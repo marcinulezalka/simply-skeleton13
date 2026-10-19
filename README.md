@@ -8,6 +8,8 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 - `infrastructure/` — lokalne środowisko (vhost, PHP-FPM, SSL), poza repozytorium; zob. [infrastructure/README.md](infrastructure/README.md)
 - `packages/<vendor>/<pakiet>/` — lokalne pakiety (osobne repozytoria Git, ignorowane przez to repozytorium), podpięte przez repozytorium Composera typu `path`
 - `packages/simplysmart/tools/` — przybornik deweloperski `simplysmart/tools` (`require-dev`): `vendor/bin/version-release`, wspólne wydawanie wersji projektu i pakietów
+- `CLAUDE.md` (i `AGENTS.md`, który do niego odsyła) — instrukcje dla agentów AI; blok `<laravel-boost-guidelines>` generuje Laravel Boost, a każdy pakiet ma własny `CLAUDE.md`
+- `.mcp.json`, `boost.json` — serwer MCP i konfiguracja [Laravel Boost](https://laravel.com/docs/boost) (`php artisan boost:update` odświeża wytyczne i skille)
 
 ## Środowisko
 
@@ -23,12 +25,16 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 
 ## Standardy kodu
 
-PSR-4 (autoload: jedna klasa na plik, namespace odpowiada katalogowi) i styl PER Coding Style (następca PSR-12) pilnowany przez Laravel Pint z presetem `per` (`pint.json`).
+PSR-4 (autoload: jedna klasa na plik, namespace odpowiada katalogowi) i styl PER Coding Style (następca PSR-12) pilnowany przez Laravel Pint z presetem `per` (`pint.json`). Pint wymaga też `declare(strict_types=1);` w każdym pliku PHP. Analiza statyczna: PHPStan z Larastanem na poziomie `max` (`phpstan.neon`).
 
 ```bash
-composer lint     # sprawdzenie stylu
-composer format   # poprawienie stylu
+composer lint      # sprawdzenie stylu i strict types
+composer format    # poprawienie stylu i dodanie strict types
+composer analyse   # PHPStan (Larastan)
+composer test      # PHPUnit
 ```
+
+Te same komendy `lint`, `format` i `analyse` działają w każdym pakiecie z `packages/`.
 
 ## Licencja
 

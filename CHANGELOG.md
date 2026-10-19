@@ -14,6 +14,10 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 - Plik środowiska lokalnego `.env.local`, ładowany zamiast `.env`, gdy istnieje; `.env` służy produkcji, a w repozytorium jest tylko `.env.example`.
 - `infrastructure/README.md`: domena lokalna, struktura i aktywacja vhosta, PHP-FPM i SSL.
+- Laravel Boost (`require-dev`): serwer MCP dla Claude Code (`.mcp.json`), wytyczne w `CLAUDE.md` i skille w `.claude/skills/` (`boost.json`); `AGENTS.md` odsyła do `CLAUDE.md`.
+- Zasady granic pakietów w `CLAUDE.md`: kontrakty w `src/Contracts/` pakietu, zasoby ładowane przez Service Provider pakietu, wspólne bramki jakości.
+- Analiza statyczna PHPStan z Larastanem na poziomie `max` (`phpstan.neon`, `composer analyse`).
+- Test integracji z pakietami: provider `simplysmart/mainboard` jest wykrywany i ładowany.
 
 ### Changed
 
@@ -21,6 +25,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 - Nazwa paczki `simplysmart/skeleton13` (zamiast `laravel/laravel`) i autor w `composer.json`.
 - Wymagane PHP ^8.4 (wcześniej ^8.3).
 - Kod sformatowany zgodnie z PER Coding Style.
+- `declare(strict_types=1);` we wszystkich plikach PHP, wymuszane przez Pint (`declare_strict_types` w `pint.json`).
 - Plik `USAGE.md` usunięty.
 - Skrypt `scripts/version-release.php` zastąpiony nowszą implementacją z `simplysmart/tools`: atomowy zapis plików, zachowanie końców linii CRLF, walidacja pliku `VERSION`, sekcji i opcji, strefa czasowa `RELEASE_TIMEZONE`, `### Deprecated` podbija MINOR.
 
