@@ -160,6 +160,14 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - **Service Providers**: A Laravel package registers itself via `extra.laravel.providers` in its `composer.json` (auto-discovery; e.g. `Simplysmart\Mainboard\MainboardServiceProvider`). Migrations (`loadMigrationsFrom`), views (`loadViewsFrom`), config (`mergeConfigFrom`) and routes live in the package and are loaded by that provider — never copy them into the skeleton's `database/`, `resources/`, `config/` or `routes/`.
 - **Package-level rules**: Each package has its own `CLAUDE.md`; read it before changing that package.
 
+## Multi-Zone Isolation
+The application is split into zones. Each zone is an isolated sandbox with its own users table and model, its own guard and its own session, so one browser can be logged in to several zones at once without mixing permissions. The public (guest) zone needs no login. Zones never share users, sessions, permissions or cache.
+- **Explicit guards**: Always name the zone's guard: `Auth::guard('<zone-guard>')`, middleware `auth:<zone-guard>` / `guest:<zone-guard>`. Never use `Auth::user()`, `auth()->user()` or `$request->user()` without a guard, and never rely on `auth.defaults.guard`.
+- **Session isolation**: Each zone with login uses its own session cookie name (e.g. `<zone>_session`), set by the zone's route-group middleware by overriding `session.cookie` **before** `StartSession` runs. This is what allows concurrent logins. Logging out invalidates only that zone's session. Ensure session cookies use compatible path/domain scopes (`session.path`, `session.domain`) if zones run under different subdomains or URI prefixes, preventing session collisions at the browser level.
+- **Drivers**: `SESSION_DRIVER=database` and `CACHE_STORE=database` now, `redis` as the target. Never use `file` for either.
+- **Cache isolation**: With the `database` store, prefix every cache key with the zone (`zone:<zone>:...`). Use `Cache::tags(['zone:<zone>', ...])` only after moving to `redis`: the `database`, `file`, `dynamodb` and `storage` stores do not support tags. Zone code never calls a global `Cache::flush()`.
+- **Zone packages**: A zone package registers its guard, user provider, session middleware and routes in its own Service Provider (see Package Boundaries above), and reads its zone and guard names from its own config, never hard-coded.
+
 ## Skills Ownership
 Each skill has exactly one source; never create a second copy of a skill in another repository.
 - **`simplysmart/tools`** (`packages/simplysmart/tools/resources/boost/skills/`) owns the shared skills: coding standards (`solid-dry`), documentation (`docs-after-tests`), changelog and releases (`changelog-before-commit`), and any future CI/CD or tooling skills. Edit them there, then run `php artisan boost:update` in the skeleton.
