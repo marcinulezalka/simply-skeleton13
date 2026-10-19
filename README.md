@@ -9,7 +9,7 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 - `packages/<vendor>/<pakiet>/` — lokalne pakiety (osobne repozytoria Git, ignorowane przez to repozytorium), podpięte przez repozytorium Composera typu `path`
 - `packages/simplysmart/tools/` — przybornik deweloperski `simplysmart/tools` (`require-dev`): `vendor/bin/version-release`, wspólne wydawanie wersji projektu i pakietów
 - `CLAUDE.md` (i `AGENTS.md`, który do niego odsyła) — instrukcje dla agentów AI; blok `<laravel-boost-guidelines>` generuje Laravel Boost, a każdy pakiet ma własny `CLAUDE.md`
-- `.mcp.json`, `boost.json` — serwer MCP i konfiguracja [Laravel Boost](https://laravel.com/docs/boost) (`php artisan boost:update` odświeża wytyczne i skille)
+- `.mcp.json`, `boost.json` — serwer MCP i konfiguracja [Laravel Boost](https://laravel.com/docs/boost) (`php artisan boost:update` odświeża wytyczne i skille). Skille w `.claude/skills/` są generowane: wspólne (`solid-dry`, `docs-after-tests`, `changelog-before-commit`) pochodzą z `simplysmart/tools` (`resources/boost/skills/`), pozostałe z samego Boosta; zasady podziału opisuje `CLAUDE.md` (Skills Ownership)
 
 ## Środowisko
 

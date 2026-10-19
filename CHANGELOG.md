@@ -14,7 +14,8 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 - Plik środowiska lokalnego `.env.local`, ładowany zamiast `.env`, gdy istnieje; `.env` służy produkcji, a w repozytorium jest tylko `.env.example`.
 - `infrastructure/README.md`: domena lokalna, struktura i aktywacja vhosta, PHP-FPM i SSL.
-- Laravel Boost (`require-dev`): serwer MCP dla Claude Code (`.mcp.json`), wytyczne w `CLAUDE.md` i skille w `.claude/skills/` (`boost.json`); `AGENTS.md` odsyła do `CLAUDE.md`.
+- Laravel Boost (`require-dev`): serwer MCP dla Claude Code (`.mcp.json`), wytyczne w `CLAUDE.md` i skille w `.claude/skills/` (`boost.json`, bez Laravel Cloud); `AGENTS.md` odsyła do `CLAUDE.md`.
+- Wspólne skille AI (`solid-dry`, `docs-after-tests`, `changelog-before-commit`) instalowane przez Boost z `simplysmart/tools`; zastępują lokalne `solid-dry`, `phpdoc-after-tests` i `docs-before-commit`. Zasady własności skilli w `CLAUDE.md`.
 - Zasady granic pakietów w `CLAUDE.md`: kontrakty w `src/Contracts/` pakietu, zasoby ładowane przez Service Provider pakietu, wspólne bramki jakości.
 - Analiza statyczna PHPStan z Larastanem na poziomie `max` (`phpstan.neon`, `composer analyse`).
 - Test integracji z pakietami: provider `simplysmart/mainboard` jest wykrywany i ładowany.

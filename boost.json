@@ -2,16 +2,21 @@
     "agents": [
         "claude_code"
     ],
-    "cloud": true,
+    "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch": false,
+    "packages": [
+        "simplysmart/tools"
+    ],
     "sail": false,
     "skills": [
         "infer-conventions",
-        "deploying-to-cloud",
         "laravel-best-practices",
         "testing-best-practices",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "changelog-before-commit",
+        "docs-after-tests",
+        "solid-dry"
     ]
 }
