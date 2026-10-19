@@ -1,0 +1,65 @@
+# --- Composer / npm ----------------------------------------------------------
+/vendor
+/node_modules
+/auth.json
+
+# --- Lokalne pakiety (osobne repozytoria Git) ---------------------------------
+/packages/*
+!/packages/.gitkeep
+
+# --- Środowisko: .env.local (lokalnie), .env (produkcja); w repozytorium tylko .env.example
+.env
+.env.*
+!.env.example
+
+# --- Środowisko lokalne (localhost): vhost, PHP-FPM, SSL ----------------------
+/infrastructure/*
+!/infrastructure/README.md
+Homestead.json
+Homestead.yaml
+/docker-compose.override.yml
+
+# --- Laravel -----------------------------------------------------------------
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+*.log
+
+# --- Testy, analiza, formatowanie ---------------------------------------------
+/.phpunit.cache
+.phpunit.result.cache
+/.pint.cache
+/.php-cs-fixer.cache
+/build
+/coverage
+/phpunit.xml.local
+/phpstan.neon.local
+
+# --- Narzędzia AI: tylko lokalne pliki sesji; skille (.claude/skills/) są w repozytorium
+/.claude/settings.local.json
+CLAUDE.local.md
+/.codex
+/.cursor/
+
+# --- Edytory i IDE -----------------------------------------------------------
+/.idea
+/.vscode
+/.zed
+/.nova
+/.fleet
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+.phpactor.json
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# --- System operacyjny -------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*~
