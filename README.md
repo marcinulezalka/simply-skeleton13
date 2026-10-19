@@ -19,7 +19,7 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 | `.env` | produkcja — tworzony na serwerze na podstawie `.env.example` | nie |
 | `.env.example` | szablon zmiennych | tak |
 
-Adres aplikacji: lokalnie `https://skeleton13.local`, na produkcji `https://skeleton13.simplysmart.pl`. Logi trafiają do plików dziennych (`storage/logs/laravel-RRRR-MM-DD.log`, przechowywane `LOG_DAILY_DAYS` dni). Poczta wychodzi ze skrzynki `noreply@simplysmart.pl` (SMTP `smtp.dpoczta.pl:587`, wymagany STARTTLS); hasło `MAIL_PASSWORD` uzupełnij ręcznie. Maile są logowane osobno w `storage/logs/email-RRRR-MM-DD.log` (kanał `mail`, `MAIL_LOG_CHANNEL`): przy `MAIL_MAILER=log` cała treść wiadomości, przy SMTP wpis o wysyłce (odbiorcy, temat, Message-ID) — listener `App\Listeners\LogSentMail`.
+Adres aplikacji: lokalnie `https://skeleton13.local`, na produkcji `https://skeleton13.simplysmart.pl`. Logi trafiają do plików dziennych (`storage/logs/laravel-RRRR-MM-DD.log`, przechowywane `LOG_DAILY_DAYS` dni). Poczta wychodzi ze skrzynki `noreply@simplysmart.pl` (SMTP `smtp.dpoczta.pl:587`, wymagany STARTTLS); hasło `MAIL_PASSWORD` uzupełnij ręcznie. Maile są logowane osobno w `storage/logs/email-RRRR-MM-DD.log` (kanał `mail`, `MAIL_LOG_CHANNEL`): przy `MAIL_MAILER=log` cała treść wiadomości, przy SMTP wpis o wysyłce (odbiorcy, temat, Message-ID) — dostarcza to Core `simplysmart/mainboard` (`config/mainboard.php`, listener `LogSentMail`), bez zmian w plikach `config/` szkieletu.
 
 ### Baza danych
 

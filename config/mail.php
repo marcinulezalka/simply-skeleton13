@@ -49,10 +49,6 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
-            // Refuse to send without encryption: with scheme "smtp" (port 587)
-            // the STARTTLS upgrade becomes mandatory instead of best-effort.
-            // Scheme "smtps" (port 465) is TLS from the first byte anyway.
-            'require_tls' => (bool) env('MAIL_REQUIRE_TLS', true),
         ],
 
         'ses' => [
@@ -78,7 +74,7 @@ return [
 
         'log' => [
             'transport' => 'log',
-            'channel' => env('MAIL_LOG_CHANNEL', 'mail'),
+            'channel' => env('MAIL_LOG_CHANNEL'),
         ],
 
         'array' => [

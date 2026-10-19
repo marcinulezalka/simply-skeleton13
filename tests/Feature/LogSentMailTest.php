@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Psr\Log\LoggerInterface;
+use Simplysmart\Mainboard\Mail\MailLogDefaults;
 use Tests\TestCase;
 
 class LogSentMailTest extends TestCase
@@ -40,9 +41,31 @@ class LogSentMailTest extends TestCase
         });
     }
 
-    public function test_mail_channel_writes_daily_email_files(): void
+    public function test_core_registers_the_daily_mail_channel(): void
     {
         $this->assertSame('daily', config('logging.channels.mail.driver'));
         $this->assertSame(storage_path('logs/email.log'), config('logging.channels.mail.path'));
+        $this->assertSame(config('mainboard.mail.log_days'), config('logging.channels.mail.days'));
+    }
+
+    public function test_core_routes_the_log_mailer_and_requires_tls_for_smtp(): void
+    {
+        $this->assertSame('mail', config('mail.mailers.log.channel'));
+        $this->assertTrue(config('mail.mailers.smtp.require_tls'));
+    }
+
+    public function test_core_keeps_mail_settings_defined_by_the_application(): void
+    {
+        config([
+            'mail.mailers.log.channel' => 'custom',
+            'logging.channels.custom' => ['driver' => 'single'],
+            'mail.mailers.smtp.require_tls' => false,
+        ]);
+
+        (new MailLogDefaults(config(), storage_path()))->apply();
+
+        $this->assertSame('custom', config('mail.mailers.log.channel'));
+        $this->assertSame(['driver' => 'single'], config('logging.channels.custom'));
+        $this->assertFalse(config('mail.mailers.smtp.require_tls'));
     }
 }

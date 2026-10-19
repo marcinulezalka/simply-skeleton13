@@ -3277,9 +3277,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "c24601c5fbe63ae19286a2f5b8c42d6da58456f8"
+                "reference": "8d24ff7aafbd67108177e0149da3af57a644aed2"
             },
             "require": {
+                "illuminate/log": "^13.0",
+                "illuminate/mail": "^13.0",
                 "illuminate/support": "^13.0",
                 "php": "^8.4"
             },
@@ -8899,7 +8901,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/tools",
-                "reference": "8c9682e72878105973024b1cf3af22ef91a30150"
+                "reference": "bb82d3ff55ca0980bd155883a2cd37bf453b6dad"
             },
             "require": {
                 "php": "^8.4"

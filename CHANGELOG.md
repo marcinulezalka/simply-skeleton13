@@ -25,13 +25,14 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Changed
 
-- Domyślny język aplikacji `pl`, także jako język zapasowy (`APP_FALLBACK_LOCALE`), i dane Fakera `pl_PL` — w `config/app.php` i `.env.example`.
+- Domyślny język aplikacji `pl`, także jako język zapasowy (`APP_FALLBACK_LOCALE`), i dane Fakera `pl_PL` — w `.env.example` (`config/app.php` bez zmian).
 - `.gitignore` uporządkowany w sekcje; wyklucza zawartość `infrastructure/` (w tym klucz prywatny SSL), wszystkie pliki `.env*` poza `.env.example`, lokalne pliki sesji AI oraz konfiguracje edytorów i IDE.
 - Nazwa paczki `simplysmart/skeleton13` (zamiast `laravel/laravel`) i autor w `composer.json`.
 - Wymagane PHP ^8.4 (wcześniej ^8.3).
 - Kod sformatowany zgodnie z PER Coding Style.
 - `declare(strict_types=1);` we wszystkich plikach PHP, wymuszane przez Pint (`declare_strict_types` w `pint.json`).
 - Plik `USAGE.md` usunięty.
+- Dziennik poczty, wymuszony STARTTLS i listener `LogSentMail` przeniesione do Core `simplysmart/mainboard`; `config/app.php`, `config/logging.php` i `config/mail.php` wróciły do wersji z Laravela (poza `declare(strict_types=1);`).
 - Środowisko: nazwa aplikacji `Simplysmart`, baza MySQL zamiast SQLite, logi w plikach dziennych (`LOG_STACK=daily`, 14 dni).
 - Skrypt `scripts/version-release.php` zastąpiony nowszą implementacją z `simplysmart/tools`: atomowy zapis plików, zachowanie końców linii CRLF, walidacja pliku `VERSION`, sekcji i opcji, strefa czasowa `RELEASE_TIMEZONE`, `### Deprecated` podbija MINOR.
 
