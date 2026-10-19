@@ -168,6 +168,16 @@ The application is split into zones. Each zone is an isolated sandbox with its o
 - **Cache isolation**: With the `database` store, prefix every cache key with the zone (`zone:<zone>:...`). Use `Cache::tags(['zone:<zone>', ...])` only after moving to `redis`: the `database`, `file`, `dynamodb` and `storage` stores do not support tags. Zone code never calls a global `Cache::flush()`.
 - **Zone packages**: A zone package registers its guard, user provider, session middleware and routes in its own Service Provider (see Package Boundaries above), and reads its zone and guard names from its own config, never hard-coded.
 
+## Routing & URL Conventions
+- **URL shape**: `/{locale}/{zone-slug}/{route}`. Folders, namespaces and classes never depend on URLs or zone slugs.
+- **Locale mode is decided by config at route registration**: with one enabled locale routes have no locale prefix and the locale is `pl`. With several, the `{locale}` prefix is always present (also for `pl`), constrained with `where` to the enabled locales, and `/` redirects to the default locale. Each route is registered exactly once — never both with and without the prefix.
+- **Shared localization middleware** (one for the whole application, not per zone): reads `{locale}`, calls `App::setLocale()` / `Carbon::setLocale()`, sets `URL::defaults(['locale' => ...])`, then `$request->route()->forgetParameter('locale')`. Never rewrite `REQUEST_URI` or the request path.
+- **Clean controllers**: Controllers, actions and Form Requests never accept `$locale` or a zone slug as parameters. Read the language from `App::getLocale()`.
+- **Configurable slug, stable names**: The zone's Service Provider groups its routes with `prefix` = the slug from the package's own config, `as` = the package's fixed route-name prefix (e.g. `mainboard.`), and the zone middleware (locale, session, `auth:<zone-guard>`). Changing a slug is a config change only and never renames routes; the route-name prefix is not configurable, so `route()` calls never break.
+- **Relative route files**: Package route files define relative paths and short names (`->name('dashboard')` → `mainboard.dashboard`). URL prefixes, the name prefix and middleware come only from the Service Provider.
+- **Named routes only**: Generate links with `route('<prefix>.<name>')`, never hand-built URLs containing the locale or a slug.
+- **Constraints**: Route names are unique across zones (each package has its own name prefix), everything works with `php artisan route:cache`, and no zone slug equals a locale code.
+
 ## Skills Ownership
 Each skill has exactly one source; never create a second copy of a skill in another repository.
 - **`simplysmart/tools`** (`packages/simplysmart/tools/resources/boost/skills/`) owns the shared skills: coding standards (`solid-dry`), documentation (`docs-after-tests`), changelog and releases (`changelog-before-commit`), and any future CI/CD or tooling skills. Edit them there, then run `php artisan boost:update` in the skeleton.
