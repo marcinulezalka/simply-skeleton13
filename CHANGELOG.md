@@ -22,6 +22,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Changed
 
+- Domyślny język aplikacji `pl`, także jako język zapasowy (`APP_FALLBACK_LOCALE`), i dane Fakera `pl_PL` — w `config/app.php` i `.env.example`.
 - `.gitignore` uporządkowany w sekcje; wyklucza zawartość `infrastructure/` (w tym klucz prywatny SSL), wszystkie pliki `.env*` poza `.env.example`, lokalne pliki sesji AI oraz konfiguracje edytorów i IDE.
 - Nazwa paczki `simplysmart/skeleton13` (zamiast `laravel/laravel`) i autor w `composer.json`.
 - Wymagane PHP ^8.4 (wcześniej ^8.3).
