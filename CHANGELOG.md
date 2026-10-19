@@ -19,6 +19,9 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 - Zasady granic pakietów w `CLAUDE.md`: kontrakty w `src/Contracts/` pakietu, zasoby ładowane przez Service Provider pakietu, wspólne bramki jakości.
 - Analiza statyczna PHPStan z Larastanem na poziomie `max` (`phpstan.neon`, `composer analyse`).
 - Test integracji z pakietami: provider `simplysmart/mainboard` jest wykrywany i ładowany.
+- Skrypt `database/create-database.sh`: tworzy bazę MySQL/MariaDB `x2k7wk_skeleton13` i jej użytkownika (utf8mb4_unicode_ci), generuje hasło, gdy brak.
+- Poczta przez skrzynkę `noreply@simplysmart.pl` (SMTP `smtp.dpoczta.pl:587`); `MAIL_REQUIRE_TLS` wymusza STARTTLS.
+- Osobny dziennik maili `storage/logs/email-RRRR-MM-DD.log` (kanał `mail`): mailer `log` zapisuje tam treść wiadomości, a listener `LogSentMail` odnotowuje każdą wysyłkę przez SMTP (odbiorcy, temat, Message-ID).
 
 ### Changed
 
@@ -29,6 +32,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 - Kod sformatowany zgodnie z PER Coding Style.
 - `declare(strict_types=1);` we wszystkich plikach PHP, wymuszane przez Pint (`declare_strict_types` w `pint.json`).
 - Plik `USAGE.md` usunięty.
+- Środowisko: nazwa aplikacji `Simplysmart`, baza MySQL zamiast SQLite, logi w plikach dziennych (`LOG_STACK=daily`, 14 dni).
 - Skrypt `scripts/version-release.php` zastąpiony nowszą implementacją z `simplysmart/tools`: atomowy zapis plików, zachowanie końców linii CRLF, walidacja pliku `VERSION`, sekcji i opcji, strefa czasowa `RELEASE_TIMEZONE`, `### Deprecated` podbija MINOR.
 
 ## [0.1.0] - 2026-10-19
