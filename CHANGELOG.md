@@ -33,6 +33,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 - `declare(strict_types=1);` we wszystkich plikach PHP, wymuszane przez Pint (`declare_strict_types` w `pint.json`).
 - Plik `USAGE.md` usunięty.
 - Dziennik poczty, wymuszony STARTTLS i listener `LogSentMail` przeniesione do Core `simplysmart/mainboard`; `config/app.php`, `config/logging.php` i `config/mail.php` wróciły do wersji z Laravela (poza `declare(strict_types=1);`).
+- Zasady w `CLAUDE.md`: migracje i seedery wszystkich tabel (Core i stref) w `simplysmart/mainboard`, a nie w paczce-właścicielu; build assetów paczek przez npm workspaces i orkiestrator z `simplysmart/tools` jedną ogólną zmianą `package.json` szkieletu (koncepcja, `vite.config.js` bez zmian).
 - Środowisko: nazwa aplikacji `Simplysmart`, baza MySQL zamiast SQLite, logi w plikach dziennych (`LOG_STACK=daily`, 14 dni).
 - Skrypt `scripts/version-release.php` zastąpiony nowszą implementacją z `simplysmart/tools`: atomowy zapis plików, zachowanie końców linii CRLF, walidacja pliku `VERSION`, sekcji i opcji, strefa czasowa `RELEASE_TIMEZONE`, `### Deprecated` podbija MINOR.
 
