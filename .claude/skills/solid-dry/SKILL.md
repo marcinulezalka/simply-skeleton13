@@ -1,7 +1,7 @@
 ---
 name: solid-dry
 description: "Apply SOLID, DRY and the simplysmart PHP 8.4 standards (strict_types, enums/constants instead of magic values, readonly) whenever writing, refactoring or reviewing code — new classes, services, controllers, jobs or any non-trivial function, not only when SOLID/DRY is named; ends with a verification pass over the diff."
-license: MIT
+license: proprietary
 ---
 
 # SOLID & DRY

@@ -1,21 +1,67 @@
-MIT License
+SIMPLYSMART RESTRICTED SOURCE LICENSE, VERSION 1.0
 
-Copyright (c) 2026 Marcin Ulezalka
+Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. DEFINITIONS
+   - "Software" means the source code, documentation and other files distributed
+     with this license, in original or modified form.
+   - "Author" means the copyright holder named above.
+   - "You" means the person or legal entity exercising the rights granted here.
+   - "Commercial Use" means any use of the Software, directly or indirectly, for
+     financial gain or as part of a business activity, including use in a product,
+     service or website offered to customers, in client projects, or in internal
+     tools of a business.
+   - "Attribution File" means a file named THIRD_PARTY.md (or THIRD_PARTY,
+     NOTICE, or an equivalent attribution file) kept in the root of the project
+     that uses the Software.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. GRANT OF RIGHTS
+   Subject to the conditions of this license, You may, free of charge:
+   a) view, copy, run and modify the Software for any non-commercial purpose;
+   b) use the Software for Commercial Use, provided You meet the condition in
+      section 3;
+   c) deliver a project built with the Software to Your client, provided the
+      client receives it under the terms of this license, including the
+      Attribution File entry required by section 3.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. CONDITION FOR COMMERCIAL USE
+   Before the first Commercial Use, You must declare it in the Attribution File
+   of every project that uses the Software. The entry must name the Software,
+   the Author, this license, the using entity or project, and the date the
+   Commercial Use started. A template entry is provided in THIRD_PARTY.md
+   distributed with the Software.
+
+4. RESTRICTIONS
+   Without prior explicit written permission from the Author, You may not:
+   a) sell, sublicense, rent or lease the Software, or offer it as a standalone
+      product, template, starter kit or library, in original or modified form;
+   b) redistribute the Software, or a modified version of it, for a fee or as
+      part of a commercial offering, except as allowed in section 2(c);
+   c) remove or alter any copyright notice, this license or the Author's entry
+      in an Attribution File.
+
+5. NOTICE
+   The above copyright notice and this license must be included in all copies or
+   substantial portions of the Software, including modified versions.
+
+6. TERMINATION
+   Any use of the Software that breaches this license automatically terminates
+   the rights granted to You. The rights are reinstated if You cure the breach
+   within 30 days of receiving notice of it from the Author.
+
+7. WARRANTY & LIABILITY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+8. GOVERNING LAW
+   This license is governed by the laws of the Republic of Poland. Disputes
+   arising from it are resolved by the court having jurisdiction over the
+   Author's place of residence.
+
+9. CONTACT
+   Requests for written permission: marcin.ulezalka@simplysmart.pl

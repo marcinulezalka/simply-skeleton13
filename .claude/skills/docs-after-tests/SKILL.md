@@ -1,7 +1,7 @@
 ---
 name: docs-after-tests
 description: "Closing step for any code change in this project, in any language: once the code works (tests pass or behavior is verified), document it in one pass over the diff — doc comments in the language's own standard, plus docs/, README.md, CONTRIBUTING.md and CLAUDE.md where the change affects them. Skip for throwaway snippets."
-license: MIT
+license: proprietary
 ---
 
 # Docs after tests

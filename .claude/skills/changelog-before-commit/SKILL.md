@@ -1,7 +1,7 @@
 ---
 name: changelog-before-commit
 description: "Before any git commit in a simplysmart project or package: add the CHANGELOG.md [Unreleased] entry for user-visible changes, preview the release with simplysmart/tools (vendor/bin/version-release --dry-run) and release only on explicit request, and confirm docs-after-tests already ran on the diff. Use whenever a commit is imminent, not only when the changelog is mentioned."
-license: MIT
+license: proprietary
 ---
 
 # Changelog before commit
