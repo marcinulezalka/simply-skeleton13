@@ -151,7 +151,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Always edit package code directly inside `packages/simplysmart/<package-name>/` (do not edit inside `vendor/`).
 - Package dependencies are symlinked via Composer path repository (`packages/*/*`).
 - Each package in `packages/` is a separate Git repository, ignored by the skeleton13 repository.
-- Coding standards (main project and every package): PHP ^8.4, `declare(strict_types=1);` in every PHP file, PSR-4 autoloading (one class per file, namespace mirrors the directory), PER Coding Style via Laravel Pint `per` preset (`pint.json`). See Quality Gates below.
+- Coding standards (main project and every package): PHP ^8.4, `declare(strict_types=1);` in every PHP file, PSR-4 autoloading (one class per file, namespace mirrors the directory), PER Coding Style via Laravel Pint `per` preset (`pint.json`). Every own PHP file carries the PHPDoc copyright header (`header_comment` in the package's `pint.json`; in the skeleton `pint.header.json`, applied to `tests/` only, because the stock framework files stay untouched) — `composer format` adds it, `composer lint` fails without it. See Quality Gates below.
 - Versioning: one shared implementation in the dev package `simplysmart/tools` (`packages/simplysmart/tools`) releases the main project and every package. Never copy it into a package; run `vendor/bin/version-release` for the main project, `vendor/bin/version-release --root=packages/<vendor>/<package>` for a package. It really releases — to preview, add `--dry-run` (no files change); tests use temp dirs.
 
 ## Framework Footprint
@@ -204,5 +204,6 @@ Each skill has exactly one source; never create a second copy of a skill in anot
 Run from the directory of the repository you changed (skeleton root or `packages/simplysmart/<package-name>/`):
 - `composer lint` — PER style plus `declare(strict_types=1);` in every PHP file (`composer format` fixes both).
 - `composer analyse` — PHPStan at level `max` (`phpstan.neon`; Larastan in the skeleton). Fix the cause; do not add ignores or a baseline.
+- Intelephense — no diagnostics (errors, warnings, hints) in changed PHP files, `src/` and `tests/` alike. Fix the cause: a real type, `@var` for mocks (`LoggerInterface&MockInterface`), `@mixin Model` for traits used on models, remove unused symbols; never `@intelephense-ignore` or disabled diagnostics. VS Code's Problems panel (`getDiagnostics`) only shows files Intelephense has analyzed, so an empty result for an unopened file is not proof — check the changed files themselves.
 - `composer test` — PHPUnit, where the repository defines it (skeleton, `tools`). Skeleton tests (`tests/Feature/`) cover integration with packages; a package tests its own logic in its own `tests/`.
 - After changing a package's `composer.json`, run `composer update simplysmart/<package-name>` in the skeleton so `composer.lock` picks it up.

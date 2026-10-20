@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Zones;
 
 use Simplysmart\Mainboard\Contracts\CurrentZone;
@@ -53,22 +62,26 @@ class ZoneIsolationTest extends ZoneTestCase
 
     public function test_zone_account_reaches_its_zone_routes(): void
     {
-        $this->actingAs($this->alphaAccount(), 'alpha')
+        $account = $this->account(AlphaAccount::class);
+        $id = $account->getKey();
+        $this->assertIsInt($id);
+
+        $this->signedIn($account, 'alpha')
             ->get('/alpha/dashboard')
             ->assertOk()
-            ->assertSee('alpha dashboard:7');
+            ->assertSee('alpha dashboard:' . $id);
     }
 
     public function test_zone_account_is_a_guest_in_another_zone(): void
     {
-        $this->actingAs($this->alphaAccount(), 'alpha')
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha')
             ->get('/beta/dashboard')
-            ->assertNotFound();
+            ->assertRedirect('/beta/signin');
     }
 
-    public function test_guest_gets_not_found_while_the_zone_has_no_sign_in_route(): void
+    public function test_guest_is_sent_to_the_sign_in_of_the_zone(): void
     {
-        $this->get('/alpha/dashboard')->assertNotFound();
+        $this->get('/alpha/dashboard')->assertRedirect('/alpha/signin');
     }
 
     public function test_the_current_zone_does_not_outlive_the_request(): void
@@ -77,10 +90,5 @@ class ZoneIsolationTest extends ZoneTestCase
 
         $this->assertFalse($this->app->make(CurrentZone::class)->has());
         $this->assertSame('web', $this->app->make('auth')->getDefaultDriver());
-    }
-
-    private function alphaAccount(): AlphaAccount
-    {
-        return (new AlphaAccount())->forceFill(['id' => 7]);
     }
 }

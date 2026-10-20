@@ -1,0 +1,12 @@
+{
+    "preset": "per",
+    "rules": {
+        "declare_strict_types": true,
+        "header_comment": {
+            "header": "This file is part of simplysmart/skeleton13.\n\nCopyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>\n\nLicensed under the Simplysmart Restricted Source License 1.0.\nSee the LICENSE file distributed with this source code.",
+            "comment_type": "PHPDoc",
+            "location": "after_declare_strict",
+            "separate": "both"
+        }
+    }
+}

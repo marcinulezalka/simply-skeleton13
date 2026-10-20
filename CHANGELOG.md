@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy logowania stref kodem i PIN-em (`tests/Feature/Zones/SignIn*`, `StrongPinTest`): pełny przepływ, decoy, najnowszy kod, kroki i ich czas, blokady stopniowe, limity niezależne od IP, rehash PIN-u, epoka i dezaktywacja, 419, czyszczenie kodów; konta testowe na `ZoneAccount` i tabelach z `ZoneTables`; zmienne `AUTH_CODE_TTL`, `AUTH_PIN_LENGTH`, `AUTH_LOG_CHANNEL` w `.env.example`.
 - Testy integracji stref z Core (`tests/Feature/Zones/`, strefy testowe `alpha`, `beta`, `open` w `tests/Fixtures/Zones/`): rejestracja, izolacja sesji i guardów, nagłówki bezpieczeństwa, tryby języka, zaufane proxy, reguły kodu (guard zawsze nazwany, brak `Cache::flush()`); zmienne `APP_LOCALES`, `ZONE_SESSION_LIFETIME`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `SECURITY_CSP` w `.env.example`.
 - Lokalne pakiety w `packages/<vendor>/<pakiet>/` podpinane przez repozytorium Composera typu `path` (`packages/*/*`, symlink); pierwszy pakiet: `simplysmart/mainboard`.
 - Wydawanie wersji przez pakiet deweloperski `simplysmart/tools` (`require-dev`, lokalnie w `packages/simplysmart/tools`): `vendor/bin/version-release` wydaje projekt główny, a z opcją `--root=<katalog>` dowolny pakiet.
@@ -26,6 +27,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Changed
 
+- Nagłówek PHPDoc z prawami autorskimi i licencją w każdym pliku testów, wymuszany przez Pint (`pint.header.json` tylko dla `tests/`, bo stockowe pliki Laravela zostają bez zmian); `composer lint` i `composer format` sprawdzają i dopisują go. Nowa bramka jakości w `CLAUDE.md`: brak ostrzeżeń Intelephense w zmienionych plikach PHP.
 - Domyślny język aplikacji `pl`, także jako język zapasowy (`APP_FALLBACK_LOCALE`), i dane Fakera `pl_PL` — w `.env.example` (`config/app.php` bez zmian).
 - `.gitignore` uporządkowany w sekcje; wyklucza zawartość `infrastructure/` (w tym klucz prywatny SSL), wszystkie pliki `.env*` poza `.env.example`, lokalne pliki sesji AI oraz konfiguracje edytorów i IDE.
 - Nazwa paczki `simplysmart/skeleton13` (zamiast `laravel/laravel`) i autor w `composer.json`.

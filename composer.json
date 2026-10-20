@@ -80,8 +80,14 @@
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
-        "lint": "pint --test",
-        "format": "pint",
+        "lint": [
+            "pint --test",
+            "pint --test --config=pint.header.json tests"
+        ],
+        "format": [
+            "pint",
+            "pint --config=pint.header.json tests"
+        ],
         "analyse": "phpstan analyse --memory-limit=1G"
     },
     "extra": {

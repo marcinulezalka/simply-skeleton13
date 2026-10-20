@@ -2,12 +2,22 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature;
 
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
+use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
 use Simplysmart\Mainboard\Mail\MailLogDefaults;
 use Tests\TestCase;
@@ -16,6 +26,7 @@ class LogSentMailTest extends TestCase
 {
     public function test_mail_sent_by_a_real_transport_is_logged_in_the_mail_channel(): void
     {
+        /** @var LoggerInterface&MockInterface $mailLogger */
         $mailLogger = Mockery::mock(LoggerInterface::class);
         $mailLogger->shouldReceive('info')->once()->with('Mail sent', Mockery::on(
             static fn(array $context): bool => $context['mailer'] === 'array'
@@ -31,6 +42,7 @@ class LogSentMailTest extends TestCase
 
     public function test_mail_sent_by_the_log_transport_is_not_logged_twice(): void
     {
+        /** @var LoggerInterface&MockInterface $mailLogger */
         $mailLogger = Mockery::mock(LoggerInterface::class);
         $mailLogger->shouldReceive('debug')->once();
         $mailLogger->shouldNotReceive('info');

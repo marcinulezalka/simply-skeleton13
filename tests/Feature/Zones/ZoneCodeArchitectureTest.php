@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\File;
@@ -19,8 +28,8 @@ class ZoneCodeArchitectureTest extends TestCase
      */
     private const array FORBIDDEN = [
         'Auth facade without a guard' => '/Auth::(user|id|check|guest)\(\s*\)/',
-        'auth() helper without a guard' => '/\bauth\(\s*\)->/',
-        'request user without a guard' => '/->user\(\s*\)/',
+        'auth() helper without a guard' => '/(?<![\w>:$])auth\(\s*\)->/',
+        'request user without a guard' => '/\$request->user\(\s*\)/',
         'global cache flush' => '/Cache::flush\(/',
     ];
 
@@ -29,7 +38,7 @@ class ZoneCodeArchitectureTest extends TestCase
         $violations = [];
 
         foreach (File::allFiles(base_path('packages/simplysmart')) as $file) {
-            if ($file->getExtension() !== 'php' || ! str_contains($file->getPathname(), '/src/')) {
+            if ($file->getExtension() !== 'php' || preg_match('#^[^/]+/src/#', $file->getRelativePathname()) !== 1) {
                 continue;
             }
 

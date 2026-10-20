@@ -2,8 +2,18 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Zones;
 
+use Illuminate\Contracts\Foundation\Application;
 use InvalidArgumentException;
 use LogicException;
 use Simplysmart\Mainboard\Contracts\ZoneRegistry;
@@ -90,7 +100,7 @@ class ZoneRegistrationTest extends ZoneTestCase
             /**
              * @param array<string, mixed> $config
              */
-            public function __construct($app, private array $config, private string $prefix, private string $routesOf)
+            public function __construct(Application $app, private array $config, private string $prefix, private string $routesOf)
             {
                 parent::__construct($app);
             }
