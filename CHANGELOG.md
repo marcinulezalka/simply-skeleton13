@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy integracji stref z Core (`tests/Feature/Zones/`, strefy testowe `alpha`, `beta`, `open` w `tests/Fixtures/Zones/`): rejestracja, izolacja sesji i guardów, nagłówki bezpieczeństwa, tryby języka, zaufane proxy, reguły kodu (guard zawsze nazwany, brak `Cache::flush()`); zmienne `APP_LOCALES`, `ZONE_SESSION_LIFETIME`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `SECURITY_CSP` w `.env.example`.
 - Lokalne pakiety w `packages/<vendor>/<pakiet>/` podpinane przez repozytorium Composera typu `path` (`packages/*/*`, symlink); pierwszy pakiet: `simplysmart/mainboard`.
 - Wydawanie wersji przez pakiet deweloperski `simplysmart/tools` (`require-dev`, lokalnie w `packages/simplysmart/tools`): `vendor/bin/version-release` wydaje projekt główny, a z opcją `--root=<katalog>` dowolny pakiet.
 
