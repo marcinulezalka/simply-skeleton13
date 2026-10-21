@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
@@ -30,12 +31,15 @@ use Tests\TestCase;
 
 /**
  * Baza testów stref: rejestruje strefy testowe alpha i beta (z logowaniem) oraz open (publiczną)
- * i tworzy tabele stref z logowaniem schematem Core (SQLite w pamięci).
+ * i tworzy tabele stref z logowaniem schematem Core (SQLite w pamięci). Migracje Core zakładają tabele
+ * prawdziwych stref (np. admiro), bo ich paczki też są zarejestrowane.
  *
  * Strefy istnieją wyłącznie w testach; skeleton i mainboard nie mają własnej strefy.
  */
 abstract class ZoneTestCase extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

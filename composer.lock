@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee7a2f3905dd274b6b78447e51271b99",
+    "content-hash": "3b4ccdfe273675571ebac06bb4a19c67",
     "packages": [
         {
             "name": "brick/math",
@@ -3272,12 +3272,80 @@
             "time": "2026-09-16T11:39:30+00:00"
         },
         {
+            "name": "simplysmart/admiro",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/simplysmart/admiro",
+                "reference": "81fc3819f816e5c952be3e304440c1e1c5b071d9"
+            },
+            "require": {
+                "laravel/framework": "^13.0",
+                "php": "^8.4",
+                "simplysmart/mainboard": "@dev"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.27",
+                "phpstan/phpstan": "^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Simplysmart\\Admiro\\AdmiroServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Simplysmart\\Admiro\\": "src/"
+                }
+            },
+            "scripts": {
+                "lint": [
+                    "pint --test"
+                ],
+                "format": [
+                    "pint"
+                ],
+                "analyse": [
+                    "phpstan analyse --memory-limit=512M"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "Marcin Ulezalka",
+                    "email": "marcin.ulezalka@simplysmart.pl",
+                    "role": "Founder"
+                }
+            ],
+            "description": "Admiro: the administrators' zone of simplysmart applications.",
+            "homepage": "https://github.com/marcinulezalka/admiro",
+            "keywords": [
+                "administration",
+                "admiro",
+                "simplysmart",
+                "zone"
+            ],
+            "support": {
+                "issues": "https://github.com/marcinulezalka/admiro/issues",
+                "source": "https://github.com/marcinulezalka/admiro"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "simplysmart/mainboard",
             "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "c4db92be82c2ca027e2a64e8fdf714ff97b61d28"
+                "reference": "dea992fe7c604257edaef128296c5dfe37734d08"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -8902,7 +8970,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/tools",
-                "reference": "f2c93a17232cb08b069ea0b75be319b1236e2c33"
+                "reference": "58a33c19de1c64876cddc1d9cc4471defd7aacb7"
             },
             "require": {
                 "php": "^8.4"
@@ -9150,6 +9218,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "simplysmart/admiro": 20,
         "simplysmart/mainboard": 20,
         "simplysmart/tools": 20
     },

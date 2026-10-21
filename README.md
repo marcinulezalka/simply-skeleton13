@@ -7,6 +7,7 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 - `public/` — document root (punkt wejścia: `public/index.php`)
 - `infrastructure/` — lokalne środowisko (vhost, PHP-FPM, SSL), poza repozytorium; zob. [infrastructure/README.md](infrastructure/README.md)
 - `packages/<vendor>/<pakiet>/` — lokalne pakiety (osobne repozytoria Git, ignorowane przez to repozytorium), podpięte przez repozytorium Composera typu `path`
+- `packages/simplysmart/admiro/` — strefa administratorów `simplysmart/admiro` (adres `/admiro`, `ADMIRO_SLUG`); pierwsze konto: `php artisan admiro:account:create <email> "<imię i nazwisko>"`, PIN administrator ustawia przy pierwszym logowaniu
 - `packages/simplysmart/tools/` — przybornik deweloperski `simplysmart/tools` (`require-dev`): `vendor/bin/version-release`, wspólne wydawanie wersji projektu i pakietów
 - `CLAUDE.md` (i `AGENTS.md`, który do niego odsyła) — instrukcje dla agentów AI; blok `<laravel-boost-guidelines>` generuje Laravel Boost, a każdy pakiet ma własny `CLAUDE.md`
 - `.mcp.json`, `boost.json` — serwer MCP i konfiguracja [Laravel Boost](https://laravel.com/docs/boost) (`php artisan boost:update` odświeża wytyczne i skille). Skille w `.claude/skills/` są generowane: wspólne (`solid-dry`, `docs-after-tests`, `changelog-before-commit`) pochodzą z `simplysmart/tools` (`resources/boost/skills/`), pozostałe z samego Boosta; zasady podziału opisuje `CLAUDE.md` (Skills Ownership)

@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Strefa administratorów: paczka `simplysmart/admiro` (adres `/admiro`, zmienna `ADMIRO_SLUG` w `.env.example`), konta zakładane komendą `php artisan admiro:account:create <email> <imię i nazwisko>`; testy integracji w `tests/Feature/Admiro/`, a testy stref uruchamiają migracje Core (`RefreshDatabase` w `ZoneTestCase`).
 - Testy logowania stref kodem i PIN-em (`tests/Feature/Zones/SignIn*`, `StrongPinTest`): pełny przepływ, decoy, najnowszy kod, kroki i ich czas, blokady stopniowe, limity niezależne od IP, rehash PIN-u, epoka i dezaktywacja, 419, czyszczenie kodów; konta testowe na `ZoneAccount` i tabelach z `ZoneTables`; zmienne `AUTH_CODE_TTL`, `AUTH_PIN_LENGTH`, `AUTH_LOG_CHANNEL` w `.env.example`.
 - Testy integracji stref z Core (`tests/Feature/Zones/`, strefy testowe `alpha`, `beta`, `open` w `tests/Fixtures/Zones/`): rejestracja, izolacja sesji i guardów, nagłówki bezpieczeństwa, tryby języka, zaufane proxy, reguły kodu (guard zawsze nazwany, brak `Cache::flush()`); zmienne `APP_LOCALES`, `ZONE_SESSION_LIFETIME`, `TRUSTED_PROXIES`, `SECURITY_HSTS`, `SECURITY_CSP` w `.env.example`.
 - Lokalne pakiety w `packages/<vendor>/<pakiet>/` podpinane przez repozytorium Composera typu `path` (`packages/*/*`, symlink); pierwszy pakiet: `simplysmart/mainboard`.
