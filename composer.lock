@@ -3277,7 +3277,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/admiro",
-                "reference": "81fc3819f816e5c952be3e304440c1e1c5b071d9"
+                "reference": "95f40b09cfa97a7483b2f4d243024b670b81e6bc"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -3323,7 +3323,7 @@
                 }
             ],
             "description": "Admiro: the administrators' zone of simplysmart applications.",
-            "homepage": "https://github.com/marcinulezalka/admiro",
+            "homepage": "https://github.com/marcinulezalka/simply-admiro",
             "keywords": [
                 "administration",
                 "admiro",
@@ -3331,8 +3331,8 @@
                 "zone"
             ],
             "support": {
-                "issues": "https://github.com/marcinulezalka/admiro/issues",
-                "source": "https://github.com/marcinulezalka/admiro"
+                "issues": "https://github.com/marcinulezalka/simply-admiro/issues",
+                "source": "https://github.com/marcinulezalka/simply-admiro"
             },
             "transport-options": {
                 "symlink": true,
@@ -3345,7 +3345,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "dea992fe7c604257edaef128296c5dfe37734d08"
+                "reference": "04e56691bacf695cfaa8212c0486ae667514c588"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -3393,7 +3393,7 @@
                 }
             ],
             "description": "Modular mainboard for simplysmart applications: connect modules, management workspaces, and beyond.",
-            "homepage": "https://github.com/marcinulezalka/mainboard",
+            "homepage": "https://github.com/marcinulezalka/simply-mainboard",
             "keywords": [
                 "mainboard",
                 "modular",
@@ -3401,8 +3401,8 @@
                 "simplysmart"
             ],
             "support": {
-                "issues": "https://github.com/marcinulezalka/mainboard/issues",
-                "source": "https://github.com/marcinulezalka/mainboard"
+                "issues": "https://github.com/marcinulezalka/simply-mainboard/issues",
+                "source": "https://github.com/marcinulezalka/simply-mainboard"
             },
             "transport-options": {
                 "symlink": true,

@@ -29,7 +29,28 @@ MySQL (lokalnie 8.4; na dhosting.pl MariaDB). Baza i użytkownik mają nazwę `x
 ```bash
 database/create-database.sh            # domyślnie .env.local, administrator: sudo mysql
 php artisan migrate
+php artisan mainboard:localization:seed  # słowniki: waluty, języki, kraje, stawki VAT (można powtarzać)
 ```
+
+Tabele danych mają historię zmian zapisywaną triggerami MySQL (`history_<tabela>`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/mainboard/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.
+
+## Paczki prywatne
+
+Część paczek w `packages/` może mieć prywatne repozytoria. Publiczne pliki projektu ich nie wymieniają — lista jest w lokalnym `private-packages.json` (poza repozytorium):
+
+```json
+{
+    "require": {
+        "<vendor>/<paczka>": "@dev"
+    }
+}
+```
+
+```bash
+composer private:install   # buduje composer.private.json/.lock i instaluje paczki prywatne
+```
+
+Zwykłe `composer install` / `update` / `require` / `remove` usuwa paczki prywatne z `vendor/` — uruchom potem ponownie `composer private:install`. Bez `private-packages.json` komenda nic nie robi. Testy integracji paczek prywatnych (`packages/*/*/tests/Integration`) uruchamia suite `Packages`; bez paczki są pomijane. Zasady: `CLAUDE.md`, sekcja „Private Packages”.
 
 ## Wymagania
 

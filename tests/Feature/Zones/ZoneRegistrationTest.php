@@ -16,7 +16,9 @@ namespace Tests\Feature\Zones;
 use Illuminate\Contracts\Foundation\Application;
 use InvalidArgumentException;
 use LogicException;
+use Illuminate\Routing\Router;
 use Simplysmart\Mainboard\Contracts\ZoneRegistry;
+use Simplysmart\Mainboard\Http\Middleware\RecordHistoryActor;
 use Simplysmart\Mainboard\Zones\ZoneServiceProvider;
 use Tests\Fixtures\Zones\AlphaAccount;
 
@@ -30,6 +32,14 @@ class ZoneRegistrationTest extends ZoneTestCase
     {
         $this->assertSame(['driver' => 'session', 'provider' => 'alpha_accounts'], config('auth.guards.alpha'));
         $this->assertSame(['driver' => 'eloquent', 'model' => AlphaAccount::class], config('auth.providers.alpha_accounts'));
+    }
+
+    public function test_zone_middleware_group_records_the_history_actor(): void
+    {
+        $group = $this->app->make(Router::class)->getMiddlewareGroups()['zone.alpha'];
+
+        $this->assertIsArray($group);
+        $this->assertContains(RecordHistoryActor::class, $group);
     }
 
     public function test_public_zone_registers_no_guard(): void

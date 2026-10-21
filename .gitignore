@@ -7,6 +7,11 @@
 /packages/*
 !/packages/.gitkeep
 
+# --- Paczki prywatne: lista i lokalny composer (composer private:install) --------
+/private-packages.json
+/composer.private.json
+/composer.private.lock
+
 # --- Środowisko: .env.local (lokalnie), .env (produkcja); w repozytorium tylko .env.example
 .env
 .env.*
