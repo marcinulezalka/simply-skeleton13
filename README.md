@@ -36,7 +36,7 @@ php artisan migrate
 
 ## Standardy kodu
 
-PSR-4 (autoload: jedna klasa na plik, namespace odpowiada katalogowi) i styl PER Coding Style (następca PSR-12) pilnowany przez Laravel Pint z presetem `per` (`pint.json`). Pint wymaga też `declare(strict_types=1);` w każdym pliku PHP. Analiza statyczna: PHPStan z Larastanem na poziomie `max` (`phpstan.neon`).
+PSR-4 (autoload: jedna klasa na plik, namespace odpowiada katalogowi) i styl PER Coding Style (następca PSR-12) pilnowany przez Laravel Pint z presetem `per` (`pint.json`). Pint wymaga też `declare(strict_types=1);` w każdym pliku PHP oraz nagłówka PHPDoc z prawami autorskimi i licencją (`header_comment`): w pakietach w każdym pliku PHP, w szkielecie tylko w `tests/` (`pint.header.json`), bo stockowe pliki Laravela zostają bez zmian. Analiza statyczna: PHPStan z Larastanem na poziomie `max` (`phpstan.neon`).
 
 ```bash
 composer lint      # sprawdzenie stylu i strict types
@@ -46,6 +46,27 @@ composer test      # PHPUnit
 ```
 
 Te same komendy `lint`, `format` i `analyse` działają w każdym pakiecie z `packages/`.
+
+### Intelephense (VS Code)
+
+Edytorem PHP jest VS Code z rozszerzeniem [Intelephense](https://intelephense.com) (`bmewburn.vscode-intelephense-client`). Zmienione pliki PHP — w szkielecie i w pakietach, w `src/` i w `tests/` — nie mogą mieć żadnych jego zgłoszeń (błędów, ostrzeżeń ani podpowiedzi), tak samo jak nie mogą mieć błędów PHPStana.
+
+Usuwaj przyczynę, nie zgłoszenie. Nie używaj `@intelephense-ignore` i nie wyłączaj diagnostyki w ustawieniach.
+
+| Zgłoszenie | Typowa przyczyna | Poprawka |
+| --- | --- | --- |
+| `Undefined method 'shouldReceive'` (P1013) | mock Mockery bez typu | `/** @var LoggerInterface&MockInterface $logger */` nad `Mockery::mock(...)` |
+| `Undefined method 'setAttribute'`, `'saving'`… (P1013) | trait wywołuje metody modelu Eloquent | tagi `@method` w PHPDoc traitu (Intelephense ignoruje `@mixin` w traitach) |
+| `Undefined method 'query'` (P1013) | klasa modelu jako `string`, np. z configu | `/** @var class-string<Model> $model */` po sprawdzeniu typu |
+| `Parameter $app has no type information` (P1132) | parametr bez typu | prawdziwy typ, np. `Application $app` |
+| `Symbol '$x' is declared but not used` (P1003) | nieużywany parametr, zmienna lub import | usuń go |
+
+Panel **Problems** pokazuje stan indeksu Intelephense, a ten bywa nieaktualny w obie strony:
+
+- pliku, którego Intelephense jeszcze nie przeanalizował (zwykle nieotwartego), panel nie pokazuje, choć może on mieć zgłoszenia;
+- po zmianach zrobionych poza edytorem (Git, Composer, generatory, agent AI) indeks może nie znać nowych klas i zgłaszać fałszywe `Undefined type` (P1009), choć klasa istnieje i PHPStan jej nie kwestionuje.
+
+Gdy zgłoszenie wygląda na fałszywe, przebuduj indeks: **Ctrl+Shift+P → „Intelephense: Index workspace”**. Jeśli to nie pomoże, użyj **„Developer: Reload Window”**. Dopiero zgłoszenie, które zostaje po przebudowie indeksu, wymaga zmiany w kodzie.
 
 ## Licencja
 
