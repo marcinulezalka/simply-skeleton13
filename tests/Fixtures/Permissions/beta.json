@@ -1,0 +1,9 @@
+{
+    "zone": "beta",
+    "permissions": ["reports.view"],
+    "roles": {
+        "guest": {"permissions": []},
+        "support": {"permissions": []},
+        "owner": {"permissions": "*"}
+    }
+}

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Zones;
 
 /**
- * Strefa testowa alpha z logowaniem.
+ * Strefa testowa alpha z logowaniem i organizacjami klientów (teams).
  */
 class AlphaZoneServiceProvider extends FixtureZoneServiceProvider
 {
@@ -25,6 +25,6 @@ class AlphaZoneServiceProvider extends FixtureZoneServiceProvider
 
     protected function zoneConfig(): array
     {
-        return ['name' => 'alpha', 'model' => AlphaAccount::class];
+        return ['name' => 'alpha', 'model' => AlphaAccount::class, 'teams' => true];
     }
 }

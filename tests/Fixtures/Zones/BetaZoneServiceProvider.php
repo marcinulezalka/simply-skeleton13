@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Zones;
 
 /**
- * Strefa testowa beta z logowaniem.
+ * Strefa testowa beta z logowaniem, zawsze z kodem z e-maila (bez zaufanych urządzeń).
  */
 class BetaZoneServiceProvider extends FixtureZoneServiceProvider
 {
@@ -25,6 +25,6 @@ class BetaZoneServiceProvider extends FixtureZoneServiceProvider
 
     protected function zoneConfig(): array
     {
-        return ['name' => 'beta', 'model' => BetaAccount::class];
+        return ['name' => 'beta', 'model' => BetaAccount::class, 'auth' => ['trusted_devices' => ['enabled' => false]]];
     }
 }

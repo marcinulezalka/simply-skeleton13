@@ -6,6 +6,8 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Zaufane urządzenia, zmiana PIN-u i akcje administracyjne na kontach z Core: po aktualizacji `php artisan migrate` (tabela urządzeń strefy `admiro`, `organization_members`); testy `tests/Feature/Zones/{TrustedDevice,PinChange,AccountAdministration}Test.php`.
+- Role stref z plików JSON i uprawnienia w żądaniu z Core: `php artisan mainboard:permissions:sync` przy wdrożeniu (po `mainboard:organizations:seed`); strefa testowa `alpha` z organizacjami klientów (`teams`), `beta` bez zaufanych urządzeń; testy `tests/Feature/Permissions/` (pliki ról, synchronizacja, organizacja żądania, trasy z uprawnieniem, nadawanie ról bez eskalacji, właściciele) i `tests/Feature/Admiro/AdmiroPermissionsTest.php`.
 - Organizacje i uprawnienia stref z Core (`spatie/laravel-permission`, bez publikowania `config/permission.php`): `php artisan mainboard:organizations:seed` po migracji zakłada organizację operatora; testy `tests/Feature/Permissions/` (schemat, historia, etykiety, izolacja stref i organizacji, odmowy, seeder).
 - Konta stref i tabela `users` wyrównane do kolumn globalnych z Core (kolumny standardowe, historia `*_history`, id od 1000); testy `tests/Feature/Zones/ZoneAccountTablesTest.php`, `tests/Feature/Database/UsersTableTest.php` i odrzucenie adresu usuniętego konta w `CreateAdmiroAccountTest`.
 - Strona startowa `/` z Core (`simplysmart/mainboard`): logo i opis simplysmart zamiast stockowej strony Laravela; stockowy `resources/views/welcome.blade.php` usunięty (plik o tej nazwie w aplikacji nadal nadpisuje stronę z Core); test `tests/Feature/WelcomePageTest.php`.

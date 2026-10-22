@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Testing\PendingCommand;
 use Simplysmart\Mainboard\Auth\SignIn\CompleteSignIn;
 use Simplysmart\Mainboard\Contracts\CodeAndPinAccount;
 use Simplysmart\Mainboard\Contracts\ZoneRegistry;
@@ -98,6 +99,18 @@ abstract class ZoneTestCase extends TestCase
         $sessions->restore();
 
         return $this->actingAs($account, $zone);
+    }
+
+    /**
+     * Komenda Artisana z asercjami (PendingCommand).
+     *
+     * @param array<string, mixed> $parameters
+     */
+    protected function command(string $command, array $parameters = []): PendingCommand
+    {
+        $pending = $this->artisan($command, $parameters);
+
+        return $pending instanceof PendingCommand ? $pending : throw new \LogicException('Artisan commands must be mocked in tests.');
     }
 
     /**
