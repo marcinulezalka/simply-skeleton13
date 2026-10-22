@@ -27,7 +27,7 @@ use Tests\Fixtures\Database\DemoItem;
  */
 class HistoryTest extends DatabaseTestCase
 {
-    private const array DICTIONARY_TABLES = ['dict_currencies', 'dict_languages', 'dict_countries', 'dict_country_language', 'dict_tax_rates'];
+    private const array DICTIONARY_TABLES = ['locale_currencies', 'locale_languages', 'locale_countries', 'locale_country_language', 'locale_tax_rates'];
 
     public function test_insert_update_and_delete_are_recorded_with_the_whole_row(): void
     {
@@ -92,7 +92,7 @@ class HistoryTest extends DatabaseTestCase
         $connection = DB::connection();
         $this->assertInstanceOf(Connection::class, $connection);
 
-        $sql = implode("\n", (new MysqlHistoryTriggers($connection))->createStatements('demo', 'history_demo', ['id', 'name']));
+        $sql = implode("\n", (new MysqlHistoryTriggers($connection))->createStatements('demo', 'demo_history', ['id', 'name']));
 
         $this->assertStringContainsString('AFTER UPDATE', $sql);
         $this->assertStringContainsString("JSON_OBJECT('id', OLD.", $sql);

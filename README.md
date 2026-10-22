@@ -32,7 +32,7 @@ php artisan migrate
 php artisan mainboard:localization:seed  # słowniki: waluty, języki, kraje, stawki VAT (można powtarzać)
 ```
 
-Tabele danych mają historię zmian zapisywaną triggerami MySQL (`history_<tabela>`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/mainboard/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.
+Tabele danych mają historię zmian zapisywaną triggerami MySQL (`<tabela>_history`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/mainboard/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.
 
 ## Paczki prywatne
 

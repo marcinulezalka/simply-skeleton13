@@ -6,6 +6,8 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Konta stref i tabela `users` wyrównane do kolumn globalnych z Core (kolumny standardowe, historia `*_history`, id od 1000); testy `tests/Feature/Zones/ZoneAccountTablesTest.php`, `tests/Feature/Database/UsersTableTest.php` i odrzucenie adresu usuniętego konta w `CreateAdmiroAccountTest`.
+- Strona startowa `/` z Core (`simplysmart/mainboard`): logo i opis simplysmart zamiast stockowej strony Laravela; stockowy `resources/views/welcome.blade.php` usunięty (plik o tej nazwie w aplikacji nadal nadpisuje stronę z Core); test `tests/Feature/WelcomePageTest.php`.
 - Paczki prywatne: lokalna lista `private-packages.json` i `composer private:install` (narzędzie `composer-private` z `simplysmart/tools`), pliki `composer.private.*` poza repozytorium, suite PHPUnit `Packages` dla testów integracji paczek (`packages/*/*/tests/Integration`), zasady „Private Packages” w `CLAUDE.md`.
 - Słowniki lokalizacji z Core: `php artisan mainboard:localization:seed` (waluty, języki, kraje, stawki VAT), historia zmian tabel na triggerach MySQL (wymaga uprawnienia `TRIGGER`), zmienne `APP_COUNTRY` i `APP_DEFAULT_VAT` w `.env.example`; testy fundamentu bazy i słowników w `tests/Feature/Database/` i `tests/Feature/Localization/`.
 - Strefa administratorów: paczka `simplysmart/admiro` (adres `/admiro`, zmienna `ADMIRO_SLUG` w `.env.example`), konta zakładane komendą `php artisan admiro:account:create <email> <imię i nazwisko>`; testy integracji w `tests/Feature/Admiro/`, a testy stref uruchamiają migracje Core (`RefreshDatabase` w `ZoneTestCase`).

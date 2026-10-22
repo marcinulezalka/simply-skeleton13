@@ -35,7 +35,7 @@ class TaxRatesInForceTest extends TestCase
     {
         parent::setUp();
 
-        $this->poland = (new Country())->forceFill(['name' => 'Polska', 'code' => 'PL', 'is_default' => true]);
+        $this->poland = (new Country())->forceFill(['name' => 'Polska', 'alpha_code_2' => 'PL', 'is_default' => true]);
         $this->poland->save();
     }
 

@@ -20,7 +20,8 @@ use Simplysmart\Mainboard\Contracts\CurrentZone;
 use Tests\TestCase;
 
 /**
- * Komenda admiro:account:create: aktywne konto bez PIN-u, odrzucenie duplikatu i błędnych danych.
+ * Komenda admiro:account:create: aktywne konto bez PIN-u, odrzucenie duplikatu (także konta usuniętego)
+ * i błędnych danych.
  */
 class CreateAdmiroAccountTest extends TestCase
 {
@@ -49,6 +50,19 @@ class CreateAdmiroAccountTest extends TestCase
 
         $this->assertSame(1, AdmiroAccount::query()->count());
         $this->assertFalse($this->app->make(CurrentZone::class)->has());
+    }
+
+    public function test_a_deleted_account_keeps_its_address_taken(): void
+    {
+        $this->createAccount('ewa@example.com', 'Ewa Admin')->assertSuccessful();
+        AdmiroAccount::query()->sole()->delete();
+
+        $this->createAccount('ewa@example.com', 'Nowa Ewa')
+            ->expectsOutput('Konto z tym adresem e-mail już istnieje.')
+            ->assertFailed();
+
+        $this->assertSame(0, AdmiroAccount::query()->count());
+        $this->assertSame(1, AdmiroAccount::withTrashed()->count());
     }
 
     public function test_it_rejects_an_invalid_address(): void

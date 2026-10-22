@@ -164,6 +164,7 @@ Goal: upgrading Laravel stays a `composer.json` bump plus `composer update`, wit
   - Texts: UI code uses the Core helpers `text_*` / `local_*` (`simplysmart/mainboard`), not `__()`. `text_*` cascades zone package → mainboard → skeleton `lang/` → the key itself, in the current locale only (no fallback language), so a missing translation shows its key. To change a package or Core text for this skeleton, override `lang/vendor/<package>/<locale>/<file>.php`.
   - An override file is a deliberate, full replacement of that one view or translation file, added only when the user asks for it. Never leave empty or stub override files: an empty file still wins and renders blank.
   - Never bulk-publish package views or translations into the skeleton (`vendor:publish`); copy only the single file being overridden.
+  - Default application views without a namespace (e.g. `welcome` for the stock `/` route) come from Core's `resources/views/app/`; the skeleton keeps no `resources/views/welcome.blade.php` unless it overrides that page.
   - Config is not overridden with files (see above: `.env` only).
 - **Asset build (concept)**: Each package has its own `package.json` (npm workspace) and `vite.config.js`. The skeleton's only build change is generic and one-time: `"workspaces": ["packages/simplysmart/*"]` plus `dev`/`build` scripts calling the orchestrator from `simplysmart/tools`, so one `npm run dev|build` builds the skeleton and every package. `vite.config.js` stays stock, and a package is never listed in the skeleton's build files. Details: `packages/simplysmart/mainboard/docs/design-system.md` §8.
 - **Registration**: A package provider is registered only through `extra.laravel.providers` in the package's `composer.json` (PSR-4 + auto-discovery), never in `bootstrap/providers.php`.
@@ -175,6 +176,14 @@ Goal: upgrading Laravel stays a `composer.json` bump plus `composer update`, wit
 - **Service Providers**: A Laravel package registers itself via `extra.laravel.providers` in its `composer.json` (auto-discovery; e.g. `Simplysmart\Mainboard\MainboardServiceProvider`). Views (`loadViewsFrom`), config (`mergeConfigFrom`) and routes live in the package and are loaded by that provider — never copy them into the skeleton's `database/`, `resources/`, `config/` or `routes/`.
 - **Database in one place**: Migrations of every table (Core and public zones) live in `simplysmart/mainboard` (`database/migrations/`, `loadMigrationsFrom`; seeders in `src/Database/Seeders/`); public zone packages have none, and the skeleton keeps only Laravel's stock migrations. Private packages are the one exception (see "Private Packages"). Schema and model rules: `packages/simplysmart/mainboard/docs/baza-danych.md`.
 - **Package-level rules**: Each package has its own `CLAUDE.md`; read it before changing that package.
+
+## Global Data Conventions
+Every data table built with Core's `Columns::base()`/`Columns::closing()` follows these rules (details: `packages/simplysmart/mainboard/docs/baza-danych.md`):
+1. **`json_default_settings`**: each record carries the default values that application processes take from it (e.g. a country's invoice due days). Read them with `$model->defaultSetting('key.path', $fallback)`; never hard-code such defaults in services or config.
+2. **Id slots**: ids 1–999 are reserved for records created by seeders and package providers (`IdSlots::next()`, stable ids); user records start at 1000 (`app(IdSlots::class)->reserve($table)` in the table's migration). A full slot pool is an error, not a fallback to 1000+.
+3. **`json_tags`**: a JSON list of the record's tags, searched with `JSON_CONTAINS` and rendered as page meta.
+4. **Accounts and users**: zone account tables (`<zone>_accounts`, built by `ZoneTables`) and the stock `users` table (aligned by a Core migration, stock migration and model untouched) carry the same standard columns, history and id slots; a soft-deleted account keeps its e-mail taken.
+5. **Naming**: history tables are `<table>_history`; localization dictionaries use the `locale_` prefix (`locale_countries`); ISO code columns are `alpha_code_2`, `alpha_code_3`, `numeric_code`.
 
 ## Private Packages
 Some packages in `packages/<vendor>/` live in **private** Git repositories, while the skeleton, Core and other packages are public. A private package is marked in its `composer.json` with `"extra": {"simplysmart": {"private": true}}`.

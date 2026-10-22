@@ -78,7 +78,7 @@ class DictionaryModelsTest extends TestCase
         $records = [
             $this->currency(),
             (new Language())->forceFill(['name' => 'polski', 'code' => 'pl']),
-            (new Country())->forceFill(['name' => 'Polska', 'code' => 'PL']),
+            (new Country())->forceFill(['name' => 'Polska', 'alpha_code_2' => 'PL']),
             (new TaxRate())->forceFill(['name' => '23%', 'type' => TaxRateType::Standard, 'rate' => 23, 'valid_from' => '2025-01-01']),
         ];
 
@@ -95,16 +95,16 @@ class DictionaryModelsTest extends TestCase
         $currency->save();
         $language = (new Language())->forceFill(['name' => 'polski', 'code' => 'pl']);
         $language->save();
-        $country = (new Country())->forceFill(['name' => 'Polska', 'code' => 'PL', 'currency_id' => $currency->id]);
+        $country = (new Country())->forceFill(['name' => 'Polska', 'alpha_code_2' => 'PL', 'currency_id' => $currency->id]);
         $country->save();
         $country->languages()->sync([$language->id => [CountryLanguage::IS_PRIMARY => true]]);
         $rate = (new TaxRate())->forceFill(['name' => '23%', 'country_id' => $country->id, 'type' => TaxRateType::Standard, 'rate' => 23, 'valid_from' => '2025-01-01']);
         $rate->save();
 
         $this->assertTrue($country->currency?->is($currency));
-        $this->assertSame(['PL'], $currency->countries->pluck('code')->all());
+        $this->assertSame(['PL'], $currency->countries->pluck('alpha_code_2')->all());
         $this->assertSame(['pl'], $country->languages()->wherePivot(CountryLanguage::IS_PRIMARY, true)->pluck('code')->all());
-        $this->assertSame(['PL'], $language->countries->pluck('code')->all());
+        $this->assertSame(['PL'], $language->countries->pluck('alpha_code_2')->all());
         $this->assertSame(['23.00'], $country->taxRates->pluck('rate')->all());
         $this->assertTrue($rate->country?->is($country));
     }
@@ -119,6 +119,6 @@ class DictionaryModelsTest extends TestCase
 
     private function currency(): Currency
     {
-        return (new Currency())->forceFill(['name' => 'złoty polski', 'code' => 'PLN']);
+        return (new Currency())->forceFill(['name' => 'złoty polski', 'alpha_code_3' => 'PLN']);
     }
 }

@@ -27,10 +27,10 @@ class DataModelTest extends DatabaseTestCase
     {
         $this->assertSame([
             ColumnNames::ID, ColumnNames::TOKEN, ColumnNames::PARENT_ID, ColumnNames::NAME, ColumnNames::STATUS,
-            ColumnNames::IS_ACTIVE, ColumnNames::SORT_ORDER,
+            ColumnNames::IS_ACTIVE, ColumnNames::IS_DEFAULT, ColumnNames::SORT_ORDER,
             'code',
-            ColumnNames::JSON_ATTRIBUTES, ColumnNames::JSON_I18N, ColumnNames::JSON_MIGRATIONS, ColumnNames::CHECKSUM,
-            ColumnNames::JSON_ARCHIVE, ColumnNames::CREATED_AT, ColumnNames::UPDATED_AT, ColumnNames::DELETED_AT,
+            ColumnNames::JSON_ATTRIBUTES, ColumnNames::JSON_DEFAULT_SETTINGS, ColumnNames::JSON_TAGS, ColumnNames::JSON_I18N,
+            ColumnNames::JSON_MIGRATIONS, ColumnNames::CHECKSUM, ColumnNames::JSON_ARCHIVE, ColumnNames::CREATED_AT, ColumnNames::UPDATED_AT, ColumnNames::DELETED_AT,
         ], Schema::getColumnListing(DemoItem::TABLE));
     }
 
@@ -78,6 +78,24 @@ class DataModelTest extends DatabaseTestCase
         $this->item(['code' => 'OFF']);
 
         $this->assertSame(['ON'], DemoItem::query()->active()->pluck('code')->all());
+    }
+
+    public function test_default_scope_keeps_the_default_record(): void
+    {
+        $this->item(['code' => 'MAIN', 'is_default' => true]);
+        $this->item(['code' => 'OTHER']);
+
+        $this->assertSame(['MAIN'], DemoItem::query()->default()->pluck('code')->all());
+        $this->assertFalse((new DemoItem())->is_default);
+    }
+
+    public function test_default_settings_and_tags_are_read_from_json(): void
+    {
+        $item = $this->item(['json_default_settings' => ['invoice' => ['due_days' => 14]], 'json_tags' => ['eu', 'b2b']])->refresh();
+
+        $this->assertSame(14, $item->defaultSetting('invoice.due_days'));
+        $this->assertSame(30, $item->defaultSetting('invoice.reminder_days', 30));
+        $this->assertSame(['eu', 'b2b'], $item->json_tags);
     }
 
     public function test_translated_name_has_no_fallback_language(): void

@@ -18,12 +18,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Simplysmart\Mainboard\Database\Columns;
 use Simplysmart\Mainboard\Database\History;
+use Simplysmart\Mainboard\Database\IdSlots;
 use Tests\Fixtures\Database\DemoItem;
 use Tests\TestCase;
 
 /**
  * Baza testów fundamentu bazy: migracje Core i tabela testowa `demo_items` z kolumnami standardowymi
- * i historią (SQLite w pamięci).
+ * historią i pulą id seederów (SQLite w pamięci).
  */
 abstract class DatabaseTestCase extends TestCase
 {
@@ -40,6 +41,7 @@ abstract class DatabaseTestCase extends TestCase
         });
 
         $this->app->make(History::class)->create(DemoItem::TABLE);
+        $this->app->make(IdSlots::class)->reserve(DemoItem::TABLE);
     }
 
     /**
