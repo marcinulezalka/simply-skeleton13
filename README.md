@@ -30,6 +30,7 @@ MySQL (lokalnie 8.4; na dhosting.pl MariaDB). Baza i użytkownik mają nazwę `x
 database/create-database.sh            # domyślnie .env.local, administrator: sudo mysql
 php artisan migrate
 php artisan mainboard:localization:seed  # słowniki: waluty, języki, kraje, stawki VAT (można powtarzać)
+php artisan mainboard:organizations:seed # organizacja operatora: zakres ról stref bez firm klientów (można powtarzać)
 ```
 
 Tabele danych mają historię zmian zapisywaną triggerami MySQL (`<tabela>_history`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/mainboard/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.

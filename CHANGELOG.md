@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Organizacje i uprawnienia stref z Core (`spatie/laravel-permission`, bez publikowania `config/permission.php`): `php artisan mainboard:organizations:seed` po migracji zakłada organizację operatora; testy `tests/Feature/Permissions/` (schemat, historia, etykiety, izolacja stref i organizacji, odmowy, seeder).
 - Konta stref i tabela `users` wyrównane do kolumn globalnych z Core (kolumny standardowe, historia `*_history`, id od 1000); testy `tests/Feature/Zones/ZoneAccountTablesTest.php`, `tests/Feature/Database/UsersTableTest.php` i odrzucenie adresu usuniętego konta w `CreateAdmiroAccountTest`.
 - Strona startowa `/` z Core (`simplysmart/mainboard`): logo i opis simplysmart zamiast stockowej strony Laravela; stockowy `resources/views/welcome.blade.php` usunięty (plik o tej nazwie w aplikacji nadal nadpisuje stronę z Core); test `tests/Feature/WelcomePageTest.php`.
 - Paczki prywatne: lokalna lista `private-packages.json` i `composer private:install` (narzędzie `composer-private` z `simplysmart/tools`), pliki `composer.private.*` poza repozytorium, suite PHPUnit `Packages` dla testów integracji paczek (`packages/*/*/tests/Integration`), zasady „Private Packages” w `CLAUDE.md`.
