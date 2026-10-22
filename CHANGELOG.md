@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Maskowanie błędów, blokada agentów AI i pułapki na boty z Core: nowe zmienne w `.env.example` (`SECURITY_MASK_ERRORS`, `HONEYPOT_*`, a także `AUTH_TRUSTED_DEVICES`, `AUTH_TRUSTED_DEVICE_DAYS`, `ADMIRO_TRUSTED_DEVICES`); testy `tests/Feature/Zones/HoneypotTest.php` i `ErrorMaskingTest.php`.
 - Zaufane urządzenia, zmiana PIN-u i akcje administracyjne na kontach z Core: po aktualizacji `php artisan migrate` (tabela urządzeń strefy `admiro`, `organization_members`); testy `tests/Feature/Zones/{TrustedDevice,PinChange,AccountAdministration}Test.php`.
 - Role stref z plików JSON i uprawnienia w żądaniu z Core: `php artisan mainboard:permissions:sync` przy wdrożeniu (po `mainboard:organizations:seed`); strefa testowa `alpha` z organizacjami klientów (`teams`), `beta` bez zaufanych urządzeń; testy `tests/Feature/Permissions/` (pliki ról, synchronizacja, organizacja żądania, trasy z uprawnieniem, nadawanie ról bez eskalacji, właściciele) i `tests/Feature/Admiro/AdmiroPermissionsTest.php`.
 - Organizacje i uprawnienia stref z Core (`spatie/laravel-permission`, bez publikowania `config/permission.php`): `php artisan mainboard:organizations:seed` po migracji zakłada organizację operatora; testy `tests/Feature/Permissions/` (schemat, historia, etykiety, izolacja stref i organizacji, odmowy, seeder).
