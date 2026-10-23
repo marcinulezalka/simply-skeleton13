@@ -48,8 +48,26 @@ class PageLayoutTest extends TestCase
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Logowanie">formularz</x-mainboard::auth.layout>');
 
-        $this->assertSame(1, substr_count($html, '<head>'));
+        $this->assertSame(1, substr_count($html, '</head>'));
         $this->assertStringContainsString('<meta name="robots" content="noindex, nofollow">', $html);
-        $this->assertStringContainsString('<h1>Logowanie</h1>', $html);
+        $this->assertStringContainsString('<h1 class="ss-auth__title">Logowanie</h1>', $html);
+    }
+
+    public function test_sign_in_layout_embeds_core_styles_lead_and_actions(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="Kod" lead="Wysłaliśmy kod.">formularz<x-slot:actions><a href="#">Zmień adres</a></x-slot:actions></x-mainboard::auth.layout>');
+
+        $this->assertStringContainsString('--ss-color-surface', $html);
+        $this->assertStringContainsString('class="ss-logo ss-auth__logo"', $html);
+        $this->assertStringContainsString('<p class="ss-auth__lead">Wysłaliśmy kod.</p>', $html);
+        $this->assertStringContainsString('<div class="ss-auth__actions"><a href="#">Zmień adres</a></div>', $html);
+    }
+
+    public function test_sign_in_layout_skips_empty_lead_and_actions(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="PIN">formularz</x-mainboard::auth.layout>');
+
+        $this->assertStringNotContainsString('class="ss-auth__lead"', $html);
+        $this->assertStringNotContainsString('class="ss-auth__actions"', $html);
     }
 }
