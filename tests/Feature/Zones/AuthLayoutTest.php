@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use Simplysmart\Mainboard\Auth\AuthBrand;
 use Simplysmart\Mainboard\Auth\ZoneAuthSettingsFactory;
 use Simplysmart\Mainboard\Enums\AuthLayout;
+use Simplysmart\Mainboard\View\CoreAssets;
 
 /**
  * Układ stron logowania (`auth.layout`): domyślnie jedna karta, strefa może wybrać dwie karty obok siebie
@@ -46,6 +47,7 @@ class AuthLayoutTest extends SignInTestCase
         $html = Blade::render('<x-mainboard::auth.layout title="Logowanie" :layout="$layout">formularz</x-mainboard::auth.layout>', ['layout' => AuthLayout::Split]);
 
         $this->assertStringContainsString('class="ss-auth ss-auth--split"', $html);
+        $this->assertStringNotContainsString('class="ss-auth ss-auth--split ss-auth--image"', $html);
         $this->assertStringContainsString('<main class="ss-auth__cards ss-frame ss-frame--row">', $html);
         $this->assertStringContainsString('<aside class="ss-card ss-card--inverse ss-card--elevated ss-auth__brand">', $html);
         $this->assertStringContainsString('class="ss-card ss-card--tinted ss-auth__card"', $html);
@@ -60,6 +62,7 @@ class AuthLayoutTest extends SignInTestCase
             'brand' => ['light' => '/banner-light.jpg', 'dark' => '/banner-dark.jpg', 'alt' => 'Sklep'],
         ]);
 
+        $this->assertStringContainsString('class="ss-auth ss-auth--split ss-auth--image"', $html);
         $this->assertStringContainsString('<aside class="ss-card ss-card--inverse ss-card--elevated ss-auth__brand ss-auth__brand--image">', $html);
         $this->assertStringContainsString('<img class="ss-auth__brand-image ss-theme-light" src="/banner-light.jpg" alt="Sklep" loading="lazy">', $html);
         $this->assertStringContainsString('<img class="ss-auth__brand-image ss-theme-dark" src="/banner-dark.jpg" alt="Sklep" loading="lazy">', $html);
@@ -90,5 +93,24 @@ class AuthLayoutTest extends SignInTestCase
             ->assertSee('class="ss-card ss-auth__card"', false)
             ->assertSee('class="ss-icon ss-button__icon"', false)
             ->assertDontSee('ss-auth__brand"', false);
+    }
+
+    public function test_sign_in_page_has_the_theme_toggle_but_no_palette_switch(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="Logowanie" :layout="$layout">x</x-mainboard::auth.layout>', ['layout' => AuthLayout::Split]);
+
+        $this->assertStringContainsString('<div class="ss-auth__theme">', $html);
+        $this->assertStringContainsString('data-ss-theme-toggle', $html);
+        $this->assertStringNotContainsString('data-ss-palette-switch hidden', $html);
+    }
+
+    public function test_image_card_drops_its_border_and_the_form_card_covers_its_rounding(): void
+    {
+        $css = CoreAssets::contents('css/app.css');
+
+        $this->assertMatchesRegularExpression('~\.ss-auth__brand--image \{[^}]*border: 0;[^}]*background: transparent;~', $css);
+        $this->assertStringContainsString('margin-top: calc(-1 * var(--ss-radius-nested));', $css);
+        $this->assertStringContainsString('margin-left: calc(-1 * var(--ss-radius-nested));', $css);
+        $this->assertMatchesRegularExpression('~\.ss-auth \{[^}]*linear-gradient\(160deg, var\(--ss-color-auth-from\), var\(--ss-color-auth-to\)\)~', $css);
     }
 }

@@ -6,6 +6,9 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy przełącznika czterech motywów i motywów kontrastu WCAG, braku przełącznika kolorystyki w layoutach, połączonych kart logowania z banerem i tła z gradientem, strony treści w design systemie oraz czytelnego błędu triggerów historii przy binlogu (`AppLayoutTest`, `Zones/AuthLayoutTest`, `DesignSystemPageTest`, `Database/HistoryTest`).
+- Testy filtra i nazw zdarzeń dziennika, stronicowania i pełnej wartości maski (`Zones/AuditLogTest`, `AppLayoutTest`); asercje historii konta na `audit.events.*`.
+- Test strony design systemu na wspólnych tekstach kroków (`layout.steps.*`).
 - Testy konta strefy: profil (imię, język, organizacje z rolami), język konta po logowaniu i strona bezpieczeństwa (`Zones/AccountProfileTest`, `Zones/AccountLocaleTest`, `Zones/AccountSecurityTest`); zaktualizowane adresy PIN-u i urządzeń.
 - Testy kolorystyk stref i ikon strony per strefa (`AppLayoutTest`, `DesignSystemPageTest`, `Zones/ZoneLayoutTest`).
 - Testy przełączania motywu i tokenów `light-dark()` (`AppLayoutTest`, `DesignSystemPageTest`).

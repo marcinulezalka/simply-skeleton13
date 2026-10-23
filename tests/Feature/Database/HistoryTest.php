@@ -14,11 +14,18 @@ declare(strict_types=1);
 namespace Tests\Feature\Database;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Mockery;
+use Mockery\MockInterface;
+use PDO;
+use PDOException;
 use Simplysmart\Mainboard\Database\History;
 use Simplysmart\Mainboard\Database\History\MysqlHistoryTriggers;
+use Simplysmart\Mainboard\Database\HistoryTriggersRejected;
 use Tests\Fixtures\Database\DemoItem;
 
 /**
@@ -45,6 +52,31 @@ class HistoryTest extends DatabaseTestCase
         $this->assertSame('Nowa nazwa', $this->decoded($delete->old_values)['name']);
         $this->assertNull($delete->new_values);
         $this->assertNull($insert->actor_zone);
+    }
+
+    public function test_server_refusing_triggers_under_binlog_explains_the_fix(): void
+    {
+        $refusingPdo = new class ('sqlite::memory:') extends PDO {
+            public function exec(string $statement): int|false
+            {
+                $exception = new PDOException('SQLSTATE[HY000]: General error: 1419 You do not have the SUPER privilege and binary logging is enabled');
+                $exception->errorInfo = ['HY000', HistoryTriggersRejected::BINLOG_NEEDS_SUPER, 'You do not have the SUPER privilege'];
+
+                throw $exception;
+            }
+        };
+        /** @var DatabaseManager&MockInterface $connections */
+        $connections = Mockery::mock(DatabaseManager::class);
+        $connections->shouldReceive('connection')->andReturn(new SQLiteConnection($refusingPdo, config: ['driver' => 'sqlite']));
+
+        try {
+            (new History($connections))->drop('locale_currencies');
+            $this->fail('Expected the trigger refusal to be explained.');
+        } catch (HistoryTriggersRejected $exception) {
+            $this->assertStringContainsString('[locale_currencies]', $exception->getMessage());
+            $this->assertStringContainsString('log_bin_trust_function_creators = 1', $exception->getMessage());
+            $this->assertInstanceOf(PDOException::class, $exception->getPrevious());
+        }
     }
 
     public function test_changes_made_outside_eloquent_are_recorded_too(): void

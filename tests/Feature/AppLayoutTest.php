@@ -16,12 +16,14 @@ namespace Tests\Feature;
 use Illuminate\Support\Facades\Blade;
 use Simplysmart\Mainboard\Enums\InputMask;
 use Simplysmart\Mainboard\Enums\Palette;
+use Simplysmart\Mainboard\Enums\Theme;
 use Simplysmart\Mainboard\Enums\ToastType;
 use Simplysmart\Mainboard\View\Navigation\NavigationGroup;
 use Simplysmart\Mainboard\View\Navigation\NavigationItem;
 use Simplysmart\Mainboard\View\Navigation\SearchBox;
 use Simplysmart\Mainboard\View\Notifications\NotificationItem;
 use Simplysmart\Mainboard\View\Notifications\NotificationPanel;
+use Simplysmart\Mainboard\View\CoreAssets;
 use Simplysmart\Mainboard\View\Initials;
 use Simplysmart\Mainboard\View\Toast;
 use Tests\TestCase;
@@ -166,25 +168,45 @@ class AppLayoutTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('~href="/polnoc"\s+aria-current~', $html);
     }
 
-    public function test_theme_toggle_sits_in_the_layout_and_the_theme_script_in_the_head(): void
+    public function test_theme_toggle_sits_above_the_menu_logo_and_the_theme_script_in_the_head(): void
     {
         $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
         $head = substr($html, 0, (int) strpos($html, '</head>'));
+        $toggle = strpos($html, '<div class="ss-theme-toggle ss-sidebar__theme" role="group" aria-label="' . text('layout.theme') . '" data-ss-theme-toggle hidden>');
 
         $this->assertStringContainsString("const STORAGE_KEY = 'ss-theme';", $head);
-        $this->assertStringContainsString('<button class="ss-icon-button ss-theme-toggle" type="button" aria-pressed="false" title="' . text('layout.dark_theme') . '" data-ss-theme-toggle hidden>', $html);
-        $this->assertStringContainsString('<span class="ss-sr-only">' . text('layout.dark_theme') . '</span>', $html);
+        $this->assertNotFalse($toggle);
+        $this->assertLessThan(strpos($html, 'class="ss-sidebar__brand"'), $toggle);
+        $this->assertGreaterThan(strpos($html, 'class="ss-sidebar__actions"'), $toggle);
     }
 
-    public function test_palette_switch_offers_the_base_colors_and_the_given_palettes(): void
+    public function test_theme_toggle_offers_every_theme_with_a_label(): void
+    {
+        $html = Blade::render('<x-mainboard::theme-toggle />');
+
+        foreach (Theme::cases() as $theme) {
+            $this->assertStringContainsString('<button class="ss-theme-toggle__option" type="button" aria-pressed="false" title="' . $theme->label() . '" data-ss-theme="' . $theme->value . '">', $html);
+            $this->assertStringContainsString('<span class="ss-sr-only">' . $theme->label() . '</span>', $html);
+        }
+
+        $this->assertStringContainsString("const THEMES = ['" . implode("', '", array_column(Theme::cases(), 'value')) . "'];", CoreAssets::contents('js/theme.js'));
+    }
+
+    public function test_layout_applies_the_palettes_without_showing_a_palette_switch(): void
     {
         $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :palettes="$palettes" palette-scope="shop">x</x-mainboard::app.layout>', ['palettes' => [Palette::Teal, Palette::Blue]]);
         $head = substr($html, 0, (int) strpos($html, '</head>'));
 
         $this->assertStringContainsString('<meta name="ss-palettes" content="teal blue" data-scope="shop">', $head);
         $this->assertLessThan(strpos($head, "const PALETTE_KEY = 'ss-palette';"), strpos($head, '<meta name="ss-palettes"'));
+        $this->assertStringNotContainsString('data-ss-palette-switch hidden', $html);
+    }
+
+    public function test_palette_switch_offers_the_base_colors_and_the_given_palettes(): void
+    {
+        $html = Blade::render('<x-mainboard::palette-switch :palettes="$palettes" />', ['palettes' => [Palette::Teal, Palette::Blue]]);
+
         $this->assertStringContainsString('data-ss-palette-switch hidden>', $html);
-        $this->assertStringContainsString('class="ss-account-menu__panel ss-sidebar__panel"', $html);
         $this->assertStringContainsString('data-ss-palette="">', $html);
         $this->assertStringContainsString('<span class="ss-palette-swatch ss-palette-swatch--teal" aria-hidden="true"></span>', $html);
         $this->assertStringContainsString('<span>' . Palette::Blue->label() . '</span>', $html);
@@ -192,12 +214,11 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString(text('layout.palettes.default'), $html);
     }
 
-    public function test_page_without_palettes_has_no_switch_and_no_palette_meta(): void
+    public function test_page_without_palettes_has_no_palette_meta(): void
     {
         $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
 
         $this->assertStringNotContainsString('<meta name="ss-palettes"', $html);
-        $this->assertStringNotContainsString('data-ss-palette-switch hidden', $html);
     }
 
     public function test_every_page_applies_the_saved_theme_before_rendering(): void
@@ -205,6 +226,26 @@ class AppLayoutTest extends TestCase
         $html = Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>');
 
         $this->assertLessThan(strpos($html, '</head>'), strpos($html, "const STORAGE_KEY = 'ss-theme';"));
+    }
+
+    public function test_pagination_shows_the_page_and_its_neighbours_only_with_several_pages(): void
+    {
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator([1], 30, 10, 2, ['path' => '/lista']);
+        $html = Blade::render('<x-mainboard::pagination :paginator="$paginator" />', ['paginator' => $paginator]);
+
+        $this->assertStringContainsString('href="/lista?page=1" rel="prev"', $html);
+        $this->assertStringContainsString('href="/lista?page=3" rel="next"', $html);
+        $this->assertStringContainsString(text('layout.pagination.page', ['page' => '2', 'pages' => '3']), $html);
+        $this->assertSame('', trim(Blade::render('<x-mainboard::pagination :paginator="$paginator" />', ['paginator' => new \Illuminate\Pagination\LengthAwarePaginator([1], 1, 10, 1)])));
+    }
+
+    public function test_mask_completeness_counts_the_digits_of_the_pattern(): void
+    {
+        $this->assertTrue(InputMask::TaxId->isComplete('525-000-11-22'));
+        $this->assertTrue(InputMask::TaxId->isComplete('5250001122'));
+        $this->assertFalse(InputMask::TaxId->isComplete('525-000-11-2'));
+        $this->assertFalse(InputMask::TaxId->isComplete('52a-000-11-22'));
+        $this->assertTrue(InputMask::PostalCode->isComplete('00-950'));
     }
 
     public function test_initials_skip_lowercase_titles(): void

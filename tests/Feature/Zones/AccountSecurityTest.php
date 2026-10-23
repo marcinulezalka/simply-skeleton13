@@ -34,9 +34,9 @@ class AccountSecurityTest extends SignInTestCase
         $this->assertStringContainsString('action="' . url('/alpha/account/pin') . '"', $html);
         $this->assertStringContainsString('id="devices"', $html);
         $this->assertStringContainsString('action="' . url('/alpha/account/security/sessions') . '"', $html);
-        $this->assertStringContainsString(text('account.history.events.sign_in'), $html);
+        $this->assertStringContainsString(text('audit.events.sign_in'), $html);
         $this->assertStringNotContainsString('127.0.0.1', $html);
-        $this->assertSame(1, substr_count($html, text('account.history.events.sign_in')));
+        $this->assertSame(1, substr_count($html, text('audit.events.sign_in')));
     }
 
     public function test_sign_out_everywhere_ends_every_session_and_returns_to_sign_in(): void

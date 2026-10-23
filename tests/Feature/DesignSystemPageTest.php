@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Simplysmart\Mainboard\Enums\DesignSystemArea;
 use Simplysmart\Mainboard\Enums\DesignSystemView;
 use Simplysmart\Mainboard\Enums\Palette;
+use Simplysmart\Mainboard\Enums\Theme;
 use Simplysmart\Mainboard\View\CoreAssets;
 use Simplysmart\Mainboard\View\DesignTokens;
 use Tests\TestCase;
@@ -106,7 +107,7 @@ class DesignSystemPageTest extends TestCase
     {
         $this->get(route('mainboard.design-system.view', DesignSystemView::Record))
             ->assertSee('aria-current="step"', false)
-            ->assertSee('(' . text('design_system.demo.step_current') . ')');
+            ->assertSee('(' . text('layout.steps.current') . ')');
     }
 
     public function test_unknown_address_shows_the_core_error_page(): void
@@ -182,6 +183,35 @@ class DesignSystemPageTest extends TestCase
         $this->assertStringContainsString(':root[data-theme="dark"] {', $css);
         $this->assertStringContainsString(':root[data-theme="light"] {', $css);
         $this->assertStringContainsString('--ss-color-bg: light-dark(', $css);
+    }
+
+    public function test_contrast_themes_come_after_the_palettes_so_they_switch_them_off(): void
+    {
+        $css = CoreAssets::contents('css/tokens.css');
+        $lastPalette = (int) strrpos($css, ':root[data-palette=');
+
+        foreach ([Theme::Contrast, Theme::ContrastYellow] as $theme) {
+            $block = strpos($css, ':root[data-theme="' . $theme->value . '"] {');
+
+            $this->assertNotFalse($block);
+            $this->assertGreaterThan($lastPalette, $block);
+        }
+
+        $this->assertStringContainsString('--ss-color-text: #ffff00;', $css);
+    }
+
+    public function test_content_page_view_shows_the_table_of_contents_and_the_document(): void
+    {
+        $this->get(route('mainboard.design-system.view', DesignSystemView::ContentPage))
+            ->assertOk()
+            ->assertSee('<div class="ss-content-page">', false)
+            ->assertSee('<a class="ss-toc__link" href="#administrator">' . text('design_system.demo.content.sections.administrator.title') . '</a>', false)
+            ->assertSee('<h2 id="administrator">', false)
+            ->assertSee('<h1 class="ss-content-page__title">' . text('design_system.demo.content.title') . '</h1>', false)
+            ->assertSee('<div class="ss-prose">', false)
+            ->assertSee(text('layout.content.see_also'))
+            ->assertSee('href="' . route('mainboard.design-system') . '"', false)
+            ->assertSee('data-ss-theme-toggle', false);
     }
 
     public function test_every_palette_overlays_the_accent_in_both_themes_and_beats_zone_tokens(): void
