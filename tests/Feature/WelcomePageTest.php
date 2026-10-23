@@ -33,7 +33,7 @@ class WelcomePageTest extends TestCase
         $response->assertSee(BrandNames::highlight(text('welcome.title'))->toHtml(), false);
         $response->assertSee(text('welcome.features.dictionaries.title'));
         $response->assertSee('.ss-welcome__card', false);
-        $response->assertSee('class="ss-icon ss-welcome__feature-icon"', false);
+        $response->assertSee('class="ss-icon ss-icon--tile"', false);
         $response->assertSee('aria-label="Laravel"', false);
         $response->assertSee(text('welcome.mainboard_version', ['version' => CoreVersion::current()]));
         $response->assertDontSee('laravel.com/docs', false);

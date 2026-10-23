@@ -47,6 +47,15 @@ class TrustedDeviceTest extends SignInTestCase
         $this->assertAuthenticatedAs($account, 'alpha');
     }
 
+    public function test_remember_device_is_a_switch_on_the_code_screen(): void
+    {
+        $this->account(AlphaAccount::class, pin: self::PIN);
+        $this->requestCode();
+
+        $this->get('/alpha/signin/code')->assertOk()
+            ->assertSee('<input type="checkbox" role="switch" id="remember_device" name="remember_device" value="1"', false);
+    }
+
     public function test_device_is_remembered_only_on_request(): void
     {
         $this->account(AlphaAccount::class, pin: self::PIN);

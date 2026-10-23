@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\AdmiroAccount;
+use Simplysmart\Mainboard\Auth\PinLength;
 use Simplysmart\Mainboard\Contracts\ZoneRegistry;
 use Tests\Feature\Zones\ZoneTestCase;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -32,6 +33,14 @@ class AdmiroZoneTest extends ZoneTestCase
         $this->assertSame(['driver' => 'session', 'provider' => 'admiro_accounts'], config('auth.guards.admiro'));
         $this->assertSame(url('/admiro'), route('admiro.dashboard'));
         $this->assertSame(url('/admiro/signin'), route('admiro.auth.login'));
+    }
+
+    public function test_administrators_need_a_longer_pin_than_other_zones(): void
+    {
+        $zones = $this->app->make(ZoneRegistry::class);
+
+        $this->assertEquals(new PinLength(8, PinLength::MAX), $zones->get('admiro')->auth()->pinLength);
+        $this->assertEquals(PinLength::accepted(), $zones->get('alpha')->auth()->pinLength);
     }
 
     public function test_guest_is_sent_to_the_admiro_sign_in(): void

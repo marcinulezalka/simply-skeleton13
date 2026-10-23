@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Design system z Core pod `/design-system` (tylko poza produkcją, `DESIGN_SYSTEM_PAGE`), nowe strony logowania (układ `AUTH_LAYOUT=centered|split`), strony błędów HTTP, layout aplikacji z menu bocznym, toastami i powiadomieniami, profil konta z kolorem awatara (`account/profile` w każdej strefie); testy `AppLayoutTest`, `DesignSystemPageTest`, `DesignSystemCatalogTest`, `Zones/AuthLayoutTest`, `Zones/AvatarColorTest`, `Zones/PinLengthTest`.
 - Słowniki i stawki VAT w panelu administratora (z Core i `simplysmart/admiro`), wspólna baza testów panelu `tests/Feature/Admiro/AdmiroTestCase.php`, testy `AdmiroDictionariesTest.php`; po aktualizacji `php artisan migrate` i `php artisan mainboard:permissions:sync`.
 - Dziennik zdarzeń i ustawienia systemu z Core i `simplysmart/admiro`: po aktualizacji `php artisan migrate` (tabela `audit_events`), zmienna `AUDIT_RETENTION_DAYS` w `.env.example`, harmonogram (`schedule:run` z crona) czyści dziennik codziennie; testy `tests/Feature/Zones/AuditLogTest.php` i `tests/Feature/Admiro/AdmiroAuditAndSettingsTest.php`.
 - Organizacje w panelu administratora i przełącznik organizacji w strefach z organizacjami klientów (z Core); testy `tests/Feature/Admiro/AdmiroOrganizationsTest.php` i przełącznika w `CurrentOrganizationTest`.
@@ -40,6 +41,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Changed
 
+- Długość PIN-u jest zakresem: w `.env` zmienne `AUTH_PIN_MIN_LENGTH` (4) i `AUTH_PIN_MAX_LENGTH` (16) zastępują `AUTH_PIN_LENGTH`, a `ADMIRO_PIN_MIN_LENGTH` (8) zastępuje `ADMIRO_PIN_LENGTH` — po aktualizacji przenieś własne wartości do nowych zmiennych.
 - Nagłówek PHPDoc z prawami autorskimi i licencją w każdym pliku testów, wymuszany przez Pint (`pint.header.json` tylko dla `tests/`, bo stockowe pliki Laravela zostają bez zmian); `composer lint` i `composer format` sprawdzają i dopisują go. Nowa bramka jakości w `CLAUDE.md`: brak ostrzeżeń Intelephense w zmienionych plikach PHP.
 - Domyślny język aplikacji `pl`, także jako język zapasowy (`APP_FALLBACK_LOCALE`), i dane Fakera `pl_PL` — w `.env.example` (`config/app.php` bez zmian).
 - `.gitignore` uporządkowany w sekcje; wyklucza zawartość `infrastructure/` (w tym klucz prywatny SSL), wszystkie pliki `.env*` poza `.env.example`, lokalne pliki sesji AI oraz konfiguracje edytorów i IDE.
