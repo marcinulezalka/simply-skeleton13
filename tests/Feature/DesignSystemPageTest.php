@@ -240,6 +240,15 @@ class DesignSystemPageTest extends TestCase
         $response->assertSee('data-ss-palette-switch hidden', false);
     }
 
+    public function test_high_contrast_underlines_links_thickens_focus_and_follows_the_system(): void
+    {
+        $css = CoreAssets::contents('css/app.css');
+
+        $this->assertStringContainsString(':root:is([data-theme="contrast"], [data-theme="contrast-yellow"]) :focus-visible {', $css);
+        $this->assertStringContainsString('text-underline-offset: 3px;', $css);
+        $this->assertStringContainsString("window.matchMedia('(prefers-contrast: more)')", CoreAssets::contents('js/theme.js'));
+    }
+
     public function test_tokens_resolve_references_per_theme_and_skip_comments(): void
     {
         $tokens = DesignTokens::fromCss(<<<'CSS'
