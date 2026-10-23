@@ -13,13 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Admiro\Models\AdmiroAccount;
-use Simplysmart\Mainboard\Database\Seeders\OperatorOrganizationSeeder;
 use Simplysmart\Mainboard\Models\Organization;
 use Simplysmart\Mainboard\Organizations\OrganizationManagement;
 use Simplysmart\Mainboard\Permissions\OrganizationMembership;
-use Simplysmart\Mainboard\Permissions\SystemRoleGrant;
-use Tests\Feature\Zones\ZoneTestCase;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -27,16 +23,8 @@ use Tests\Fixtures\Zones\AlphaAccount;
  * zakładanie, drzewo bez cykli, chroniona organizacja operatora, wyłączanie i usuwanie członków
  * (`organizations.manage`) z ochroną innych administratorów.
  */
-class AdmiroOrganizationsTest extends ZoneTestCase
+class AdmiroOrganizationsTest extends AdmiroTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seed(OperatorOrganizationSeeder::class);
-        $this->command('mainboard:permissions:sync', ['--zone' => 'admiro'])->assertSuccessful();
-    }
-
     public function test_owner_creates_an_organization_with_a_branch(): void
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
@@ -119,13 +107,5 @@ class AdmiroOrganizationsTest extends ZoneTestCase
     public function test_unknown_organization_is_not_found(): void
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/organizations/missing/members')->assertNotFound();
-    }
-
-    private function admin(string $email, string $role): AdmiroAccount
-    {
-        $admin = $this->account(AdmiroAccount::class, ['email' => $email, 'name' => $email], '159357');
-        $this->app->make(SystemRoleGrant::class)->grant($admin, Organization::query()->findOrFail(Organization::OPERATOR_ID), [$role]);
-
-        return $admin;
     }
 }

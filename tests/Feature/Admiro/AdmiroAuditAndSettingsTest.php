@@ -13,46 +13,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Admiro\Models\AdmiroAccount;
 use Simplysmart\Mainboard\Audit\Events\AdminActionPerformed;
 use Simplysmart\Mainboard\Auth\AccountActor;
 use Simplysmart\Mainboard\Contracts\InterfaceLocales;
-use Simplysmart\Mainboard\Database\Seeders\OperatorOrganizationSeeder;
 use Simplysmart\Mainboard\Models\AuditEvent;
 use Simplysmart\Mainboard\Models\Dictionaries\Country;
 use Simplysmart\Mainboard\Models\Dictionaries\Currency;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Permissions\SystemRoleGrant;
-use Tests\Feature\Zones\ZoneTestCase;
 
 /**
  * Dziennik zdarzeń (`audit.view`, filtry) i ustawienia systemu (`settings.view` podgląd, `settings.manage`
  * zmiana kraju, waluty, języka domyślnego i języków interfejsu w granicach APP_LOCALES, w dzienniku).
  */
-class AdmiroAuditAndSettingsTest extends ZoneTestCase
+class AdmiroAuditAndSettingsTest extends AdmiroTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
-        $this->seed(OperatorOrganizationSeeder::class);
-        $this->command('mainboard:permissions:sync', ['--zone' => 'admiro'])->assertSuccessful();
-
-        foreach (['PL' => ['POL', '616'], 'DE' => ['DEU', '276']] as $alpha2 => [$alpha3, $numeric]) {
-            (new Country())->forceFill(['name' => $alpha2, 'alpha_code_2' => $alpha2, 'alpha_code_3' => $alpha3, 'numeric_code' => $numeric, 'is_active' => true, 'is_default' => $alpha2 === 'PL'])->save();
-        }
-
-        foreach (['PLN' => '985', 'EUR' => '978'] as $alpha3 => $numeric) {
-            (new Currency())->forceFill(['name' => $alpha3, 'alpha_code_3' => $alpha3, 'numeric_code' => $numeric, 'is_active' => true, 'is_default' => $alpha3 === 'PLN'])->save();
-        }
-
-        foreach (['pl', 'en'] as $code) {
-            (new Language())->forceFill(['name' => $code, 'code' => $code, 'is_interface' => $code === 'pl', 'is_default' => $code === 'pl', 'is_active' => true])->save();
-        }
-
-        $this->app->make(InterfaceLocales::class)->forget();
+        $this->seedDictionaries();
     }
 
     public function test_audit_log_lists_and_filters_events(): void
@@ -102,13 +80,5 @@ class AdmiroAuditAndSettingsTest extends ZoneTestCase
     private function settings(): array
     {
         return ['country' => 'DE', 'currency' => 'EUR', 'language' => 'en', 'interface' => ['pl', 'en']];
-    }
-
-    private function admin(string $email, ?string $role = null): AdmiroAccount
-    {
-        $admin = $this->account(AdmiroAccount::class, ['email' => $email, 'name' => $email], '159357');
-        $this->app->make(SystemRoleGrant::class)->grant($admin, Organization::query()->findOrFail(Organization::OPERATOR_ID), $role === null ? [] : [$role]);
-
-        return $admin;
     }
 }

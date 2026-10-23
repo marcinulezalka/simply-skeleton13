@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Słowniki i stawki VAT w panelu administratora (z Core i `simplysmart/admiro`), wspólna baza testów panelu `tests/Feature/Admiro/AdmiroTestCase.php`, testy `AdmiroDictionariesTest.php`; po aktualizacji `php artisan migrate` i `php artisan mainboard:permissions:sync`.
 - Dziennik zdarzeń i ustawienia systemu z Core i `simplysmart/admiro`: po aktualizacji `php artisan migrate` (tabela `audit_events`), zmienna `AUDIT_RETENTION_DAYS` w `.env.example`, harmonogram (`schedule:run` z crona) czyści dziennik codziennie; testy `tests/Feature/Zones/AuditLogTest.php` i `tests/Feature/Admiro/AdmiroAuditAndSettingsTest.php`.
 - Organizacje w panelu administratora i przełącznik organizacji w strefach z organizacjami klientów (z Core); testy `tests/Feature/Admiro/AdmiroOrganizationsTest.php` i przełącznika w `CurrentOrganizationTest`.
 - Panel administratora z `simplysmart/admiro`: pierwszy administrator `php artisan admiro:account:create <email> <imię i nazwisko> --role=hero` (po `mainboard:organizations:seed` i `mainboard:permissions:sync`); testy `tests/Feature/Admiro/AdmiroPanelTest.php`.

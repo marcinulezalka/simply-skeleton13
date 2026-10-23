@@ -15,13 +15,10 @@ namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\AdmiroAccount;
 use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Database\Seeders\OperatorOrganizationSeeder;
 use Simplysmart\Mainboard\Models\Organization;
 use Simplysmart\Mainboard\Models\ZoneAccount;
 use Simplysmart\Mainboard\Permissions\PermissionFiles;
-use Simplysmart\Mainboard\Permissions\SystemRoleGrant;
 use Simplysmart\Mainboard\Permissions\ZoneOwnerProvisioners;
-use Tests\Feature\Zones\ZoneTestCase;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 
@@ -30,16 +27,8 @@ use Tests\Fixtures\Zones\BetaAccount;
  * wyłączenie), ochrona innych administratorów, role administratorów bez eskalacji, zakładanie właścicieli
  * stref i pierwszy administrator z komendy.
  */
-class AdmiroPanelTest extends ZoneTestCase
+class AdmiroPanelTest extends AdmiroTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seed(OperatorOrganizationSeeder::class);
-        $this->command('mainboard:permissions:sync', ['--zone' => 'admiro'])->assertSuccessful();
-    }
-
     public function test_dashboard_shows_only_permitted_sections(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
@@ -185,13 +174,6 @@ class AdmiroPanelTest extends ZoneTestCase
         $this->assertTrue($this->hasRole(AdmiroAccount::query()->sole(), 'hero'));
     }
 
-    private function admin(string $email, ?string $role = null): AdmiroAccount
-    {
-        $admin = $this->account(AdmiroAccount::class, ['email' => $email, 'name' => $email], '159357');
-        $this->app->make(SystemRoleGrant::class)->grant($admin, Organization::query()->findOrFail(Organization::OPERATOR_ID), $role === null ? [] : [$role]);
-
-        return $admin;
-    }
 
     private function hasRole(ZoneAccount $account, string $role): bool
     {
