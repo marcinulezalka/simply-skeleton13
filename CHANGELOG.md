@@ -6,6 +6,9 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy kolorystyk stref i ikon strony per strefa (`AppLayoutTest`, `DesignSystemPageTest`, `Zones/ZoneLayoutTest`).
+- Testy przełączania motywu i tokenów `light-dark()` (`AppLayoutTest`, `DesignSystemPageTest`).
+- Testy podpowiedzi w polach (pole e-mail logowania, maski).
 - Testy arkuszy stref (`Zones/ZoneLayoutTest`).
 - Testy banera logowania strefy (`Zones/AuthLayoutTest`).
 - Testy layoutu stref na layoucie aplikacji (`Zones/ZoneLayoutTest`, menu testowe `Tests\Fixtures\Zones\ShopNavigation`); zaktualizowane asercje przełącznika organizacji i słowników admiro.

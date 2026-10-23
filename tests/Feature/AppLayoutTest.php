@@ -15,6 +15,7 @@ namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
 use Simplysmart\Mainboard\Enums\InputMask;
+use Simplysmart\Mainboard\Enums\Palette;
 use Simplysmart\Mainboard\Enums\ToastType;
 use Simplysmart\Mainboard\View\Navigation\NavigationGroup;
 use Simplysmart\Mainboard\View\Navigation\NavigationItem;
@@ -165,6 +166,47 @@ class AppLayoutTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('~href="/polnoc"\s+aria-current~', $html);
     }
 
+    public function test_theme_toggle_sits_in_the_layout_and_the_theme_script_in_the_head(): void
+    {
+        $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
+        $head = substr($html, 0, (int) strpos($html, '</head>'));
+
+        $this->assertStringContainsString("const STORAGE_KEY = 'ss-theme';", $head);
+        $this->assertStringContainsString('<button class="ss-icon-button ss-theme-toggle" type="button" aria-pressed="false" title="' . text('layout.dark_theme') . '" data-ss-theme-toggle hidden>', $html);
+        $this->assertStringContainsString('<span class="ss-sr-only">' . text('layout.dark_theme') . '</span>', $html);
+    }
+
+    public function test_palette_switch_offers_the_base_colors_and_the_given_palettes(): void
+    {
+        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :palettes="$palettes" palette-scope="shop">x</x-mainboard::app.layout>', ['palettes' => [Palette::Teal, Palette::Blue]]);
+        $head = substr($html, 0, (int) strpos($html, '</head>'));
+
+        $this->assertStringContainsString('<meta name="ss-palettes" content="teal blue" data-scope="shop">', $head);
+        $this->assertLessThan(strpos($head, "const PALETTE_KEY = 'ss-palette';"), strpos($head, '<meta name="ss-palettes"'));
+        $this->assertStringContainsString('data-ss-palette-switch hidden>', $html);
+        $this->assertStringContainsString('class="ss-account-menu__panel ss-sidebar__panel"', $html);
+        $this->assertStringContainsString('data-ss-palette="">', $html);
+        $this->assertStringContainsString('<span class="ss-palette-swatch ss-palette-swatch--teal" aria-hidden="true"></span>', $html);
+        $this->assertStringContainsString('<span>' . Palette::Blue->label() . '</span>', $html);
+        $this->assertStringNotContainsString('data-ss-palette="' . Palette::Violet->value . '"', $html);
+        $this->assertStringContainsString(text('layout.palettes.default'), $html);
+    }
+
+    public function test_page_without_palettes_has_no_switch_and_no_palette_meta(): void
+    {
+        $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
+
+        $this->assertStringNotContainsString('<meta name="ss-palettes"', $html);
+        $this->assertStringNotContainsString('data-ss-palette-switch hidden', $html);
+    }
+
+    public function test_every_page_applies_the_saved_theme_before_rendering(): void
+    {
+        $html = Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>');
+
+        $this->assertLessThan(strpos($html, '</head>'), strpos($html, "const STORAGE_KEY = 'ss-theme';"));
+    }
+
     public function test_initials_skip_lowercase_titles(): void
     {
         $this->assertSame('AW', Initials::of('dr Anna Wiśniewska'));
@@ -179,9 +221,15 @@ class AppLayoutTest extends TestCase
 
         $this->assertStringContainsString('<div class="ss-input-wrap ss-input-wrap--icon">', $html);
         $this->assertStringContainsString('class="ss-icon ss-input-wrap__icon"', $html);
-        $this->assertStringContainsString('inputmode="numeric" placeholder="' . InputMask::TaxId->example() . '" maxlength="13" data-ss-mask="999-999-99-99" aria-invalid="true" aria-describedby="tax-hint tax-error"', $html);
+        $this->assertStringContainsString('inputmode="numeric" placeholder="' . e(InputMask::TaxId->placeholder()) . '" maxlength="13" data-ss-mask="999-999-99-99" aria-invalid="true" aria-describedby="tax-hint tax-error"', $html);
         $this->assertStringContainsString('<p class="ss-field__hint" id="tax-hint">' . text('layout.mask_format', ['format' => '999-999-99-99']) . '</p>', $html);
         $this->assertStringContainsString('<p class="ss-field__error" id="tax-error" role="alert">Niepoprawny NIP.</p>', $html);
+    }
+
+    public function test_mask_placeholder_is_an_example_in_the_shared_pattern(): void
+    {
+        $this->assertSame(text('placeholders.example', ['value' => InputMask::Phone->example()]), InputMask::Phone->placeholder());
+        $this->assertStringStartsWith('np. ', InputMask::Phone->placeholder());
     }
 
     public function test_input_without_icon_or_mask_is_a_plain_field(): void

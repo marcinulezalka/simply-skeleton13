@@ -184,6 +184,11 @@ class SignInFlowTest extends SignInTestCase
             ->assertCookie('alpha_session');
     }
 
+    public function test_sign_in_email_field_shows_an_example_placeholder(): void
+    {
+        $this->get('/alpha/signin')->assertOk()->assertSee('placeholder="' . e(text('placeholders.email')) . '"', false);
+    }
+
     public function test_forgot_pin_page_explains_the_reset_and_leads_back_to_sign_in(): void
     {
         $this->get('/alpha/signin/forgot-pin')

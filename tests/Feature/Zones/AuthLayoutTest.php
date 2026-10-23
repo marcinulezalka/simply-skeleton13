@@ -61,8 +61,8 @@ class AuthLayoutTest extends SignInTestCase
         ]);
 
         $this->assertStringContainsString('<aside class="ss-card ss-card--inverse ss-card--elevated ss-auth__brand ss-auth__brand--image">', $html);
-        $this->assertStringContainsString('<source srcset="/banner-dark.jpg" media="(prefers-color-scheme: dark)">', $html);
-        $this->assertStringContainsString('<img class="ss-auth__brand-image" src="/banner-light.jpg" alt="Sklep">', $html);
+        $this->assertStringContainsString('<img class="ss-auth__brand-image ss-theme-light" src="/banner-light.jpg" alt="Sklep" loading="lazy">', $html);
+        $this->assertStringContainsString('<img class="ss-auth__brand-image ss-theme-dark" src="/banner-dark.jpg" alt="Sklep" loading="lazy">', $html);
         $this->assertStringNotContainsString('class="ss-logo ss-auth__brand-logo"', $html);
     }
 

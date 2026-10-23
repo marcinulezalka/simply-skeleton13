@@ -16,6 +16,7 @@ namespace Tests\Feature;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Simplysmart\Mainboard\Enums\DesignSystemArea;
 use Simplysmart\Mainboard\Enums\DesignSystemView;
+use Simplysmart\Mainboard\Enums\Palette;
 use Simplysmart\Mainboard\View\CoreAssets;
 use Simplysmart\Mainboard\View\DesignTokens;
 use Tests\TestCase;
@@ -153,6 +154,60 @@ class DesignSystemPageTest extends TestCase
 
         $this->get(route('mainboard.design-system'))->assertNotFound();
         $this->get(route('mainboard.design-system.view', DesignSystemView::Dashboard))->assertNotFound();
+    }
+
+    public function test_tokens_resolve_light_dark_values_also_inside_shadows(): void
+    {
+        $tokens = DesignTokens::fromCss(<<<'CSS'
+            :root {
+                --ss-gray-900: #111827;
+                --ss-gray-50: #f9fafb;
+                --ss-color-text: light-dark(var(--ss-gray-900), var(--ss-gray-50));
+                --ss-shadow-frame: 0 1px 2px 0 light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3));
+            }
+            CSS);
+
+        $text = $tokens->group('color')[0];
+        $shadow = $tokens->group('shadow')[0];
+
+        $this->assertSame(['#111827', '#f9fafb'], [$text->light, $text->dark]);
+        $this->assertSame(['0 1px 2px 0 rgb(0 0 0 / 0.04)', '0 1px 2px 0 rgb(0 0 0 / 0.3)'], [$shadow->light, $shadow->dark]);
+    }
+
+    public function test_core_tokens_switch_theme_with_light_dark_and_data_theme(): void
+    {
+        $css = CoreAssets::contents('css/tokens.css');
+
+        $this->assertStringNotContainsString('prefers-color-scheme', $css);
+        $this->assertStringContainsString(':root[data-theme="dark"] {', $css);
+        $this->assertStringContainsString(':root[data-theme="light"] {', $css);
+        $this->assertStringContainsString('--ss-color-bg: light-dark(', $css);
+    }
+
+    public function test_every_palette_overlays_the_accent_in_both_themes_and_beats_zone_tokens(): void
+    {
+        $css = CoreAssets::contents('css/tokens.css');
+
+        $this->assertStringContainsString('--ss-color-accent: var(--ss-color-accent-base);', $css);
+
+        foreach (Palette::cases() as $palette) {
+            $this->assertStringContainsString('--ss-palette-' . $palette->value . '-accent: light-dark(', $css);
+            $this->assertStringContainsString(':root[data-palette="' . $palette->value . '"] {', $css);
+            $this->assertStringContainsString('--ss-color-accent: var(--ss-palette-' . $palette->value . '-accent);', $css);
+            $this->assertStringContainsString('.ss-palette-swatch--' . $palette->value . ' {', CoreAssets::contents('css/app.css'));
+        }
+    }
+
+    public function test_page_shows_palettes_with_a_live_switch(): void
+    {
+        $response = $this->get(route('mainboard.design-system'));
+
+        $response->assertSee('<meta name="ss-palettes" content="' . implode(' ', array_column(Palette::cases(), 'value')) . '" data-scope="design-system">', false);
+        $response->assertSee('id="palettes"', false);
+        $response->assertSee('href="#palettes"', false);
+        $response->assertSee('<code>--ss-palette-teal-accent</code>', false);
+        $response->assertSee('.ss-ds-chip--teal-accent-light { background: #0f766e; }', false);
+        $response->assertSee('data-ss-palette-switch hidden', false);
     }
 
     public function test_tokens_resolve_references_per_theme_and_skip_comments(): void

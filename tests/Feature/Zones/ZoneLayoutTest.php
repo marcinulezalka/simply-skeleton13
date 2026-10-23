@@ -15,6 +15,8 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
+use Simplysmart\Mainboard\Enums\FaviconType;
+use Simplysmart\Mainboard\Enums\Palette;
 use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
 use Simplysmart\Mainboard\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -49,6 +51,61 @@ class ZoneLayoutTest extends ZoneTestCase
 
         $this->expectException(InvalidArgumentException::class);
         $factory->make(['name' => 'shop', 'stylesheets' => [base_path('composer.json')]], 'shop', __DIR__);
+    }
+
+    public function test_zone_palettes_are_unique_known_palettes_in_config_order(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+
+        $this->assertSame([Palette::Violet, Palette::Teal], $factory->make(['name' => 'shop', 'palettes' => ['violet', 'teal']], 'shop', __DIR__)->palettes);
+        $this->assertSame([], $factory->make(['name' => 'shop'], 'shop', __DIR__)->palettes);
+
+        foreach ([['pink'], ['teal', 'teal']] as $palettes) {
+            try {
+                $factory->make(['name' => 'shop', 'palettes' => $palettes], 'shop', __DIR__);
+                $this->fail('Palettes ' . implode(', ', $palettes) . ' should be rejected.');
+            } catch (InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function test_zone_favicon_needs_known_types_with_matching_existing_files(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $svg = base_path('packages/simplysmart/mainboard/public/assets/img/brand/logo.svg');
+        $ico = public_path('favicon.ico');
+        $favicon = $factory->make(['name' => 'shop', 'favicon' => ['svg' => $svg, 'ico' => $ico]], 'shop', __DIR__)->favicon;
+
+        $this->assertSame([FaviconType::Ico, FaviconType::Svg], $favicon?->types());
+        $this->assertSame($svg, $favicon->path(FaviconType::Svg));
+        $this->assertNull($favicon->path(FaviconType::Apple));
+        $this->assertSame(12, strlen($favicon->version(FaviconType::Ico)));
+        $this->assertNull($factory->make(['name' => 'shop'], 'shop', __DIR__)->favicon);
+
+        foreach ([['png' => $svg], ['ico' => $svg], ['svg' => base_path('missing.svg')], [$svg]] as $files) {
+            try {
+                $factory->make(['name' => 'shop', 'favicon' => $files], 'shop', __DIR__);
+                $this->fail('Favicon ' . json_encode($files) . ' should be rejected.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertStringStartsWith('Zone [shop]', $exception->getMessage());
+            }
+        }
+    }
+
+    public function test_page_renders_favicon_links_in_the_head(): void
+    {
+        $html = Blade::render('<x-mainboard::page title="Start" :favicons="$favicons">x</x-mainboard::page>', ['favicons' => [
+            ['rel' => 'icon', 'href' => '/shop/favicon/ico?v=1', 'type' => null, 'sizes' => 'any'],
+            ['rel' => 'icon', 'href' => '/shop/favicon/svg?v=2', 'type' => 'image/svg+xml', 'sizes' => null],
+            ['rel' => 'apple-touch-icon', 'href' => '/shop/favicon/apple?v=3', 'type' => null, 'sizes' => null],
+        ]]);
+        $head = substr($html, 0, (int) strpos($html, '</head>'));
+
+        $this->assertStringContainsString('<link rel="icon" href="/shop/favicon/ico?v=1" sizes="any">', $head);
+        $this->assertStringContainsString('<link rel="icon" href="/shop/favicon/svg?v=2" type="image/svg+xml">', $head);
+        $this->assertStringContainsString('<link rel="apple-touch-icon" href="/shop/favicon/apple?v=3">', $head);
+        $this->assertStringNotContainsString('<link rel="icon"', Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>'));
     }
 
     public function test_zone_styles_are_embedded_after_the_core_styles(): void
