@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\ViewErrorBag;
 use Illuminate\Testing\TestResponse;
 use Simplysmart\Mainboard\Mail\LoginCodeMail;
 
@@ -76,22 +75,6 @@ abstract class SignInTestCase extends ZoneTestCase
     protected function submitCode(string $code): TestResponse
     {
         return $this->post('/alpha/signin/code', ['code' => $code]);
-    }
-
-    /**
-     * Pierwszy błąd pola w sesji strefy po żądaniu zalogowanego konta. TestResponse::assertSessionHasErrors()
-     * startuje magazyn sesji strefy od nowa i nie widzi wtedy błędów, więc testy kont zalogowanych czytają je tu.
-     */
-    protected function sessionError(string $field): string
-    {
-        $errors = session('errors');
-
-        return $errors instanceof ViewErrorBag ? (string) $errors->first($field) : '';
-    }
-
-    protected function assertSessionError(string $field, string $message): void
-    {
-        $this->assertSame($message, $this->sessionError($field));
     }
 
     /**

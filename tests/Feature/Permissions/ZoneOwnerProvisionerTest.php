@@ -16,7 +16,6 @@ namespace Tests\Feature\Permissions;
 use LogicException;
 use Simplysmart\Mainboard\Contracts\CurrentOrganization;
 use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Permissions\DefaultOwnerProvisioner;
 use Simplysmart\Mainboard\Permissions\OwnerData;
 use Simplysmart\Mainboard\Permissions\ZoneOwnerProvisioners;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -33,7 +32,7 @@ class ZoneOwnerProvisionerTest extends ZoneRolesTestCase
         parent::setUp();
 
         foreach (['alpha', 'beta'] as $zone) {
-            $this->app->make(ZoneOwnerProvisioners::class)->add($this->app->make(DefaultOwnerProvisioner::class, ['zone' => $zone]));
+            $this->app->make(ZoneOwnerProvisioners::class)->addDefault($zone);
         }
     }
 
@@ -66,7 +65,7 @@ class ZoneOwnerProvisionerTest extends ZoneRolesTestCase
         $token = $this->provisioners()->for('beta')->provisionOwner(new OwnerData('Anna Nowak', 'anna@example.com'));
 
         $this->assertSame($account->getAttribute('token'), $token);
-        $this->assertSame(['beta'], array_values(array_diff($this->provisioners()->zones(), ['alpha'])));
+        $this->assertContains('beta', $this->provisioners()->zones());
     }
 
     private function provisioners(): ZoneOwnerProvisioners

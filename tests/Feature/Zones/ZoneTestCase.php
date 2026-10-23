@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\Testing\PendingCommand;
 use Simplysmart\Mainboard\Auth\SignIn\CompleteSignIn;
 use Simplysmart\Mainboard\Contracts\CodeAndPinAccount;
@@ -99,6 +100,33 @@ abstract class ZoneTestCase extends TestCase
         $sessions->restore();
 
         return $this->actingAs($account, $zone);
+    }
+
+    /**
+     * Pierwszy błąd pola w sesji strefy po żądaniu zalogowanego konta. TestResponse::assertSessionHasErrors()
+     * startuje magazyn sesji strefy od nowa i nie widzi wtedy błędów, więc testy kont zalogowanych czytają je tu.
+     */
+    protected function sessionError(string $field): string
+    {
+        $errors = session('errors');
+
+        return $errors instanceof ViewErrorBag ? (string) $errors->first($field) : '';
+    }
+
+    protected function assertSessionError(string $field, string $message): void
+    {
+        $this->assertSame($message, $this->sessionError($field));
+    }
+
+    /**
+     * Klucz trasy (token) konta.
+     */
+    protected function routeKey(Model $model): string
+    {
+        $key = $model->getRouteKey();
+        $this->assertIsString($key);
+
+        return $key;
     }
 
     /**
