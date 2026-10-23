@@ -100,7 +100,7 @@ class AdmiroDictionariesTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro');
 
-        $this->get('/admiro/dictionaries/currencies')->assertOk()->assertSee('EUR')->assertDontSee('toggle');
+        $this->get('/admiro/dictionaries/currencies')->assertOk()->assertSee('EUR')->assertDontSee('/toggle"', false);
         $this->get('/admiro/tax-rates/PL')->assertOk();
         $this->post('/admiro/dictionaries/countries/DE/toggle')->assertForbidden();
         $this->get('/admiro/dictionaries/planets')->assertNotFound();

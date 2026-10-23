@@ -6,6 +6,9 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy arkuszy stref (`Zones/ZoneLayoutTest`).
+- Testy banera logowania strefy (`Zones/AuthLayoutTest`).
+- Testy layoutu stref na layoucie aplikacji (`Zones/ZoneLayoutTest`, menu testowe `Tests\Fixtures\Zones\ShopNavigation`); zaktualizowane asercje przełącznika organizacji i słowników admiro.
 - Testy strony „Nie pamiętam PIN-u”, linku z ekranu PIN-u i komunikatu po wylogowaniu (`Zones/SignInFlowTest`).
 - Design system z Core pod `/design-system` (tylko poza produkcją, `DESIGN_SYSTEM_PAGE`), nowe strony logowania (układ `AUTH_LAYOUT=centered|split`), strony błędów HTTP, layout aplikacji z menu bocznym, toastami i powiadomieniami, profil konta z kolorem awatara (`account/profile` w każdej strefie); testy `AppLayoutTest`, `DesignSystemPageTest`, `DesignSystemCatalogTest`, `Zones/AuthLayoutTest`, `Zones/AvatarColorTest`, `Zones/PinLengthTest`.
 - Słowniki i stawki VAT w panelu administratora (z Core i `simplysmart/admiro`), wspólna baza testów panelu `tests/Feature/Admiro/AdmiroTestCase.php`, testy `AdmiroDictionariesTest.php`; po aktualizacji `php artisan migrate` i `php artisan mainboard:permissions:sync`.

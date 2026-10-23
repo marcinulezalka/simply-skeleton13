@@ -61,10 +61,14 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
     {
         $account = $this->account(AlphaAccount::class);
         $this->member($account, $this->organization('Pierwsza'));
-        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')->assertOk()->assertDontSee('organization-switch');
+        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
 
         $this->member($account, $this->organization('Druga'));
-        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')->assertSee('organization-switch')->assertSee('Druga');
+        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')
+            ->assertSee('class="ss-account-menu ss-context-switch"', false)
+            ->assertSee('<form method="POST" action="' . url('/alpha/account/organization') . '">', false)
+            ->assertSee('name="organization"', false)
+            ->assertSee('Druga');
     }
 
     public function test_account_cannot_switch_to_a_foreign_organization(): void

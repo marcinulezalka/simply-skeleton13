@@ -15,6 +15,7 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
+use Simplysmart\Mainboard\Auth\AuthBrand;
 use Simplysmart\Mainboard\Auth\ZoneAuthSettingsFactory;
 use Simplysmart\Mainboard\Enums\AuthLayout;
 
@@ -50,6 +51,34 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('class="ss-card ss-card--tinted ss-auth__card"', $html);
         $this->assertStringNotContainsString('class="ss-logo ss-auth__logo"', $html);
         $this->assertStringContainsString('<h1 class="ss-auth__title">Logowanie</h1>', $html);
+    }
+
+    public function test_split_layout_shows_the_zone_banner_instead_of_the_logo(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="Logowanie" :layout="$layout" :brand="$brand">x</x-mainboard::auth.layout>', [
+            'layout' => AuthLayout::Split,
+            'brand' => ['light' => '/banner-light.jpg', 'dark' => '/banner-dark.jpg', 'alt' => 'Sklep'],
+        ]);
+
+        $this->assertStringContainsString('<aside class="ss-card ss-card--inverse ss-card--elevated ss-auth__brand ss-auth__brand--image">', $html);
+        $this->assertStringContainsString('<source srcset="/banner-dark.jpg" media="(prefers-color-scheme: dark)">', $html);
+        $this->assertStringContainsString('<img class="ss-auth__brand-image" src="/banner-light.jpg" alt="Sklep">', $html);
+        $this->assertStringNotContainsString('class="ss-logo ss-auth__brand-logo"', $html);
+    }
+
+    public function test_banner_needs_an_existing_image_and_dark_falls_back_to_light(): void
+    {
+        $light = base_path('packages/simplysmart/mainboard/public/assets/img/brand/logo.svg');
+        $brand = $this->app->make(ZoneAuthSettingsFactory::class)->make(['brand' => ['light' => $light, 'alt' => 'x']])->brand;
+
+        $this->assertNotNull($brand);
+        $this->assertSame($light, $brand->path(AuthBrand::DARK));
+        $this->assertNull($brand->path('other'));
+        $this->assertNotSame('', $brand->version(AuthBrand::LIGHT));
+        $this->assertNull($this->app->make(ZoneAuthSettingsFactory::class)->make([])->brand);
+
+        $this->expectException(InvalidArgumentException::class);
+        new AuthBrand('/no/such/banner.jpg');
     }
 
     public function test_zone_sign_in_page_uses_the_zone_layout(): void
