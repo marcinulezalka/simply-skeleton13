@@ -175,6 +175,34 @@ class SignInFlowTest extends SignInTestCase
         $this->assertGuest('alpha');
     }
 
+    public function test_sign_out_says_goodbye_on_the_sign_in_page(): void
+    {
+        $this->signedIn($this->account(AlphaAccount::class, pin: self::PIN), 'alpha')
+            ->post('/alpha/signin/out')
+            ->assertRedirect('/alpha/signin')
+            ->assertSessionHas('status', text('sign_in.signed_out'))
+            ->assertCookie('alpha_session');
+    }
+
+    public function test_forgot_pin_page_explains_the_reset_and_leads_back_to_sign_in(): void
+    {
+        $this->get('/alpha/signin/forgot-pin')
+            ->assertOk()
+            ->assertSee(text('sign_in.forgot_pin.title'))
+            ->assertSee(text('sign_in.forgot_pin.steps.admin'))
+            ->assertSee('href="' . url('/alpha/signin') . '"', false)
+            ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+    }
+
+    public function test_pin_step_links_to_the_forgot_pin_page(): void
+    {
+        $this->account(AlphaAccount::class, pin: self::PIN);
+        $this->requestCode();
+        $this->submitCode($this->sentCode());
+
+        $this->get('/alpha/signin/pin')->assertOk()->assertSee('href="' . url('/alpha/signin/forgot-pin') . '"', false);
+    }
+
     public function test_expired_form_sends_back_to_the_zone_sign_in(): void
     {
         $this->post('/alpha/expired-form')

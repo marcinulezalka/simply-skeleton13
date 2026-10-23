@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy strony „Nie pamiętam PIN-u”, linku z ekranu PIN-u i komunikatu po wylogowaniu (`Zones/SignInFlowTest`).
 - Design system z Core pod `/design-system` (tylko poza produkcją, `DESIGN_SYSTEM_PAGE`), nowe strony logowania (układ `AUTH_LAYOUT=centered|split`), strony błędów HTTP, layout aplikacji z menu bocznym, toastami i powiadomieniami, profil konta z kolorem awatara (`account/profile` w każdej strefie); testy `AppLayoutTest`, `DesignSystemPageTest`, `DesignSystemCatalogTest`, `Zones/AuthLayoutTest`, `Zones/AvatarColorTest`, `Zones/PinLengthTest`.
 - Słowniki i stawki VAT w panelu administratora (z Core i `simplysmart/admiro`), wspólna baza testów panelu `tests/Feature/Admiro/AdmiroTestCase.php`, testy `AdmiroDictionariesTest.php`; po aktualizacji `php artisan migrate` i `php artisan mainboard:permissions:sync`.
 - Dziennik zdarzeń i ustawienia systemu z Core i `simplysmart/admiro`: po aktualizacji `php artisan migrate` (tabela `audit_events`), zmienna `AUDIT_RETENTION_DAYS` w `.env.example`, harmonogram (`schedule:run` z crona) czyści dziennik codziennie; testy `tests/Feature/Zones/AuditLogTest.php` i `tests/Feature/Admiro/AdmiroAuditAndSettingsTest.php`.
