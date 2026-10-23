@@ -204,8 +204,8 @@ class TrustedDeviceTest extends SignInTestCase
         $cookie = $this->signInRemembering();
         $token = $this->deviceToken();
 
-        $this->withCookie(self::COOKIE, $cookie)->get('/alpha/account/devices')->assertOk()->assertSee(text('account.this_device'));
-        $this->delete('/alpha/account/devices/' . $token)->assertRedirect('/alpha/account/devices')->assertCookieExpired(self::COOKIE);
+        $this->withCookie(self::COOKIE, $cookie)->get('/alpha/account/security')->assertOk()->assertSee(text('account.this_device'));
+        $this->delete('/alpha/account/devices/' . $token)->assertRedirect('/alpha/account/security#devices')->assertCookieExpired(self::COOKIE);
 
         $this->assertNotNull(DB::table('alpha_trusted_devices')->value('revoked_at'));
         $this->assertAuthenticatedAs($account, 'alpha');
@@ -231,7 +231,7 @@ class TrustedDeviceTest extends SignInTestCase
         $this->post('/alpha/signin/out');
         $this->signInRemembering();
 
-        $this->delete('/alpha/account/devices')->assertRedirect('/alpha/account/devices');
+        $this->delete('/alpha/account/devices')->assertRedirect('/alpha/account/security#devices');
 
         $this->assertSame(0, DB::table('alpha_trusted_devices')->whereNull('revoked_at')->count());
     }

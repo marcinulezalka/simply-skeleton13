@@ -34,9 +34,9 @@ class PinChangeTest extends SignInTestCase
         $account = $this->account(AlphaAccount::class, pin: self::PIN);
         $this->signedIn($account, 'alpha');
 
-        $this->post('/alpha/account/pin/code')->assertRedirect('/alpha/account/pin');
+        $this->post('/alpha/account/pin/code')->assertRedirect('/alpha/account/security#pin');
         $this->changePin(self::PIN, $this->sentCode(), self::NEW_PIN)
-            ->assertRedirect('/alpha/account/pin')
+            ->assertRedirect('/alpha/account/security#pin')
             ->assertSessionHas('status', text('account.pin_changed'));
 
         $fresh = $account->fresh();

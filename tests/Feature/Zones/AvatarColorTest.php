@@ -49,7 +49,7 @@ class AvatarColorTest extends ZoneTestCase
             ->assertSee('name="avatar_color" value="pink"', false)
             ->assertSee(AvatarColor::Pink->label());
 
-        $this->put('/alpha/account/profile', ['avatar_color' => 'pink'])->assertRedirect('/alpha/account/profile');
+        $this->put('/alpha/account/profile', ['name' => 'Anna Nowak', 'avatar_color' => 'pink'])->assertRedirect('/alpha/account/profile');
 
         $this->assertSame(['theme' => 'dark', 'avatar_color' => 'pink'], $account->fresh()?->json_attributes);
     }
@@ -60,7 +60,7 @@ class AvatarColorTest extends ZoneTestCase
         $this->signedIn($account, 'alpha');
 
         $this->get('/alpha/account/profile');
-        $this->put('/alpha/account/profile', ['avatar_color' => 'gold'])->assertRedirect('/alpha/account/profile');
+        $this->put('/alpha/account/profile', ['name' => 'Anna Nowak', 'avatar_color' => 'gold'])->assertRedirect('/alpha/account/profile');
 
         $this->assertNotSame('', $this->sessionError('avatar_color'));
 

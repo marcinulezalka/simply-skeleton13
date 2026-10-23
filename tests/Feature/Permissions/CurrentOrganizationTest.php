@@ -61,10 +61,10 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
     {
         $account = $this->account(AlphaAccount::class);
         $this->member($account, $this->organization('Pierwsza'));
-        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
+        $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
 
         $this->member($account, $this->organization('Druga'));
-        $this->signedIn($account, 'alpha')->get('/alpha/account/pin')
+        $this->signedIn($account, 'alpha')->get('/alpha/account/security')
             ->assertSee('class="ss-account-menu ss-context-switch"', false)
             ->assertSee('<form method="POST" action="' . url('/alpha/account/organization') . '">', false)
             ->assertSee('name="organization"', false)

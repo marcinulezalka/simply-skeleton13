@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Testy konta strefy: profil (imię, język, organizacje z rolami), język konta po logowaniu i strona bezpieczeństwa (`Zones/AccountProfileTest`, `Zones/AccountLocaleTest`, `Zones/AccountSecurityTest`); zaktualizowane adresy PIN-u i urządzeń.
 - Testy kolorystyk stref i ikon strony per strefa (`AppLayoutTest`, `DesignSystemPageTest`, `Zones/ZoneLayoutTest`).
 - Testy przełączania motywu i tokenów `light-dark()` (`AppLayoutTest`, `DesignSystemPageTest`).
 - Testy podpowiedzi w polach (pole e-mail logowania, maski).
