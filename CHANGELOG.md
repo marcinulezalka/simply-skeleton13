@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Test tekstów ekranów logowania stref (`SignInTextsTest`).
 - `.env.example`: `HOLIDAYS_SCHEDULE`; testy dni wolnych w Core i panelu administratorów (`HolidaysTest`, `AdmiroHolidaysTest`).
 - `.env.example`: `COOKIE_CONSENT`; testy zgody na cookies w Core i polityki cookies w panelu administratorów (`CookieConsentTest`, `AdmiroCookiePolicyTest`).
 - `.env.example`: kursy walut z NBP (`EXCHANGE_RATES_SCHEDULE_AT`, `EXCHANGE_RATES_DAYS_BACK`); testy kursów walut w Core i panelu administratorów (`ExchangeRatesTest`, `AdmiroExchangeRatesTest`).
