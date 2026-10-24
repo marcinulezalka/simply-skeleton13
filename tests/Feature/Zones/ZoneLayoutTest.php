@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
 use Simplysmart\Mainboard\Enums\FaviconType;
 use Simplysmart\Mainboard\Enums\Palette;
+use Simplysmart\Mainboard\Queries\InstalledPackages;
 use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
 use Simplysmart\Mainboard\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -106,6 +107,101 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('<link rel="icon" href="/shop/favicon/svg?v=2" type="image/svg+xml">', $head);
         $this->assertStringContainsString('<link rel="apple-touch-icon" href="/shop/favicon/apple?v=3">', $head);
         $this->assertStringNotContainsString('<link rel="icon"', Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>'));
+    }
+
+    public function test_zone_fonts_need_valid_faces_with_existing_woff2_files(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $file = sys_get_temp_dir() . '/zone-font-test.woff2';
+        file_put_contents($file, 'wOF2');
+        $face = ['family' => 'Brand Sans', 'weight' => 700, 'file' => $file, 'unicode_range' => 'U+0000-00FF, U+0131'];
+
+        try {
+            $fonts = $factory->make(['name' => 'shop', 'fonts' => ['brand-latin' => $face]], 'shop', __DIR__)->fonts;
+
+            $this->assertSame(['brand-latin'], $fonts?->keys());
+            $this->assertSame($file, $fonts->path('brand-latin'));
+            $this->assertNull($fonts->path('missing'));
+            $this->assertSame(
+                '@font-face { font-family: "Brand Sans"; font-style: normal; font-weight: 700; font-display: swap; src: url("/shop/font/brand-latin?v=' . $fonts->version('brand-latin') . '") format("woff2"); unicode-range: U+0000-00FF, U+0131; }',
+                $fonts->fontFaceCss(static fn(string $key, string $version): string => "/shop/font/{$key}?v={$version}"),
+            );
+            $this->assertNull($factory->make(['name' => 'shop'], 'shop', __DIR__)->fonts);
+
+            foreach ([['Brand' => $face], ['brand' => [...$face, 'family' => 'Brand"; }']], ['brand' => [...$face, 'style' => 'oblique']], ['brand' => [...$face, 'weight' => 950]], ['brand' => [...$face, 'unicode_range' => 'latin']], ['brand' => [...$face, 'file' => base_path('composer.json')]], [$face]] as $fontsConfig) {
+                try {
+                    $factory->make(['name' => 'shop', 'fonts' => $fontsConfig], 'shop', __DIR__);
+                    $this->fail('Fonts ' . json_encode($fontsConfig) . ' should be rejected.');
+                } catch (InvalidArgumentException $exception) {
+                    $this->assertStringStartsWith('Zone [shop]', $exception->getMessage());
+                }
+            }
+        } finally {
+            unlink($file);
+        }
+    }
+
+    public function test_page_renders_font_faces_in_the_head_with_the_csp_nonce(): void
+    {
+        $html = Blade::render('<x-mainboard::page title="Start" :font-faces="$fontFaces">x</x-mainboard::page>', ['fontFaces' => '@font-face { font-family: "Brand Sans"; }']);
+        $head = substr($html, 0, (int) strpos($html, '</head>'));
+
+        $this->assertMatchesRegularExpression('/<style nonce="[^"]*">@font-face \{ font-family: "Brand Sans"; \}<\/style>/', $head);
+        $this->assertStringNotContainsString('@font-face', Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>'));
+    }
+
+    public function test_zone_legal_links_need_a_route_and_a_label_and_only_apply_to_zones_with_sign_in(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $links = [['route' => 'legal.privacy', 'label' => 'shop::legal.privacy']];
+
+        $this->assertSame($links, $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_links' => $links], 'shop', __DIR__)->legalLinks);
+        $this->assertSame([], $factory->make(['name' => 'shop', 'legal_links' => $links], 'shop', __DIR__)->legalLinks);
+
+        $this->expectException(InvalidArgumentException::class);
+        $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_links' => [['route' => 'legal.privacy']]], 'shop', __DIR__);
+    }
+
+    public function test_legal_links_go_to_a_sliding_brand_footer_and_the_theme_toggle_to_the_card(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
+
+        $this->assertStringContainsString('<footer class="ss-auth__footer" id="ss-auth-footer" data-ss-auth-footer>', $html);
+        $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
+        $this->assertStringContainsString('aria-controls="ss-auth-footer"', $html);
+        $this->assertStringContainsString('<div class="ss-auth__card-end">', $html);
+        $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $html);
+        $this->assertStringNotContainsString('<div class="ss-auth__theme">', $html);
+
+        $plain = Blade::render('<x-mainboard::auth.layout title="Start">x</x-mainboard::auth.layout>');
+
+        $this->assertStringContainsString('<div class="ss-auth__theme">', $plain);
+        $this->assertStringNotContainsString('<footer class="ss-auth__footer"', $plain);
+    }
+
+    public function test_installed_packages_skip_dev_and_path_packages(): void
+    {
+        $file = sys_get_temp_dir() . '/installed-packages-test.json';
+        file_put_contents($file, (string) json_encode([
+            'packages' => [
+                ['name' => 'vendor/zeta', 'version' => '2.0.0', 'license' => ['MIT'], 'description' => 'Zeta', 'source' => ['url' => 'https://example.com/zeta.git']],
+                ['name' => 'vendor/alpha', 'version' => '1.0.0', 'license' => ['BSD-3-Clause'], 'homepage' => 'https://example.com/alpha'],
+                ['name' => 'vendor/dev-tool', 'version' => '1.0.0'],
+                ['name' => 'own/package', 'version' => 'dev-main', 'dist' => ['type' => 'path']],
+            ],
+            'dev-package-names' => ['vendor/dev-tool'],
+        ]));
+
+        try {
+            $packages = new InstalledPackages($file)->all();
+        } finally {
+            unlink($file);
+        }
+
+        $this->assertSame(['vendor/alpha', 'vendor/zeta'], array_column($packages, 'name'));
+        $this->assertSame(['https://example.com/alpha', 'https://example.com/zeta'], array_column($packages, 'homepage'));
+        $this->assertSame(['BSD-3-Clause'], $packages[0]['licenses']);
+        $this->assertSame([], new InstalledPackages('/missing/installed.json')->all());
     }
 
     public function test_zone_styles_are_embedded_after_the_core_styles(): void
