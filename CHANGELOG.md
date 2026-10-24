@@ -9,6 +9,10 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 - Wdrożenie jednym poleceniem: `infrastructure/deploy.sh` (sprawdza wypchnięcie repozytoriów, `composer deploy:lock`, wysyłka plików wdrożeniowych, SSH) i `infrastructure/deploy-remote.sh` (Composer w `~/bin`, `.env`, `git pull`, token GitHub, instalacja `--no-dev`, `APP_KEY`, migracje, role, słowniki, cache), wzór konfiguracji `infrastructure/deploy.env.example`.
 - Wdrożenie bez katalogu `packages/` na serwerze: skrypt `composer deploy:lock` (manifest i lock z paczkami z repozytoriów git), pliki `composer.deploy.json` i `composer.deploy.lock` w `.gitignore`.
 
+### Fixed
+
+- `composer private:install` i `composer deploy:lock` wywołują narzędzie przez proxy `vendor/bin/composer-private`; bezpośrednia ścieżka `vendor/simplysmart/tools/bin/composer-private` nie znajdowała autoloadera w projekcie, w którym `simplysmart/tools` nie ma własnego `vendor/`.
+
 ## [0.2.0] - 2026-10-24
 
 ### Added
