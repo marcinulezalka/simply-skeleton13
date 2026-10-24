@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Zmienna `MAINBOARD_ORGANIZATION_BRAND_DISK` w `.env.example` (dysk plików marki organizacji, logo w e-mailach stref).
 - Wdrożenie jednym poleceniem z `simplysmart/tools`: `vendor/bin/simplysmart deploy` (sprawdza wypchnięcie repozytoriów, manifest wdrożeniowy, wysyłka plików, skrypt serwerowy przez SSH: Composer, `.env`, `git pull`, token GitHub, instalacja `--no-dev`, `APP_KEY`, migracje, role, słowniki, cache) i `vendor/bin/simplysmart deploy:onboarding` (wdrożenie plus konta pierwszej instalacji); wzory konfiguracji `infrastructure/deploy.env.example` i `infrastructure/deploy.onboarding.env.example`.
 - Wdrożenie bez katalogu `packages/` na serwerze: skrypt `composer deploy:lock` (manifest i lock z paczkami z repozytoriów git), pliki `composer.deploy.json` i `composer.deploy.lock` w `.gitignore`.
 
