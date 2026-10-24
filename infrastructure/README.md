@@ -26,26 +26,28 @@ echo "127.0.0.1 skeleton13.local" | sudo tee -a /etc/hosts
 
 ## Wdrożenie na serwer (jednym poleceniem)
 
-W repozytorium są też skrypty wdrożenia (wyjątki w `.gitignore`):
+Wdrożenie robi polecenie `vendor/bin/simplysmart` z pakietu `simplysmart/tools` (uruchamiane na komputerze
+deweloperskim, nie na serwerze); w repozytorium są tylko wzory konfiguracji (wyjątki w `.gitignore`):
 
-- `deploy.sh` — uruchamiany lokalnie: sprawdza, czy aplikacja i paczki z `packages/*/*` są wypchnięte, tworzy
-  `composer.deploy.json` i `composer.deploy.lock` (`composer deploy:lock`), wysyła je na serwer i uruchamia tam
-  `deploy-remote.sh` przez SSH;
-- `deploy-remote.sh` — część serwerowa (można ją też uruchomić ręcznie w katalogu aplikacji): Composer w
-  `~/bin/composer` (instaluje, gdy go nie ma), `.env`, `git pull`, token GitHub, paczki z GitHuba (`--no-dev`),
-  `APP_KEY`, migracje, role, słowniki i cache;
-- `deploy.env.example` — wzór konfiguracji; skopiuj jako `deploy.env` (ignorowany) i uzupełnij `DEPLOY_SSH`,
-  `DEPLOY_PATH`, `DEPLOY_PHP` i jednorazowo `GITHUB_TOKEN` (tylko do odczytu); opcjonalnie `REMOTE_COMPOSER` (np.
-  `composer.phar` w katalogu aplikacji — skrypt aktualizuje go do 2.8+, a gdy go nie ma, instaluje) i
-  `LOCAL_COMPOSER` (polecenie Composera na komputerze, np. `php composer.phar`).
-
-`deploy.sh` uruchamia się na komputerze deweloperskim, nie na serwerze.
+- `deploy.env.example` — skopiuj jako `deploy.env` (ignorowany) i uzupełnij `DEPLOY_SSH`, `DEPLOY_PATH`,
+  `DEPLOY_PHP` i jednorazowo `GITHUB_TOKEN` (tylko do odczytu); opcjonalnie `REMOTE_COMPOSER` (np. `composer.phar`
+  w katalogu aplikacji — skrypt serwerowy aktualizuje go do 2.8+, a gdy go nie ma, instaluje) i `LOCAL_COMPOSER`
+  (polecenie Composera na komputerze, np. `php composer.phar`);
+- `deploy.onboarding.env.example` — wartości pierwszej instalacji (konta, np. pierwszy administrator); skopiuj
+  jako `deploy.onboarding.env` (ignorowany) i uzupełnij.
 
 ```bash
-cp infrastructure/deploy.env.example infrastructure/deploy.env   # raz, uzupełnij
-infrastructure/deploy.sh
+cp infrastructure/deploy.env.example infrastructure/deploy.env                        # raz, uzupełnij
+cp infrastructure/deploy.onboarding.env.example infrastructure/deploy.onboarding.env  # raz, uzupełnij
+vendor/bin/simplysmart deploy:onboarding --dry-run   # podgląd: konfiguracja, repozytoria, konta
+vendor/bin/simplysmart deploy:onboarding             # pierwsza instalacja: wdrożenie + konta
+vendor/bin/simplysmart deploy                        # każde kolejne wdrożenie
 ```
 
-Na serwerze musi istnieć repozytorium aplikacji (`git clone`) z plikiem `.env`. Szczegóły: `docs/wdrozenie.md`
-w mainboard.
+`deploy` sprawdza, czy aplikacja i paczki z `packages/*/*` są wypchnięte, tworzy `composer.deploy.json`
+i `composer.deploy.lock`, wysyła je na serwer i uruchamia tam przez SSH skrypt serwerowy z tools (Composer,
+`.env`, `git pull`, paczki z GitHuba bez narzędzi deweloperskich, `APP_KEY`, migracje, role, słowniki, cache).
+`deploy:onboarding` robi to samo i zakłada konta z `deploy.onboarding.env`; istniejące są pomijane.
 
+Na serwerze musi istnieć repozytorium aplikacji (`git clone`) z plikiem `.env`. Szczegóły: README `simplysmart/tools`
+i `docs/wdrozenie.md` w mainboard.

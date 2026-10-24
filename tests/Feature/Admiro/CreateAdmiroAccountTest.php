@@ -20,8 +20,8 @@ use Simplysmart\Mainboard\Contracts\CurrentZone;
 use Tests\TestCase;
 
 /**
- * Komenda admiro:account:create: aktywne konto bez PIN-u, odrzucenie duplikatu (także konta usuniętego)
- * i błędnych danych.
+ * Komenda admiro:account:create: aktywne konto bez PIN-u, odrzucenie duplikatu (także konta usuniętego),
+ * pominięcie duplikatu z --skip-existing i odrzucenie błędnych danych.
  */
 class CreateAdmiroAccountTest extends TestCase
 {
@@ -52,6 +52,18 @@ class CreateAdmiroAccountTest extends TestCase
         $this->assertFalse($this->app->make(CurrentZone::class)->has());
     }
 
+    public function test_skip_existing_leaves_the_account_and_succeeds(): void
+    {
+        $this->createAccount('ewa@example.com', 'Ewa Admin')->assertSuccessful();
+
+        $this->createAccount('EWA@example.com', 'Inna Ewa', ['--skip-existing' => true])
+            ->expectsOutput('Konto z tym adresem e-mail już istnieje — pominięte.')
+            ->assertSuccessful();
+
+        $this->assertSame('Ewa Admin', AdmiroAccount::query()->sole()->displayName());
+        $this->assertFalse($this->app->make(CurrentZone::class)->has());
+    }
+
     public function test_a_deleted_account_keeps_its_address_taken(): void
     {
         $this->createAccount('ewa@example.com', 'Ewa Admin')->assertSuccessful();
@@ -72,9 +84,12 @@ class CreateAdmiroAccountTest extends TestCase
         $this->assertSame(0, AdmiroAccount::query()->count());
     }
 
-    private function createAccount(string $email, string $name): PendingCommand
+    /**
+     * @param  array<string, bool>  $options
+     */
+    private function createAccount(string $email, string $name, array $options = []): PendingCommand
     {
-        $command = $this->artisan('admiro:account:create', ['email' => $email, 'name' => $name]);
+        $command = $this->artisan('admiro:account:create', ['email' => $email, 'name' => $name, ...$options]);
         $this->assertInstanceOf(PendingCommand::class, $command);
 
         return $command;

@@ -24,9 +24,8 @@
 # --- Środowisko lokalne (localhost): vhost, PHP-FPM, SSL ----------------------
 /infrastructure/*
 !/infrastructure/README.md
-!/infrastructure/deploy.sh
-!/infrastructure/deploy-remote.sh
 !/infrastructure/deploy.env.example
+!/infrastructure/deploy.onboarding.env.example
 Homestead.json
 Homestead.yaml
 /docker-compose.override.yml
