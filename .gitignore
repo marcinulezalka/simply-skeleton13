@@ -11,6 +11,9 @@
 /private-packages.json
 /composer.private.json
 /composer.private.lock
+# --- Wdrożenie: manifest i lock z paczkami z repozytoriów git (composer deploy:lock) --
+/composer.deploy.json
+/composer.deploy.lock
 
 # --- Środowisko: .env.local (lokalnie), .env (produkcja); w repozytorium tylko .env.example
 .env

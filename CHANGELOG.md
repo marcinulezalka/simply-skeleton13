@@ -4,6 +4,10 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Wdrożenie bez katalogu `packages/` na serwerze: skrypt `composer deploy:lock` (manifest i lock z paczkami z repozytoriów git), pliki `composer.deploy.json` i `composer.deploy.lock` w `.gitignore`.
+
 ## [0.2.0] - 2026-10-24
 
 ### Added

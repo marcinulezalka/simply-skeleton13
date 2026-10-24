@@ -90,7 +90,8 @@
             "pint --config=pint.header.json tests"
         ],
         "analyse": "phpstan analyse --memory-limit=1G",
-        "private:install": "@php vendor/simplysmart/tools/bin/composer-private"
+        "private:install": "@php vendor/simplysmart/tools/bin/composer-private",
+        "deploy:lock": "@php vendor/simplysmart/tools/bin/composer-private --deploy"
     },
     "extra": {
         "laravel": {
