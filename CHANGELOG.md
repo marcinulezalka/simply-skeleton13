@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- `.env.example`: `COOKIE_CONSENT`; testy zgody na cookies w Core i polityki cookies w panelu administratorów (`CookieConsentTest`, `AdmiroCookiePolicyTest`).
 - `.env.example`: kursy walut z NBP (`EXCHANGE_RATES_SCHEDULE_AT`, `EXCHANGE_RATES_DAYS_BACK`); testy kursów walut w Core i panelu administratorów (`ExchangeRatesTest`, `AdmiroExchangeRatesTest`).
 - Test podpisu odręcznego z Core (`AppLayoutTest`).
 - Testy menu i widoków strefy administratorów (`Admiro/AdmiroNavigationTest`) i dodatków wysokiego kontrastu (`DesignSystemPageTest`).
