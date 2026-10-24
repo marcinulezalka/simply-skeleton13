@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Wdrożenie jednym poleceniem: `infrastructure/deploy.sh` (sprawdza wypchnięcie repozytoriów, `composer deploy:lock`, wysyłka plików wdrożeniowych, SSH) i `infrastructure/deploy-remote.sh` (Composer w `~/bin`, `.env`, `git pull`, token GitHub, instalacja `--no-dev`, `APP_KEY`, migracje, role, słowniki, cache), wzór konfiguracji `infrastructure/deploy.env.example`.
 - Wdrożenie bez katalogu `packages/` na serwerze: skrypt `composer deploy:lock` (manifest i lock z paczkami z repozytoriów git), pliki `composer.deploy.json` i `composer.deploy.lock` w `.gitignore`.
 
 ## [0.2.0] - 2026-10-24
