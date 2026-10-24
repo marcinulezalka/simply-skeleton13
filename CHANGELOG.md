@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Test podpisu odręcznego z Core (`AppLayoutTest`).
 - Testy menu i widoków strefy administratorów (`Admiro/AdmiroNavigationTest`) i dodatków wysokiego kontrastu (`DesignSystemPageTest`).
 - Testy przełącznika czterech motywów i motywów kontrastu WCAG, braku przełącznika kolorystyki w layoutach, połączonych kart logowania z banerem i tła z gradientem, strony treści w design systemie oraz czytelnego błędu triggerów historii przy binlogu (`AppLayoutTest`, `Zones/AuthLayoutTest`, `DesignSystemPageTest`, `Database/HistoryTest`).
 - Testy filtra i nazw zdarzeń dziennika, stronicowania i pełnej wartości maski (`Zones/AuditLogTest`, `AppLayoutTest`); asercje historii konta na `audit.events.*`.

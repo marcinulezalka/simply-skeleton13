@@ -248,6 +248,16 @@ class AppLayoutTest extends TestCase
         $this->assertTrue(InputMask::PostalCode->isComplete('00-950'));
     }
 
+    public function test_signature_pad_has_a_canvas_a_hidden_value_and_its_script_once(): void
+    {
+        $html = Blade::render('<x-mainboard::signature-pad id="a" name="first" label="Pierwszy" value="data:image/png;base64,AAA=" /><x-mainboard::signature-pad id="b" name="second" label="Drugi" error="Błąd" />');
+
+        $this->assertStringContainsString('<canvas class="ss-signature__canvas" id="a"', $html);
+        $this->assertStringContainsString('<input type="hidden" name="first" value="data:image/png;base64,AAA=" data-ss-signature-value>', $html);
+        $this->assertStringContainsString('<p class="ss-field__error" role="alert">Błąd</p>', $html);
+        $this->assertSame(1, substr_count($html, '[data-ss-signature-pad]'));
+    }
+
     public function test_initials_skip_lowercase_titles(): void
     {
         $this->assertSame('AW', Initials::of('dr Anna Wiśniewska'));
