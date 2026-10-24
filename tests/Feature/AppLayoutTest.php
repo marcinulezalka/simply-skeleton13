@@ -280,7 +280,7 @@ class AppLayoutTest extends TestCase
     public function test_mask_placeholder_is_an_example_in_the_shared_pattern(): void
     {
         $this->assertSame(text('placeholders.example', ['value' => InputMask::Phone->example()]), InputMask::Phone->placeholder());
-        $this->assertStringStartsWith('np. ', InputMask::Phone->placeholder());
+        $this->assertSame(InputMask::Phone->example(), InputMask::Phone->placeholder());
     }
 
     public function test_input_without_icon_or_mask_is_a_plain_field(): void

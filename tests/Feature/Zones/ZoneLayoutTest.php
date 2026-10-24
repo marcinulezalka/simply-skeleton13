@@ -162,14 +162,14 @@ class ZoneLayoutTest extends ZoneTestCase
         $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_links' => [['route' => 'legal.privacy']]], 'shop', __DIR__);
     }
 
-    public function test_legal_links_go_to_a_sliding_brand_footer_and_the_theme_toggle_to_the_card(): void
+    public function test_legal_links_and_the_theme_toggle_go_to_a_sliding_brand_footer(): void
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
         $this->assertStringContainsString('<footer class="ss-auth__footer" id="ss-auth-footer" data-ss-auth-footer>', $html);
         $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
         $this->assertStringContainsString('aria-controls="ss-auth-footer"', $html);
-        $this->assertStringContainsString('<div class="ss-auth__card-end">', $html);
+        $this->assertStringContainsString('<div class="ss-auth__footer-meta">', $html);
         $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $html);
         $this->assertStringNotContainsString('<div class="ss-auth__theme">', $html);
 
@@ -179,29 +179,34 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('<footer class="ss-auth__footer"', $plain);
     }
 
-    public function test_installed_packages_skip_dev_and_path_packages(): void
+    public function test_installed_packages_list_only_direct_dependencies_of_the_application_and_its_own_packages(): void
     {
-        $file = sys_get_temp_dir() . '/installed-packages-test.json';
-        file_put_contents($file, (string) json_encode([
+        $directory = sys_get_temp_dir() . '/installed-packages-test';
+        @mkdir($directory);
+        file_put_contents($directory . '/composer.json', (string) json_encode(['name' => 'own/app', 'require' => ['php' => '^8.4', 'vendor/framework' => '^1.0', 'own/core' => '@dev']]));
+        file_put_contents($directory . '/installed.json', (string) json_encode([
             'packages' => [
-                ['name' => 'vendor/zeta', 'version' => '2.0.0', 'license' => ['MIT'], 'description' => 'Zeta', 'source' => ['url' => 'https://example.com/zeta.git']],
-                ['name' => 'vendor/alpha', 'version' => '1.0.0', 'license' => ['BSD-3-Clause'], 'homepage' => 'https://example.com/alpha'],
-                ['name' => 'vendor/dev-tool', 'version' => '1.0.0'],
-                ['name' => 'own/package', 'version' => 'dev-main', 'dist' => ['type' => 'path']],
+                ['name' => 'vendor/framework', 'version' => '1.0.0', 'license' => ['MIT'], 'homepage' => 'https://example.com/framework', 'require' => ['vendor/framework-part' => '^1.0']],
+                ['name' => 'vendor/framework-part', 'version' => '1.0.0', 'license' => ['MIT']],
+                ['name' => 'own/core', 'version' => 'dev-main', 'require' => ['vendor/pdf' => '^3.0', 'ext-intl' => '*']],
+                ['name' => 'own/zone', 'version' => 'dev-main', 'require' => ['own/core' => '@dev', 'vendor/flags' => '^2.0']],
+                ['name' => 'vendor/pdf', 'version' => '3.1.0', 'license' => ['LGPL-2.1'], 'source' => ['url' => 'https://example.com/pdf.git']],
+                ['name' => 'vendor/flags', 'version' => '2.0.0', 'license' => ['MIT']],
             ],
-            'dev-package-names' => ['vendor/dev-tool'],
         ]));
 
         try {
-            $packages = new InstalledPackages($file)->all();
+            $packages = new InstalledPackages($directory . '/installed.json', $directory . '/composer.json')->all();
         } finally {
-            unlink($file);
+            unlink($directory . '/composer.json');
+            unlink($directory . '/installed.json');
+            rmdir($directory);
         }
 
-        $this->assertSame(['vendor/alpha', 'vendor/zeta'], array_column($packages, 'name'));
-        $this->assertSame(['https://example.com/alpha', 'https://example.com/zeta'], array_column($packages, 'homepage'));
-        $this->assertSame(['BSD-3-Clause'], $packages[0]['licenses']);
-        $this->assertSame([], new InstalledPackages('/missing/installed.json')->all());
+        $this->assertSame(['vendor/flags', 'vendor/framework', 'vendor/pdf'], array_column($packages, 'name'));
+        $this->assertSame([null, 'https://example.com/framework', 'https://example.com/pdf'], array_column($packages, 'homepage'));
+        $this->assertSame(['LGPL-2.1'], $packages[2]['licenses']);
+        $this->assertSame([], new InstalledPackages('/missing/installed.json', '/missing/composer.json')->all());
     }
 
     public function test_zone_styles_are_embedded_after_the_core_styles(): void
