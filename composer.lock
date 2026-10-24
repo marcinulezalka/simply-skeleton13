@@ -3427,7 +3427,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/admiro",
-                "reference": "d4facb3cc04ef6df81a744a68c016f26f598d2dd"
+                "reference": "3fdc96441cd31dc4cae084b37f6225afb4703da7"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -3495,9 +3495,10 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "b2487a4777e150d0bd4598f53d47c027b828941c"
+                "reference": "7146c6edc488f4e53973320c01b23023fa89789e"
             },
             "require": {
+                "ext-bcmath": "*",
                 "laravel/framework": "^13.0",
                 "outhebox/blade-flags": "^1.7",
                 "php": "^8.4",
