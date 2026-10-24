@@ -6,7 +6,7 @@
         "support": {"permissions": ["reports.view"]},
         "analyst": {"permissions": ["reports.view", "reports.export"]},
         "manager": {"inherits": ["analyst"], "permissions": ["notes.manage", "users.manage"]},
-        "owner": {"permissions": "*", "except": ["users.manage"]},
+        "owner": {"permissions": "*", "except": ["users.manage"], "assigns": ["manager"]},
         "hero": {"permissions": "*"}
     }
 }

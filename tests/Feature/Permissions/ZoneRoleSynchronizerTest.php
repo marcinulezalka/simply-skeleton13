@@ -20,11 +20,12 @@ use Simplysmart\Mainboard\Models\Permissions\Role;
 use Simplysmart\Mainboard\Permissions\PermissionFileParser;
 use Simplysmart\Mainboard\Permissions\PermissionFiles;
 use Simplysmart\Mainboard\Permissions\PermissionTables;
+use Simplysmart\Mainboard\Permissions\RoleDelegation;
 use Simplysmart\Mainboard\Permissions\ZoneRoleSynchronizer;
 
 /**
  * Zapis ról z plików: idempotentny, z id z puli seederów, role globalne dla guardu strefy, przywracanie
- * usuniętych; rekordy spoza pliku tylko raportowane, usuwane przez `--prune` (na produkcji z `--force`).
+ * usuniętych, role delegowane w `json_default_settings`; rekordy spoza pliku tylko raportowane, usuwane przez `--prune` (na produkcji z `--force`).
  */
 class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
 {
@@ -45,6 +46,14 @@ class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
         $this->assertNull($owner->organization_id);
         $this->assertLessThan(IdSlots::FIRST_USER_ID, $owner->id);
         $this->assertEqualsCanonicalizing(['notes.manage', 'reports.export', 'reports.view'], $owner->permissions->pluck('name')->all());
+    }
+
+    public function test_delegated_roles_are_stored_in_default_settings(): void
+    {
+        $roles = Role::query()->where('guard_name', 'alpha')->get()->keyBy('name');
+
+        $this->assertSame(['manager'], $roles['owner']?->defaultSetting(RoleDelegation::SETTING));
+        $this->assertNull($roles['manager']?->json_default_settings);
     }
 
     public function test_deleted_role_is_restored(): void

@@ -19,7 +19,7 @@ use Simplysmart\Mainboard\Permissions\PermissionFiles;
 
 /**
  * Walidacja plików ról przed zapisem: strefa, role obowiązkowe, nazwy, odwołania do uprawnień i ról, cykle
- * dziedziczenia; spłaszczanie `inherits`, `*` i `except`; każdy zarejestrowany plik jest poprawny.
+ * dziedziczenia; spłaszczanie `inherits`, `*` i `except`; role delegowane `assigns`; każdy zarejestrowany plik jest poprawny.
  */
 class PermissionFileParserTest extends ZoneRolesTestCase
 {
@@ -30,6 +30,8 @@ class PermissionFileParserTest extends ZoneRolesTestCase
         $this->assertSame(['notes.manage', 'reports.export', 'reports.view', 'users.manage'], $set->permissionsOf('manager'));
         $this->assertSame(['notes.manage', 'reports.export', 'reports.view'], $set->permissionsOf('owner'));
         $this->assertSame([], $set->permissionsOf('guest'));
+        $this->assertSame(['manager'], $set->assignableBy('owner'));
+        $this->assertSame([], $set->assignableBy('manager'));
     }
 
     public function test_every_registered_file_is_valid(): void
@@ -60,6 +62,8 @@ class PermissionFileParserTest extends ZoneRolesTestCase
             'invalid role name' => [['zone' => 'beta', 'permissions' => [], 'roles' => [...$roles, 'Clerks' => []]], 'kebab-case'],
             'duplicate permission' => [['zone' => 'beta', 'permissions' => ['orders.view', 'orders.view'], 'roles' => $roles], 'duplicates'],
             'unknown parent role' => [['zone' => 'beta', 'permissions' => [], 'roles' => [...$roles, 'clerk' => ['inherits' => ['boss']]]], 'unknown role [boss]'],
+            'unknown delegated role' => [['zone' => 'beta', 'permissions' => [], 'roles' => [...$roles, 'owner' => ['permissions' => '*', 'assigns' => ['boss']]]], 'assigns the unknown role [boss]'],
+            'invalid delegated role name' => [['zone' => 'beta', 'permissions' => [], 'roles' => [...$roles, 'owner' => ['permissions' => '*', 'assigns' => ['Boss']]]], 'invalid name'],
             'inheritance cycle' => [['zone' => 'beta', 'permissions' => [], 'roles' => [...$roles, 'a' => ['inherits' => ['b']], 'b' => ['inherits' => ['a']]]], 'cycle'],
         ];
     }

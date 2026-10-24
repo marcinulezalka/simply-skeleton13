@@ -22,13 +22,14 @@ use Simplysmart\Mainboard\Models\ZoneAccount;
 use Simplysmart\Mainboard\Permissions\OrganizationMembership;
 use Simplysmart\Mainboard\Permissions\PermissionTables;
 use Simplysmart\Mainboard\Permissions\RoleAssignmentDenied;
+use Simplysmart\Mainboard\Permissions\RoleDelegation;
 use Simplysmart\Mainboard\Permissions\ZoneRoleAssignment;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 
 /**
  * Nadawanie ról bez eskalacji (rola nie szersza niż uprawnienia nadającego w tej organizacji, ta sama strefa,
- * oba konta członkami) oraz odbieranie ról i członkostwa z unieważnieniem sesji konta.
+ * oba konta członkami), role delegowane (`assigns`) tylko w tej organizacji oraz odbieranie ról i członkostwa z unieważnieniem sesji konta.
  */
 class ZoneRoleAssignmentTest extends ZoneRolesTestCase
 {
@@ -60,6 +61,41 @@ class ZoneRoleAssignmentTest extends ZoneRolesTestCase
         $this->expectExceptionMessage('grants more than the assigner has');
 
         $this->assignment()->assign($owner, $other, 'hero', $this->company);
+    }
+
+    public function test_delegated_role_is_assigned_and_revoked_despite_missing_permissions(): void
+    {
+        $owner = $this->member($this->account(AlphaAccount::class), $this->company, 'owner');
+        $other = $this->member($this->account(AlphaAccount::class, ['email' => 'other@example.com']), $this->company);
+
+        $this->assignment()->assign($owner, $other, 'manager', $this->company);
+        $this->assertTrue($this->allows($other, 'users.manage'));
+
+        $this->assignment()->revoke($owner, $other, 'manager', $this->company);
+        $this->assertFalse($this->allows($other, 'users.manage'));
+    }
+
+    public function test_owner_assigns_a_delegated_role_to_itself(): void
+    {
+        $owner = $this->member($this->account(AlphaAccount::class), $this->company, 'owner');
+
+        $this->assignment()->assign($owner, $owner, 'manager', $this->company);
+
+        $this->assertTrue($this->allows($owner, 'users.manage'));
+        $this->assertSame(['manager'], $this->app->make(RoleDelegation::class)->assignableBy($owner, $this->company));
+    }
+
+    public function test_delegation_from_another_organization_does_not_count(): void
+    {
+        $owner = $this->member($this->account(AlphaAccount::class), $this->organization('Inna'), 'owner');
+        $this->member($owner, $this->company, 'analyst');
+        $other = $this->member($this->account(AlphaAccount::class, ['email' => 'other@example.com']), $this->company);
+
+        $this->assertFalse($this->app->make(RoleDelegation::class)->allows($owner, 'manager', $this->company));
+        $this->expectException(RoleAssignmentDenied::class);
+        $this->expectExceptionMessage('grants more than the assigner has');
+
+        $this->assignment()->assign($owner, $other, 'manager', $this->company);
     }
 
     public function test_denied_permission_cannot_be_passed_on(): void
