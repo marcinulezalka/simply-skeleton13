@@ -35,7 +35,11 @@ W repozytorium są też skrypty wdrożenia (wyjątki w `.gitignore`):
   `~/bin/composer` (instaluje, gdy go nie ma), `.env`, `git pull`, token GitHub, paczki z GitHuba (`--no-dev`),
   `APP_KEY`, migracje, role, słowniki i cache;
 - `deploy.env.example` — wzór konfiguracji; skopiuj jako `deploy.env` (ignorowany) i uzupełnij `DEPLOY_SSH`,
-  `DEPLOY_PATH`, `DEPLOY_PHP` i jednorazowo `GITHUB_TOKEN` (tylko do odczytu).
+  `DEPLOY_PATH`, `DEPLOY_PHP` i jednorazowo `GITHUB_TOKEN` (tylko do odczytu); opcjonalnie `REMOTE_COMPOSER` (np.
+  `composer.phar` w katalogu aplikacji — skrypt aktualizuje go do 2.8+, a gdy go nie ma, instaluje) i
+  `LOCAL_COMPOSER` (polecenie Composera na komputerze, np. `php composer.phar`).
+
+`deploy.sh` uruchamia się na komputerze deweloperskim, nie na serwerze.
 
 ```bash
 cp infrastructure/deploy.env.example infrastructure/deploy.env   # raz, uzupełnij

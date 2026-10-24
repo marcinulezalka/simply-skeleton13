@@ -14,6 +14,7 @@
 # --- Wdrożenie: manifest i lock z paczkami z repozytoriów git (composer deploy:lock) --
 /composer.deploy.json
 /composer.deploy.lock
+/composer.phar
 
 # --- Środowisko: .env.local (lokalnie), .env (produkcja); w repozytorium tylko .env.example
 .env

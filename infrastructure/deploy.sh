@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Wdrożenie aplikacji na serwer jednym poleceniem, uruchamiane na komputerze deweloperskim.
+# Wdrożenie aplikacji na serwer jednym poleceniem, uruchamiane na komputerze deweloperskim (nie na serwerze —
+# tam działa infrastructure/deploy-remote.sh).
 #
 # Kroki:
 #   1. sprawdza, czy aplikacja i paczki z packages/*/* są wypchnięte (inaczej serwer dostałby stary kod),
@@ -25,6 +26,17 @@ source "$config"
 : "${DEPLOY_SSH:?Ustaw DEPLOY_SSH w $config}"
 : "${DEPLOY_PATH:?Ustaw DEPLOY_PATH w $config}"
 deploy_php="${DEPLOY_PHP:-php84}"
+# Polecenie Composera na tym komputerze (np. "php composer.phar"); domyślnie `composer`, a bez niego composer.phar.
+if [[ -n "${LOCAL_COMPOSER:-}" ]]; then
+    read -r -a local_composer <<< "$LOCAL_COMPOSER"
+elif command -v composer >/dev/null; then
+    local_composer=(composer)
+elif [[ -f composer.phar ]]; then
+    local_composer=(php composer.phar)
+else
+    echo "Brak Composera na tym komputerze — ustaw LOCAL_COMPOSER w $config (np. \"php composer.phar\")." >&2
+    exit 1
+fi
 
 echo "==> Sprawdzam, czy wszystko jest wypchnięte"
 unpushed=()
@@ -45,7 +57,7 @@ if (( ${#unpushed[@]} > 0 )); then
 fi
 
 echo "==> Tworzę manifest wdrożeniowy (composer deploy:lock)"
-composer deploy:lock
+"${local_composer[@]}" deploy:lock
 [[ -f composer.deploy.json && -f composer.deploy.lock ]] || { echo "Brak composer.deploy.json / composer.deploy.lock po deploy:lock." >&2; exit 1; }
 
 echo "==> Wysyłam pliki wdrożeniowe na $DEPLOY_SSH:$DEPLOY_PATH"
@@ -55,6 +67,9 @@ echo "==> Uruchamiam wdrożenie na serwerze"
 # Token idzie przez standardowe wejście, nie przez argumenty (nie trafia do listy procesów).
 {
     printf 'export DEPLOY_PHP=%q GITHUB_TOKEN=%q\n' "$deploy_php" "${GITHUB_TOKEN:-}"
+    if [[ -n "${REMOTE_COMPOSER:-}" ]]; then
+        printf 'export COMPOSER_BIN=%s\n' "$REMOTE_COMPOSER"
+    fi
     printf 'cd %s || exit 1\n' "$DEPLOY_PATH"
     cat infrastructure/deploy-remote.sh
 } | ssh "$DEPLOY_SSH" 'bash -s'

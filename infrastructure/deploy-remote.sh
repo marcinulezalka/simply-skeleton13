@@ -14,6 +14,7 @@
 set -euo pipefail
 
 php_bin="${DEPLOY_PHP:-php84}"
+# Plik Composera na serwerze: COMPOSER_BIN (np. composer.phar w katalogu aplikacji), domyślnie ~/bin/composer.
 composer_bin="${COMPOSER_BIN:-$HOME/bin/composer}"
 
 fail() { echo "BŁĄD: $*" >&2; exit 1; }
@@ -35,6 +36,10 @@ if [[ ! -f "$composer_bin" ]]; then
     rm -f "$setup"
 fi
 composer=("$php_bin" "$composer_bin")
+if ! "${composer[@]}" --version --no-ansi 2>/dev/null | grep -qE 'version (2\.(8|9|[1-9][0-9])|[3-9])\.'; then
+    step "Aktualizuję Composera (wymagany 2.8+ dla PHP 8.4)"
+    "${composer[@]}" self-update --2 --no-interaction 2>/dev/null || fail "Nie udało się zaktualizować Composera ($composer_bin)."
+fi
 step "$("${composer[@]}" --version --no-ansi 2>/dev/null | head -n1)"
 
 [[ -f .env ]] || fail "Brak .env. Skopiuj .env.example jako .env i uzupełnij (baza, APP_URL, poczta)."
