@@ -3427,7 +3427,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/admiro",
-                "reference": "3fdc96441cd31dc4cae084b37f6225afb4703da7"
+                "reference": "91d5dc56e84bf760eae9fd9c585db396c2e26c40"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -3495,7 +3495,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "7146c6edc488f4e53973320c01b23023fa89789e"
+                "reference": "750acb439144c04c571033b5d1bb39bf347c7cdd"
             },
             "require": {
                 "ext-bcmath": "*",
@@ -9272,7 +9272,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/tools",
-                "reference": "ab3231396cc3123b45fbbb2a6f6078c753c44b74"
+                "reference": "e1d0455db5f9bc375260833844a22f2cf4da6158"
             },
             "require": {
                 "php": "^8.4"
