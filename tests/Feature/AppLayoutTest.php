@@ -21,6 +21,7 @@ use Simplysmart\Mainboard\Enums\ToastType;
 use Simplysmart\Mainboard\View\Navigation\NavigationGroup;
 use Simplysmart\Mainboard\View\Navigation\NavigationItem;
 use Simplysmart\Mainboard\View\Navigation\SearchBox;
+use Simplysmart\Mainboard\View\Navigation\SettingsMenu;
 use Simplysmart\Mainboard\View\Notifications\NotificationItem;
 use Simplysmart\Mainboard\View\Notifications\NotificationPanel;
 use Simplysmart\Mainboard\View\CoreAssets;
@@ -168,16 +169,47 @@ class AppLayoutTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('~href="/polnoc"\s+aria-current~', $html);
     }
 
-    public function test_theme_toggle_sits_above_the_menu_logo_and_the_theme_script_in_the_head(): void
+    public function test_menu_footer_has_the_settings_link_and_the_logo_opening_the_simplysmart_footer_without_a_theme_toggle(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
+        $settings = new SettingsMenu([], '/ustawienia', false, '/pulpit');
+        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :settings="$settings" :legal-links="$links">x</x-mainboard::app.layout>', [
+            'settings' => $settings,
+            'links' => [['url' => '/prywatnosc', 'label' => 'Prywatność']],
+        ]);
         $head = substr($html, 0, (int) strpos($html, '</head>'));
-        $toggle = strpos($html, '<div class="ss-theme-toggle ss-sidebar__theme" role="group" aria-label="' . text('layout.theme') . '" data-ss-theme-toggle hidden>');
+        $sidebar = substr($html, (int) strpos($html, '<aside class="ss-sidebar"'), (int) strpos($html, '</aside>') - (int) strpos($html, '<aside class="ss-sidebar"'));
 
         $this->assertStringContainsString("const STORAGE_KEY = 'ss-theme';", $head);
-        $this->assertNotFalse($toggle);
-        $this->assertLessThan(strpos($html, 'class="ss-sidebar__brand"'), $toggle);
-        $this->assertGreaterThan(strpos($html, 'class="ss-sidebar__actions"'), $toggle);
+        $this->assertStringNotContainsString('data-ss-theme-toggle', $sidebar);
+        $this->assertStringContainsString('<a class="ss-sidebar__link" href="/ustawienia" title="' . text('layout.settings') . '">', $sidebar);
+        $this->assertStringContainsString('<div class="ss-sidebar__brand" data-ss-footer-root="ss-sidebar__brand">', $sidebar);
+        $this->assertStringContainsString('aria-controls="ss-sidebar-footer"', $sidebar);
+        $this->assertStringContainsString('<a class="ss-link" href="/prywatnosc">Prywatność</a>', $sidebar);
+        $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $sidebar);
+        $this->assertLessThan(strpos($sidebar, 'data-ss-footer-toggle'), strpos($sidebar, 'id="ss-sidebar-footer"'));
+    }
+
+    public function test_settings_mode_shows_the_settings_groups_with_a_way_back_instead_of_the_settings_link(): void
+    {
+        $group = new NavigationGroup('Konto', [new NavigationItem('Profil', '/profil', 'user', true)]);
+        $html = Blade::render('<x-mainboard::app.layout title="Profil" :navigation="$navigation" :settings="$settings">x</x-mainboard::app.layout>', [
+            'navigation' => [$group],
+            'settings' => new SettingsMenu([$group], '/profil', true, '/pulpit'),
+        ]);
+
+        $this->assertStringContainsString('<nav class="ss-sidebar__nav" aria-label="' . text('layout.settings') . '">', $html);
+        $this->assertStringContainsString('<a class="ss-sidebar__link ss-sidebar__back" href="/pulpit" title="' . text('layout.back_to_app') . '">', $html);
+        $this->assertStringContainsString('<p class="ss-sidebar__title">' . text('layout.settings') . '</p>', $html);
+        $this->assertStringNotContainsString('<ul class="ss-sidebar__list ss-sidebar__settings">', $html);
+    }
+
+    public function test_flashed_status_joins_the_flashed_toasts_as_a_success_toast(): void
+    {
+        $toasts = Toast::fromFlash([(new Toast(ToastType::Danger, 'Błąd zapisu'))->toArray()], 'Zapisano');
+
+        $this->assertSame([ToastType::Danger, ToastType::Success], array_map(static fn(Toast $toast): ToastType => $toast->type, $toasts));
+        $this->assertSame('Zapisano', $toasts[1]->message);
+        $this->assertSame([], Toast::fromFlash(null, ''));
     }
 
     public function test_theme_toggle_offers_every_theme_with_a_label(): void

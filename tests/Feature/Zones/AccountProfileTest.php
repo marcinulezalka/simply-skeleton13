@@ -92,4 +92,14 @@ class AccountProfileTest extends ZoneRolesTestCase
         $this->assertSame('roles.shop.owner', $factory->make(['name' => 'shop'], 'shop', __DIR__)->textKey('roles.shop.owner'));
         $this->assertSame(text('roles.admiro.owner'), $factory->make(['name' => 'admiro'], 'admiro', __DIR__)->roleLabel('owner'));
     }
+
+    public function test_appearance_settings_offer_the_theme_and_only_the_zone_palettes(): void
+    {
+        $html = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/account/appearance')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<h2 class="ss-card__title" id="appearance-theme-title">' . text('account.theme_title') . '</h2>', $html);
+        $this->assertStringContainsString('data-ss-theme-toggle hidden', $html);
+        $this->assertStringNotContainsString('id="appearance-palette-title"', $html);
+        $this->assertMatchesRegularExpression('~href="' . preg_quote(url('/alpha/account/appearance'), '~') . '" title="[^"]+"\s+aria-current="page"~', $html);
+    }
 }

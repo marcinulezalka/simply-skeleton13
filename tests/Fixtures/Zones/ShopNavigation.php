@@ -28,6 +28,11 @@ final class ShopNavigation implements ZoneNavigation
         return [new NavigationGroup(null, [new NavigationItem('Zamówienia', '/zamowienia', 'invoice')])];
     }
 
+    public function settings(): array
+    {
+        return [new NavigationGroup('Sklep', [new NavigationItem('Ustawienia sklepu', '/ustawienia', 'settings')])];
+    }
+
     public function search(): SearchBox
     {
         return new SearchBox('/szukaj', 'Numer zamówienia');

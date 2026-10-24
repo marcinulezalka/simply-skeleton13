@@ -28,9 +28,24 @@ class AdmiroNavigationTest extends AdmiroTestCase
         }
 
         $this->assertStringContainsString('href="' . url('/admiro/audit') . '"', $html);
-        $this->assertStringContainsString('href="' . url('/admiro/dictionaries/countries') . '"', $html);
+        $this->assertStringNotContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/dictionaries/countries') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/settings') . '" title="' . text('layout.settings') . '">', $html);
         $this->assertStringContainsString(text('roles.admiro.owner'), $html);
         $this->assertStringContainsString('class="ss-card ss-card--link"', $html);
+    }
+
+    public function test_settings_pages_switch_the_menu_to_the_settings_groups_with_a_way_back(): void
+    {
+        $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/dictionaries/countries')->assertOk()->getContent();
+
+        foreach (['application', 'dictionaries'] as $group) {
+            $this->assertStringContainsString('<p class="ss-sidebar__group">' . text('admiro::navigation.groups.' . $group) . '</p>', $html);
+        }
+
+        $this->assertMatchesRegularExpression('~href="' . preg_quote(url('/admiro/dictionaries/countries'), '~') . '" title="[^"]+"\s+aria-current="page"~', $html);
+        $this->assertStringContainsString('<a class="ss-sidebar__link ss-sidebar__back" href="' . url('/admiro') . '"', $html);
+        $this->assertStringContainsString('href="' . url('/admiro/account/appearance') . '"', $html);
+        $this->assertStringNotContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/audit') . '"', $html);
     }
 
     public function test_support_sees_only_what_its_permissions_allow(): void

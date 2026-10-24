@@ -24,19 +24,24 @@ use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
 
 /**
- * Layout strefy na layoucie aplikacji: menu i wyszukiwarka z ZoneNavigation zarejestrowanego dla strefy, awatar
- * w kolorze konta, druga linia, menu konta (profil, PIN) z wylogowaniem formularzem; strefa bez menu działa bez pozycji.
+ * Layout strefy na layoucie aplikacji: menu, ustawienia i wyszukiwarka z ZoneNavigation zarejestrowanego dla strefy
+ * (strony konta to ustawienia: menu ustawień z powrotem do aplikacji), awatar w kolorze konta, druga linia, menu konta
+ * (profil, bezpieczeństwo, wygląd) z wylogowaniem formularzem; strefa bez menu ma same ustawienia konta.
  */
 class ZoneLayoutTest extends ZoneTestCase
 {
-    public function test_zone_menu_search_and_subtitle_come_from_the_registered_navigation(): void
+    public function test_account_pages_show_the_settings_menu_with_the_zone_settings_first(): void
     {
         $this->app->make(ZoneNavigations::class)->add('alpha', ShopNavigation::class);
         $account = $this->account(AlphaAccount::class);
 
         $html = (string) $this->signedIn($account, 'alpha')->get('/alpha/account/profile')->assertOk()->getContent();
 
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="/zamowienia" title="Zamówienia"', $html);
+        $this->assertStringNotContainsString('href="/zamowienia"', $html);
+        $this->assertStringContainsString('<a class="ss-sidebar__link ss-sidebar__back" href="' . url('/alpha/dashboard') . '" title="' . text('layout.back_to_app') . '">', $html);
+        $this->assertStringContainsString('<p class="ss-sidebar__group">Sklep</p>', $html);
+        $this->assertStringContainsString('<a class="ss-sidebar__link" href="/ustawienia" title="Ustawienia sklepu"', $html);
+        $this->assertStringContainsString('<p class="ss-sidebar__group">' . text('account.settings_group') . '</p>', $html);
         $this->assertStringContainsString('<form class="ss-search" role="search" method="GET" action="/szukaj">', $html);
         $this->assertStringContainsString('<span class="ss-sidebar__identity-subtitle">Sklep · Kierownik</span>', $html);
         $this->assertStringContainsString('class="ss-avatar ss-avatar--md ss-avatar--' . $account->avatarColor()->value . '"', $html);
@@ -166,7 +171,8 @@ class ZoneLayoutTest extends ZoneTestCase
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
-        $this->assertStringContainsString('<footer class="ss-auth__footer" id="ss-auth-footer" data-ss-auth-footer>', $html);
+        $this->assertStringContainsString('<footer class="ss-auth__footer" id="ss-auth-footer" data-ss-footer>', $html);
+        $this->assertStringContainsString('data-ss-footer-root="ss-auth"', $html);
         $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
         $this->assertStringContainsString('aria-controls="ss-auth-footer"', $html);
         $this->assertStringContainsString('<div class="ss-auth__footer-meta">', $html);
@@ -223,7 +229,8 @@ class ZoneLayoutTest extends ZoneTestCase
         $html = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/account/profile')->assertOk()->getContent();
 
         $this->assertStringContainsString('data-ss-shell', $html);
-        $this->assertStringNotContainsString('class="ss-sidebar__link"', $html);
+        $this->assertStringContainsString('<p class="ss-sidebar__title">' . text('layout.settings') . '</p>', $html);
+        $this->assertStringContainsString(url('/alpha/account/appearance'), $html);
         $this->assertMatchesRegularExpression('~href="' . preg_quote(url('/alpha/account/profile'), '~') . '"\s+aria-current="page"~', $html);
         $this->assertStringContainsString(url('/alpha/account/security'), $html);
         $this->assertStringContainsString('<form method="POST" action="' . url('/alpha/signin/out') . '">', $html);

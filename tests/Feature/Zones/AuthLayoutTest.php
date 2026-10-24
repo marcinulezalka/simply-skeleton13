@@ -19,6 +19,7 @@ use Simplysmart\Mainboard\Auth\AuthBrand;
 use Simplysmart\Mainboard\Auth\ZoneAuthSettingsFactory;
 use Simplysmart\Mainboard\Enums\AuthLayout;
 use Simplysmart\Mainboard\View\CoreAssets;
+use Simplysmart\Mainboard\View\Toast;
 
 /**
  * Układ stron logowania (`auth.layout`): domyślnie jedna karta, strefa może wybrać dwie karty obok siebie
@@ -93,6 +94,43 @@ class AuthLayoutTest extends SignInTestCase
             ->assertSee('class="ss-card ss-auth__card"', false)
             ->assertSee('class="ss-icon ss-button__icon"', false)
             ->assertDontSee('ss-auth__brand"', false);
+    }
+
+    public function test_session_messages_show_as_global_toasts_instead_of_a_notice_in_the_card(): void
+    {
+        session()->put(Toast::STATUS_KEY, text('sign_in.signed_out'));
+        $html = Blade::render('<x-mainboard::auth.layout title="Logowanie">x</x-mainboard::auth.layout>');
+
+        $this->assertMatchesRegularExpression('~<div class="ss-toast ss-toast--success" role="status" data-ss-toast\s+data-ss-toast-auto\s*>~', $html);
+        $this->assertStringContainsString('<p class="ss-toast__message">' . e(text('sign_in.signed_out')) . '</p>', $html);
+        $this->assertStringContainsString('const DISMISS_AFTER = 6000;', $html);
+        $this->assertStringNotContainsString('class="ss-notice"', $html);
+    }
+
+    public function test_pin_field_opens_an_on_screen_numeric_keypad_in_a_modal(): void
+    {
+        $html = Blade::render('<x-mainboard::pin-field id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" error="Zły PIN" autofocus />');
+
+        $this->assertMatchesRegularExpression('~<input class="ss-input ss-input--code" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="8" required="required" aria-invalid="true" aria-describedby="pin-error" autofocus="autofocus"\s*>~', $html);
+        $this->assertStringContainsString('aria-controls="pin-keypad" title="' . text('layout.keypad.open') . '" data-ss-keypad-open hidden>', $html);
+        $this->assertStringContainsString('<dialog class="ss-keypad" id="pin-keypad" aria-labelledby="pin-keypad-title" data-ss-keypad data-ss-keypad-for="pin">', $html);
+        $this->assertSame(10, substr_count($html, 'data-ss-keypad-digit='));
+        $this->assertStringContainsString('data-ss-keypad-backspace', $html);
+        $this->assertStringContainsString('data-ss-keypad-clear', $html);
+        $this->assertStringContainsString('<p class="ss-field__error" id="pin-error" role="alert">Zły PIN</p>', $html);
+
+        $plain = Blade::render('<x-mainboard::pin-field id="code" name="code" label="Kod" type="text" autocomplete="one-time-code" :min="6" :max="6" :keypad="false" />');
+
+        $this->assertStringNotContainsString('<dialog', $plain);
+        $this->assertStringNotContainsString('aria-invalid', $plain);
+    }
+
+    public function test_pin_steps_offer_the_keypad_and_load_its_script(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="PIN">x</x-mainboard::auth.layout>');
+
+        $this->assertStringContainsString('const init = (dialog) => {', $html);
+        $this->assertStringContainsString("dialog.querySelector('[data-ss-keypad-backspace]')", $html);
     }
 
     public function test_sign_in_page_has_the_theme_toggle_but_no_palette_switch(): void
