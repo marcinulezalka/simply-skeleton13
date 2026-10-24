@@ -4,6 +4,8 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-24
+
 ### Added
 
 - Test tekstów ekranów logowania stref (`SignInTextsTest`).
