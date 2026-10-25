@@ -49,6 +49,14 @@ class AdmiroZoneTest extends ZoneTestCase
         $this->get('/admiro/signin')->assertOk()->assertSee('name="email"', false);
     }
 
+    public function test_sign_in_shows_the_form_left_and_the_admiro_logo_on_the_brand_card_right(): void
+    {
+        $this->get('/admiro/signin')
+            ->assertOk()
+            ->assertSee('class="ss-auth ss-auth--split ss-auth--reversed"', false)
+            ->assertSee('<span class="ss-logo ss-auth__brand-logo"><svg role="img" aria-label="admiro"', false);
+    }
+
     public function test_signed_in_administrator_sees_the_dashboard(): void
     {
         $account = $this->account(AdmiroAccount::class, ['name' => 'Ewa Admin'], '159357');

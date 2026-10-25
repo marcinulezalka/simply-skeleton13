@@ -23,8 +23,9 @@ use Simplysmart\Mainboard\View\Toast;
 
 /**
  * Układ stron logowania (`auth.layout`): domyślnie jedna karta, strefa może wybrać dwie karty obok siebie
- * w ramie (marka na karcie odwróconej i wyniesionej po lewej, nagłówek i formularz na karcie tinted po prawej),
- * nieznany układ zatrzymuje konfigurację; przyciski formularzy mają ikony.
+ * w ramie (marka na karcie odwróconej i wyniesionej po lewej, nagłówek i formularz na karcie tinted po prawej)
+ * albo ich odbicie lustrzane, z własnym logo SVG (`auth.logo`) w karcie marki; nieznany układ zatrzymuje
+ * konfigurację; przyciski formularzy mają ikony.
  */
 class AuthLayoutTest extends SignInTestCase
 {
@@ -34,6 +35,28 @@ class AuthLayoutTest extends SignInTestCase
 
         $this->assertSame(AuthLayout::Centered, $factory->make([])->layout);
         $this->assertSame(AuthLayout::Split, $factory->make(['layout' => 'split'])->layout);
+        $this->assertSame(AuthLayout::SplitReversed, $factory->make(['layout' => 'split-reversed'])->layout);
+    }
+
+    public function test_reversed_split_mirrors_the_cards_and_shows_the_zone_logo(): void
+    {
+        $html = Blade::render('<x-mainboard::auth.layout title="Logowanie" :layout="$layout" logo="<svg>sklep</svg>">x</x-mainboard::auth.layout>', ['layout' => AuthLayout::SplitReversed]);
+
+        $this->assertStringContainsString('class="ss-auth ss-auth--split ss-auth--reversed"', $html);
+        $this->assertStringContainsString('<span class="ss-logo ss-auth__brand-logo"><svg>sklep</svg></span>', $html);
+        $this->assertMatchesRegularExpression('~\.ss-auth--reversed \.ss-frame\.ss-frame--row \{\s*flex-direction: row-reverse;~', CoreAssets::contents('css/app.css'));
+    }
+
+    public function test_zone_logo_must_be_an_existing_svg_file(): void
+    {
+        $factory = $this->app->make(ZoneAuthSettingsFactory::class);
+        $svg = base_path('packages/simplysmart/mainboard/public/assets/img/brand/logo.svg');
+
+        $this->assertSame($svg, $factory->make(['logo' => $svg])->logo);
+        $this->assertNull($factory->make([])->logo);
+
+        $this->expectException(InvalidArgumentException::class);
+        $factory->make(['logo' => '/no/such/logo.svg']);
     }
 
     public function test_unknown_layout_is_rejected(): void
