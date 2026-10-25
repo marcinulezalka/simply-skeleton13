@@ -13,14 +13,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Mockery;
+use Mockery\MockInterface;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
 use Simplysmart\Admiro\View\BrandNames;
 use Simplysmart\Admiro\View\CoreVersion;
+use Simplysmart\Admiro\View\ZoneLogos;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\TestCase;
 
 /**
  * Strona startowa `/` (stockowa trasa view('welcome')) pochodzi z Core: logo simplysmart, funkcje jako
  * ikona, tytuł i opis, wyróżnione nazwy simplysmart i admiro, stopka z logo Laravela i wersją admiro, teksty w języku aplikacji i style marki osadzone
- * inline, bez akcji i bez stockowej strony Laravela.
+ * inline, bez akcji i bez stockowej strony Laravela; pod marką subtelne logo zarejestrowanych stref, każde raz.
  */
 class WelcomePageTest extends TestCase
 {
@@ -40,6 +45,30 @@ class WelcomePageTest extends TestCase
         $response->assertDontSee('<form', false);
         $response->assertSee('<strong class="ss-brand-name">admiro</strong>', false);
         $response->assertDontSee('simplysmart/admiro', false);
+    }
+
+    public function test_brand_card_shows_the_logos_of_registered_zones(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<ul class="ss-welcome__zones">', false)
+            ->assertSee('<li class="ss-welcome__zone-logo">', false)
+            ->assertSee('aria-label="admiro"', false);
+    }
+
+    public function test_zone_logos_are_listed_once_each(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $logo = $this->packagePath('simplysmart/admiro', 'public/images/logo.svg');
+        /** @var ZoneRegistry&MockInterface $zones */
+        $zones = Mockery::mock(ZoneRegistry::class);
+        $zones->shouldReceive('all')->andReturn([
+            'shop' => $factory->make(['name' => 'shop', 'logo' => $logo], 'shop', __DIR__),
+            'outlet' => $factory->make(['name' => 'outlet', 'logo' => $logo], 'outlet', __DIR__),
+            'plain' => $factory->make(['name' => 'plain'], 'plain', __DIR__),
+        ]);
+
+        $this->assertSame([(string) file_get_contents($logo)], (new ZoneLogos($zones))->svgs());
     }
 
     public function test_brand_names_are_highlighted_after_escaping(): void

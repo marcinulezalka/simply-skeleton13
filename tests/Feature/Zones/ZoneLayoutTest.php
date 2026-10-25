@@ -76,6 +76,20 @@ class ZoneLayoutTest extends ZoneTestCase
         }
     }
 
+    public function test_zone_logo_defaults_to_the_sign_in_logo_and_must_be_an_svg(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $svg = $this->packagePath('simplysmart/admiro', 'public/assets/img/brand/logo.svg');
+
+        $this->assertSame($svg, $factory->make(['name' => 'shop', 'logo' => $svg], 'shop', __DIR__)->logo);
+        $this->assertSame($svg, $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'auth' => ['logo' => $svg]], 'shop', __DIR__)->logo);
+        $this->assertNull($factory->make(['name' => 'shop'], 'shop', __DIR__)->logo);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zone [shop] logo must be the path of an existing SVG file.');
+        $factory->make(['name' => 'shop', 'logo' => $this->packagePath('simplysmart/admiro', 'public/assets/css/base.css')], 'shop', __DIR__);
+    }
+
     public function test_zone_favicon_needs_known_types_with_matching_existing_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
