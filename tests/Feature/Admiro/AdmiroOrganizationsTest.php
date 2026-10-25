@@ -37,6 +37,25 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->get('/admiro/organizations')->assertOk()->assertSee('Oddział')->assertSee('Firma');
     }
 
+    public function test_short_name_is_saved_cleared_and_falls_back_to_the_full_name(): void
+    {
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+
+        $this->post('/admiro/organizations', ['name' => 'Hurtownia Materiałów Budowlanych', 'short_name' => 'HMB'])->assertRedirect('/admiro/organizations');
+        $organization = Organization::query()->where('name', 'Hurtownia Materiałów Budowlanych')->sole();
+        $this->assertSame('HMB', $organization->shortName());
+        $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()->assertSee('value="HMB"', false);
+
+        $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Hurtownia Materiałów Budowlanych', 'short_name' => '']);
+        $organization->refresh();
+        $this->assertNull($organization->short_name);
+        $this->assertSame('Hurtownia Materiałów Budowlanych', $organization->shortName());
+
+        $this->post('/admiro/organizations', ['name' => 'Firma', 'short_name' => str_repeat('x', Organization::SHORT_NAME_MAX_LENGTH + 1)]);
+        $this->assertNotSame('', $this->sessionError(Organization::SHORT_NAME));
+        $this->assertFalse(Organization::query()->where('name', 'Firma')->exists());
+    }
+
     public function test_tree_cycle_and_operator_changes_are_rejected(): void
     {
         $management = $this->app->make(OrganizationManagement::class);
