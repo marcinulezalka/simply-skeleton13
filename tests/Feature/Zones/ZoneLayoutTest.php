@@ -167,14 +167,13 @@ class ZoneLayoutTest extends ZoneTestCase
         $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_links' => [['route' => 'legal.privacy']]], 'shop', __DIR__);
     }
 
-    public function test_legal_links_and_the_theme_toggle_sit_in_the_form_card_without_the_page_footer(): void
+    public function test_legal_links_sit_in_the_form_card_without_the_page_footer_or_the_theme_toggle(): void
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
         $this->assertStringContainsString('<nav class="ss-auth__legal" aria-label="' . e(text('layout.legal')) . '">', $html);
         $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
-        $this->assertStringContainsString('<div class="ss-auth__theme">', $html);
-        $this->assertLessThan(strpos($html, '<div class="ss-auth__header">'), strpos($html, '<div class="ss-auth__theme">'));
+        $this->assertStringNotContainsString('data-ss-theme-toggle hidden', $html);
         $this->assertLessThan(strpos($html, '<nav class="ss-auth__legal"'), strpos($html, '<div class="ss-auth__header">'));
         $this->assertStringNotContainsString('<footer class="ss-footer"', $html);
         $this->assertStringNotContainsString('type="button" aria-expanded="false" aria-controls="ss-auth-footer"', $html);

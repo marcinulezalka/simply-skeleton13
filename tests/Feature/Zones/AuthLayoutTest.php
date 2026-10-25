@@ -133,12 +133,12 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString("dialog.querySelector('[data-ss-keypad-backspace]')", $html);
     }
 
-    public function test_sign_in_page_has_the_theme_toggle_but_no_palette_switch(): void
+    public function test_sign_in_page_has_neither_the_theme_toggle_nor_the_palette_switch(): void
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Logowanie" :layout="$layout">x</x-mainboard::auth.layout>', ['layout' => AuthLayout::Split]);
 
-        $this->assertStringContainsString('<div class="ss-auth__theme">', $html);
-        $this->assertStringContainsString('data-ss-theme-toggle', $html);
+        $this->assertStringNotContainsString('<div class="ss-auth__theme">', $html);
+        $this->assertStringNotContainsString('data-ss-theme-toggle hidden', $html);
         $this->assertStringNotContainsString('data-ss-palette-switch hidden', $html);
     }
 
