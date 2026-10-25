@@ -50,7 +50,7 @@ class ZoneLayoutTest extends ZoneTestCase
     public function test_zone_stylesheets_must_be_existing_css_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
-        $css = base_path('packages/simplysmart/admiro/public/assets/css/base.css');
+        $css = $this->packagePath('simplysmart/admiro', 'public/assets/css/base.css');
 
         $this->assertSame([$css], $factory->make(['name' => 'shop', 'stylesheets' => [$css]], 'shop', __DIR__)->stylesheets);
         $this->assertSame([], $factory->make(['name' => 'shop'], 'shop', __DIR__)->stylesheets);
@@ -79,7 +79,7 @@ class ZoneLayoutTest extends ZoneTestCase
     public function test_zone_favicon_needs_known_types_with_matching_existing_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
-        $svg = base_path('packages/simplysmart/admiro/public/assets/img/brand/logo.svg');
+        $svg = $this->packagePath('simplysmart/admiro', 'public/assets/img/brand/logo.svg');
         $ico = public_path('favicon.ico');
         $favicon = $factory->make(['name' => 'shop', 'favicon' => ['svg' => $svg, 'ico' => $ico]], 'shop', __DIR__)->favicon;
 
@@ -212,7 +212,7 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_zone_styles_are_embedded_after_the_core_styles(): void
     {
-        $html = Blade::render('<x-admiro::zone-styles :paths="$paths" />', ['paths' => [base_path('packages/simplysmart/admiro/public/assets/css/base.css')]]);
+        $html = Blade::render('<x-admiro::zone-styles :paths="$paths" />', ['paths' => [$this->packagePath('simplysmart/admiro', 'public/assets/css/base.css')]]);
 
         $this->assertStringContainsString('<style nonce=', $html);
         $this->assertStringContainsString('box-sizing: border-box;', $html);

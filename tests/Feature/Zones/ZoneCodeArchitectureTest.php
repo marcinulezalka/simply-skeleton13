@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Zones;
 
+use Composer\InstalledVersions;
 use Illuminate\Support\Facades\File;
 use Simplysmart\Admiro\Zones\ZoneCacheKey;
 use Tests\TestCase;
@@ -37,14 +38,20 @@ class ZoneCodeArchitectureTest extends TestCase
     {
         $violations = [];
 
-        foreach (File::allFiles(base_path('packages/simplysmart')) as $file) {
-            if ($file->getExtension() !== 'php' || preg_match('#^[^/]+/src/#', $file->getRelativePathname()) !== 1) {
+        foreach (InstalledVersions::getInstalledPackages() as $package) {
+            if (! str_starts_with($package, 'simplysmart/') || ! is_dir($this->packagePath($package, 'src'))) {
                 continue;
             }
 
-            foreach (self::FORBIDDEN as $rule => $pattern) {
-                if (preg_match($pattern, $file->getContents()) === 1) {
-                    $violations[] = "{$rule}: {$file->getRelativePathname()}";
+            foreach (File::allFiles($this->packagePath($package, 'src')) as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+
+                foreach (self::FORBIDDEN as $rule => $pattern) {
+                    if (preg_match($pattern, $file->getContents()) === 1) {
+                        $violations[] = "{$rule}: {$package}/src/{$file->getRelativePathname()}";
+                    }
                 }
             }
         }

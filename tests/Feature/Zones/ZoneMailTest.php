@@ -128,7 +128,7 @@ class ZoneMailTest extends ZoneTestCase
         $factory = $this->app->make(ZoneDefinitionFactory::class);
 
         foreach ([
-            ['brand' => ['logo' => __DIR__ . '/../../../packages/simplysmart/admiro/public/assets/img/brand/logo.svg']],
+            ['brand' => ['logo' => $this->packagePath('simplysmart/admiro', 'public/assets/img/brand/logo.svg')]],
             ['brand' => ['favicon' => MailZoneServiceProvider::LOGO]],
             ['mail' => ['views' => 'no-namespace']],
             ['mail' => ['palette' => ['accent' => 'blue']]],

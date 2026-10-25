@@ -25,11 +25,9 @@ use Tests\Feature\Zones\ZoneTestCase;
  */
 class AdmiroPermissionsTest extends ZoneTestCase
 {
-    private const string FILE = __DIR__ . '/../../../packages/simplysmart/admiro/database/seeders/permissions/admiro.json';
-
     public function test_enums_match_the_roles_file(): void
     {
-        $set = $this->app->make(PermissionFileParser::class)->parse(self::FILE);
+        $set = $this->app->make(PermissionFileParser::class)->parse($this->rolesFile());
 
         $this->assertEqualsCanonicalizing(array_column(Permission::cases(), 'value'), $set->permissions);
         $this->assertEqualsCanonicalizing(array_column(Role::cases(), 'value'), array_keys($set->roles));
@@ -44,7 +42,7 @@ class AdmiroPermissionsTest extends ZoneTestCase
         foreach (['pl', 'en'] as $locale) {
             App::setLocale($locale);
 
-            foreach (glob(dirname(self::FILE) . '/*.json') ?: [] as $file) {
+            foreach (glob(dirname($this->rolesFile()) . '/*.json') ?: [] as $file) {
                 $set = $parser->parse($file);
 
                 foreach ($set->permissions as $permission) {
@@ -58,5 +56,13 @@ class AdmiroPermissionsTest extends ZoneTestCase
                 }
             }
         }
+    }
+
+    /**
+     * Plik ról strefy administratorów w zainstalowanej paczce admiro.
+     */
+    private function rolesFile(): string
+    {
+        return $this->packagePath('simplysmart/admiro', 'database/seeders/permissions/admiro.json');
     }
 }

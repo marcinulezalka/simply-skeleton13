@@ -92,7 +92,7 @@ class AuthLayoutTest extends SignInTestCase
     public function test_zone_logo_must_be_an_existing_svg_file(): void
     {
         $factory = $this->app->make(ZoneAuthSettingsFactory::class);
-        $svg = base_path('packages/simplysmart/admiro/public/assets/img/brand/logo.svg');
+        $svg = $this->packagePath('simplysmart/admiro', 'public/assets/img/brand/logo.svg');
 
         $this->assertSame($svg, $factory->make(['logo' => $svg])->logo);
         $this->assertNull($factory->make([])->logo);
@@ -137,7 +137,7 @@ class AuthLayoutTest extends SignInTestCase
 
     public function test_banner_needs_an_existing_image_and_dark_falls_back_to_light(): void
     {
-        $light = base_path('packages/simplysmart/admiro/public/assets/img/brand/logo.svg');
+        $light = $this->packagePath('simplysmart/admiro', 'public/assets/img/brand/logo.svg');
         $brand = $this->app->make(ZoneAuthSettingsFactory::class)->make(['brand' => ['light' => $light, 'alt' => 'x']])->brand;
 
         $this->assertNotNull($brand);
