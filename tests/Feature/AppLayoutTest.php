@@ -63,6 +63,31 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('treść', $html);
     }
 
+    public function test_item_with_children_is_an_expandable_branch_with_tree_lines_open_on_a_current_child(): void
+    {
+        $render = static fn(bool $childCurrent): string => Blade::render('<x-mainboard::app.layout title="Grafik" :navigation="$navigation">x</x-mainboard::app.layout>', [
+            'navigation' => [new NavigationGroup(null, [
+                new NavigationItem('Grafik', '/grafik', 'calendar', badge: '4', children: [
+                    new NavigationItem('Dzień', '/grafik?zakres=dzien', 'calendar', current: $childCurrent),
+                    new NavigationItem('Tydzień', '/grafik?zakres=tydzien', 'calendar'),
+                ]),
+            ])],
+        ]);
+
+        $html = $render(true);
+
+        $this->assertStringContainsString('<li class="ss-sidebar__branch">', $html);
+        $this->assertMatchesRegularExpression('~<details class="ss-sidebar__tree"\s+open\s*>~', $html);
+        $this->assertStringContainsString('<summary class="ss-sidebar__link ss-sidebar__summary" title="Grafik">', $html);
+        $this->assertStringContainsString('<span class="ss-sidebar__badge">4</span>', $html);
+        $this->assertStringContainsString('class="ss-icon ss-sidebar__chevron"', $html);
+        $this->assertStringContainsString('<ul class="ss-sidebar__sublist">', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-sidebar__sublink" href="/grafik\?zakres=dzien"\s+aria-current="page"\s*>~', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-sidebar__link ss-sidebar__branch-link" href="/grafik" title="Grafik"\s+aria-current="page"\s*>~', $html);
+
+        $this->assertDoesNotMatchRegularExpression('~<details class="ss-sidebar__tree"\s+open~', $render(false));
+    }
+
     public function test_account_items_open_from_the_avatar_menu(): void
     {
         $html = Blade::render('<x-mainboard::app.layout title="Profil" :account="$account">x</x-mainboard::app.layout>', [
