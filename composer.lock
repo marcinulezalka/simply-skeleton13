@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3b4ccdfe273675571ebac06bb4a19c67",
+    "content-hash": "2897b4be015edb695830c3b09ba22d6b",
     "packages": [
         {
             "name": "blade-ui-kit/blade-icons",
@@ -3427,7 +3427,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/admiro",
-                "reference": "29723a9e2ca7e1f5f2b2e79a5840dcb8f79a152c"
+                "reference": "a6773d0a0b2c81b5b5de577dcbdfde8601194c83"
             },
             "require": {
                 "laravel/framework": "^13.0",
@@ -3436,8 +3436,14 @@
             },
             "require-dev": {
                 "laravel/pint": "^1.27",
-                "phpstan/phpstan": "^2.1"
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.5"
             },
+            "bin": [
+                "bin/simplysmart",
+                "bin/version-release",
+                "bin/composer-private"
+            ],
             "type": "library",
             "extra": {
                 "laravel": {
@@ -3451,7 +3457,15 @@
                     "Simplysmart\\Admiro\\": "src/"
                 }
             },
+            "autoload-dev": {
+                "psr-4": {
+                    "Simplysmart\\Admiro\\Tests\\": "tests/"
+                }
+            },
             "scripts": {
+                "test": [
+                    "phpunit"
+                ],
                 "lint": [
                     "pint --test"
                 ],
@@ -3472,12 +3486,17 @@
                     "role": "Founder"
                 }
             ],
-            "description": "Admiro: the administrators' zone of simplysmart applications.",
+            "description": "Admiro: the administrators' zone of simplysmart applications and the developer toolbox (SemVer releases, private packages, deployment).",
             "homepage": "https://github.com/marcinulezalka/simply-admiro",
             "keywords": [
                 "administration",
                 "admiro",
+                "changelog",
+                "deploy",
+                "release",
+                "semver",
                 "simplysmart",
+                "tools",
                 "zone"
             ],
             "support": {
@@ -3495,7 +3514,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/mainboard",
-                "reference": "f1cb4feba469b2ff63c65bb1a1c773a21ca1b136"
+                "reference": "4b8b9c1826a99ec99f2688429f454196a511dfe7"
             },
             "require": {
                 "ext-bcmath": "*",
@@ -9267,80 +9286,6 @@
             "time": "2026-10-04T05:50:08+00:00"
         },
         {
-            "name": "simplysmart/tools",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/simplysmart/tools",
-                "reference": "d8b13501cdcba78947ec2621a7e0e4ecace0be57"
-            },
-            "require": {
-                "php": "^8.4"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.27",
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^12.5"
-            },
-            "bin": [
-                "bin/simplysmart",
-                "bin/version-release",
-                "bin/composer-private"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Simplysmart\\Tools\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Simplysmart\\Tools\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ],
-                "lint": [
-                    "pint --test"
-                ],
-                "format": [
-                    "pint"
-                ],
-                "analyse": [
-                    "phpstan analyse --memory-limit=512M"
-                ]
-            },
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Marcin Ulezalka",
-                    "email": "marcin.ulezalka@simplysmart.pl",
-                    "role": "Founder"
-                }
-            ],
-            "description": "Developer toolbox for simplysmart projects and packages: SemVer release from Keep a Changelog.",
-            "homepage": "https://github.com/marcinulezalka/simply-tools",
-            "keywords": [
-                "changelog",
-                "release",
-                "semver",
-                "simplysmart",
-                "tools"
-            ],
-            "support": {
-                "issues": "https://github.com/marcinulezalka/simply-tools/issues",
-                "source": "https://github.com/marcinulezalka/simply-tools"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
             "name": "staabm/side-effects-detector",
             "version": "1.0.5",
             "source": {
@@ -9523,8 +9468,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "simplysmart/admiro": 20,
-        "simplysmart/mainboard": 20,
-        "simplysmart/tools": 20
+        "simplysmart/mainboard": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -6,9 +6,14 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Wdrożenie od zera: `vendor/bin/simplysmart deploy:fresh --confirm=<DEPLOY_SSH>` (`migrate:fresh` na serwerze — usuwa wszystkie dane — seedery i konta z `deploy.onboarding.env`; `--dry-run` pokazuje plan z ostrzeżeniem).
 - Zmienna `MAINBOARD_ORGANIZATION_BRAND_DISK` w `.env.example` (dysk plików marki organizacji, logo w e-mailach stref).
-- Wdrożenie jednym poleceniem z `simplysmart/tools`: `vendor/bin/simplysmart deploy` (sprawdza wypchnięcie repozytoriów, manifest wdrożeniowy, wysyłka plików, skrypt serwerowy przez SSH: Composer, `.env`, `git pull`, token GitHub, instalacja `--no-dev`, `APP_KEY`, migracje, role, słowniki, cache) i `vendor/bin/simplysmart deploy:onboarding` (wdrożenie plus konta pierwszej instalacji); wzory konfiguracji `infrastructure/deploy.env.example` i `infrastructure/deploy.onboarding.env.example`.
+- Wdrożenie jednym poleceniem z narzędzi deweloperskich `simplysmart/admiro`: `vendor/bin/simplysmart deploy` (sprawdza wypchnięcie repozytoriów, manifest wdrożeniowy, wysyłka plików, skrypt serwerowy przez SSH: Composer, `.env`, `git pull`, token GitHub, instalacja `--no-dev`, `APP_KEY`, migracje, role, słowniki, cache) i `vendor/bin/simplysmart deploy:onboarding` (wdrożenie plus konta pierwszej instalacji); wzory konfiguracji `infrastructure/deploy.env.example` i `infrastructure/deploy.onboarding.env.example`.
 - Wdrożenie bez katalogu `packages/` na serwerze: skrypt `composer deploy:lock` (manifest i lock z paczkami z repozytoriów git), pliki `composer.deploy.json` i `composer.deploy.lock` w `.gitignore`.
+
+### Changed
+
+- Narzędzia deweloperskie (`vendor/bin/simplysmart`, `version-release`, `composer-private`) i wspólne skille AI pochodzą z `simplysmart/admiro`; `simplysmart/tools` usunięty z `require-dev`, `boost.json` wskazuje `simplysmart/admiro`.
 
 ### Fixed
 

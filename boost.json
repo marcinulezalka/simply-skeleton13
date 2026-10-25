@@ -7,7 +7,7 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "simplysmart/tools"
+        "simplysmart/admiro"
     ],
     "sail": false,
     "skills": [

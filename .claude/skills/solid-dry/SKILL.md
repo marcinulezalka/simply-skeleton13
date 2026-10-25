@@ -42,7 +42,7 @@ The project requires PHP ^8.4 (`composer.json`). These are the mechanical conven
 
 - **`declare(strict_types=1);`** at the top of every PHP file — implicit coercion hides exactly the type bugs a signature is supposed to catch.
 - **Types everywhere:** parameters, return types, and properties. Use PHPDoc only for what the type system can't say (`list<string>`, array shapes, generics).
-- **No magic values.** A string or number that encodes a decision (a status, a section name, a default timezone) becomes an enum case or a named constant — that's DRY applied to literals. A fixed set of options is an enum, not a list of strings. `simplysmart/tools` (`src/Release/`) shows the pattern: `ReleaseBump` enum, class constants such as `Changelog::UNRELEASED_TITLE`.
+- **No magic values.** A string or number that encodes a decision (a status, a section name, a default timezone) becomes an enum case or a named constant — that's DRY applied to literals. A fixed set of options is an enum, not a list of strings. `simplysmart/admiro` (`src/Tools/Release/`) shows the pattern: `ReleaseBump` enum, class constants such as `Changelog::UNRELEASED_TITLE`.
 - **Immutability by default:** `readonly` classes or properties for value objects and results, constructor promotion for dependencies. Mutable state needs a reason.
 - **`match` over `switch`** when mapping a value to a result — it's an expression, compares strictly, and throws on an unhandled case instead of silently falling through.
 - **PER Coding Style (PSR-12 successor) via Laravel Pint `per` preset, PSR-4 autoloading:** one class per file, namespace mirrors the directory. Run `composer lint` (`composer format` fixes style and adds missing `strict_types`).
