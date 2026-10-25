@@ -15,6 +15,9 @@ namespace Tests\Feature\Legal;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
+use Mockery;
+use Mockery\MockInterface;
+use Psr\Log\LoggerInterface;
 use Simplysmart\Admiro\Cookies\CookiePolicies;
 use Simplysmart\Admiro\Enums\LegalDocumentType;
 use Simplysmart\Admiro\Legal\LegalDocumentRejected;
@@ -114,6 +117,20 @@ class LegalDocumentsTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_documents' => ['privacy', 'terms']], 'shop', __DIR__);
+    }
+
+    public function test_seeder_reports_every_policy_published_from_the_template(): void
+    {
+        config(['admiro.legal.controller' => ['name' => 'Jan Kowalski', 'email' => 'dane@example.com']]);
+        /** @var LoggerInterface&MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('warning')->times(3)->withArgs(static fn(string $message): bool => str_contains($message, 'To treść szablonowa'));
+        $this->app->instance(LoggerInterface::class, $logger);
+
+        $this->command('admiro:legal:seed')
+            ->expectsOutputToContain('Opublikowano szablon dokumentu „Polityka prywatności” z administratorem danych Jan Kowalski (dane@example.com).')
+            ->assertSuccessful();
+        $this->command('admiro:legal:seed')->doesntExpectOutputToContain('Opublikowano szablon')->assertSuccessful();
     }
 
     private function publish(LegalDocumentType $type, string $title, string $body): void
