@@ -169,7 +169,7 @@ class AppLayoutTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('~href="/polnoc"\s+aria-current~', $html);
     }
 
-    public function test_menu_footer_has_the_settings_link_and_the_logo_opening_the_simplysmart_footer_without_a_theme_toggle(): void
+    public function test_menu_has_the_settings_link_and_a_centered_logo_opening_the_full_width_simplysmart_footer(): void
     {
         $settings = new SettingsMenu([], '/ustawienia', false, '/pulpit');
         $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :settings="$settings" :legal-links="$links">x</x-mainboard::app.layout>', [
@@ -182,11 +182,19 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString("const STORAGE_KEY = 'ss-theme';", $head);
         $this->assertStringNotContainsString('data-ss-theme-toggle', $sidebar);
         $this->assertStringContainsString('<a class="ss-sidebar__link" href="/ustawienia" title="' . text('layout.settings') . '">', $sidebar);
-        $this->assertStringContainsString('<div class="ss-sidebar__brand" data-ss-footer-root="ss-sidebar__brand">', $sidebar);
-        $this->assertStringContainsString('aria-controls="ss-sidebar-footer"', $sidebar);
-        $this->assertStringContainsString('<a class="ss-link" href="/prywatnosc">Prywatność</a>', $sidebar);
-        $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $sidebar);
-        $this->assertLessThan(strpos($sidebar, 'data-ss-footer-toggle'), strpos($sidebar, 'id="ss-sidebar-footer"'));
+        $this->assertStringContainsString('<div class="ss-sidebar__brand">', $sidebar);
+        $this->assertStringContainsString('aria-controls="ss-app-footer"', $sidebar);
+        $this->assertStringContainsString('data-ss-footer-toggle', $sidebar);
+
+        $footer = substr($html, (int) strpos($html, '<footer class="ss-footer" id="ss-app-footer"'));
+
+        $this->assertStringContainsString('<div class="ss-footer-host" data-ss-footer-root="ss-footer-host">', $html);
+        $this->assertStringContainsString('<div class="ss-shell ss-footer-stage" data-ss-shell>', $html);
+        $this->assertStringContainsString('<footer class="ss-footer" id="ss-app-footer" data-ss-footer data-ss-footer-media="(min-width: 64rem)">', $html);
+        $this->assertStringContainsString('<a class="ss-link" href="/prywatnosc">Prywatność</a>', $footer);
+        $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $footer);
+        $this->assertStringContainsString('<div class="ss-footer__brand" aria-hidden="true">', $footer);
+        $this->assertSame(1, substr_count($html, 'Wysuwana stopka simplysmart'));
     }
 
     public function test_settings_mode_shows_the_settings_groups_with_a_way_back_instead_of_the_settings_link(): void
