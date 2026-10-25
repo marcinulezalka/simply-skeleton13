@@ -62,18 +62,29 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('<span class="ss-icon ss-input-wrap__icon">', $html);
     }
 
+    public function test_page_title_is_the_heading_unless_the_zone_gives_its_own(): void
+    {
+        $this->get('/alpha/signin')
+            ->assertOk()
+            ->assertSee('<title>' . text('sign_in.title') . '</title>', false);
+    }
+
     public function test_zone_can_size_the_sign_in_title_controls_and_icon_stroke_with_tokens(): void
     {
         $tokens = CoreAssets::contents('css/tokens.css');
         $css = CoreAssets::contents('css/app.css');
 
-        foreach (['--ss-auth-title-size: 1.5rem;', '--ss-auth-control-height: 2.5rem;', '--ss-icon-stroke: 1.75;', '--ss-radius-input: var(--ss-radius-control);'] as $token) {
+        foreach (['--ss-auth-title-size: 1.5rem;', '--ss-auth-control-height: 2.5rem;', '--ss-icon-stroke: 1.75;', '--ss-radius-input: var(--ss-radius-control);', '--ss-auth-header-space: 0rem;', '--ss-auth-button-height: var(--ss-auth-control-height);', '--ss-color-accent-text: var(--ss-color-accent);', '--ss-auth-legal-border: none;', '--ss-link-decoration: underline;'] as $token) {
             $this->assertStringContainsString($token, $tokens);
         }
 
         $this->assertStringContainsString('font-size: var(--ss-auth-title-size);', $css);
+        $this->assertStringContainsString('margin-bottom: var(--ss-auth-header-space);', $css);
+        $this->assertStringContainsString('border-top: var(--ss-auth-legal-border);', $css);
+        $this->assertMatchesRegularExpression('~\.ss-link \{[^}]*text-decoration: var\(--ss-link-decoration\);~', $css);
+        $this->assertMatchesRegularExpression('~\.ss-accent-text \{\s*color: var\(--ss-color-accent-text\);~', $css);
         $this->assertMatchesRegularExpression('~\.ss-auth \.ss-input \{\s*min-height: var\(--ss-auth-control-height\);~', $css);
-        $this->assertMatchesRegularExpression('~\.ss-auth \.ss-button:not\(\.ss-button--sm, \.ss-button--lg\) \{\s*--ss-button-height: var\(--ss-auth-control-height\);~', $css);
+        $this->assertMatchesRegularExpression('~\.ss-auth \.ss-button:not\(\.ss-button--sm, \.ss-button--lg\) \{\s*--ss-button-height: var\(--ss-auth-button-height\);~', $css);
         $this->assertMatchesRegularExpression('~\.ss-icon svg\[stroke\] \{\s*stroke-width: var\(--ss-icon-stroke\);~', $css);
         $this->assertStringContainsString('border-radius: var(--ss-radius-input);', $css);
     }

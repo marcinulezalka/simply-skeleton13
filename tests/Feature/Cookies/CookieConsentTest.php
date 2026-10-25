@@ -48,7 +48,34 @@ class CookieConsentTest extends TestCase
             ->assertSee('data-cookie="ss_consent"', false);
     }
 
-    public function test_sign_in_card_lists_the_cookie_policy_first_and_the_cookie_settings_last(): void
+    public function test_policy_page_lists_cookies_as_panels_with_icons_and_no_theme_toggle(): void
+    {
+        $this->publish('Polityka cookies', 'Treść');
+
+        $this->get('/cookies')
+            ->assertOk()
+            ->assertSee('<h1 class="ss-content-page__title"><span class="ss-icon ss-content-page__title-icon"', false)
+            ->assertSee('<ul class="ss-cookie-list">', false)
+            ->assertSee('<li class="ss-card ss-card--muted ss-cookie-list__item">', false)
+            ->assertDontSee('<table class="ss-table">', false)
+            ->assertSee('<button class="ss-button" type="button" data-ss-cookie-settings><span class="ss-icon ss-button__icon"', false)
+            ->assertDontSee('class="ss-theme-toggle', false);
+    }
+
+    public function test_banner_puts_accept_first_as_primary_then_reject_and_customize_as_secondary(): void
+    {
+        $this->publish('Polityka cookies', 'Treść');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSeeInOrder([
+                '<button class="ss-button ss-button--primary" type="button" data-ss-consent-action="accept">',
+                '<button class="ss-button" type="button" data-ss-consent-action="reject">',
+                '<button class="ss-button" type="button" data-ss-consent-action="customize">',
+            ], false);
+    }
+
+    public function test_sign_in_card_lists_the_zone_documents_first_then_the_cookie_policy_and_settings(): void
     {
         $render = static fn(): string => Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
@@ -63,8 +90,8 @@ class CookieConsentTest extends TestCase
 
         $this->assertNotFalse($policy);
         $this->assertNotFalse($settings);
-        $this->assertLessThan($privacy, $policy);
-        $this->assertLessThan($settings, $privacy);
+        $this->assertLessThan($policy, $privacy);
+        $this->assertLessThan($settings, $policy);
     }
 
     public function test_publishing_needs_default_language_content_and_numbers_versions(): void
@@ -145,7 +172,7 @@ class CookieConsentTest extends TestCase
         $this->postJson('/cookies/consent', ['consent_id' => (string) Str::uuid(), 'version' => 1, 'decision' => 'accepted', 'categories' => ['analytics', 'marketing', 'preferences']]);
         CookieConsent::query()->update(['recorded_at' => Carbon::now()->subDays(31)]);
 
-        $this->artisan('mainboard:cookies:prune')->assertSuccessful();
+        $this->command('mainboard:cookies:prune')->assertSuccessful();
 
         $this->assertSame(0, CookieConsent::query()->count());
     }

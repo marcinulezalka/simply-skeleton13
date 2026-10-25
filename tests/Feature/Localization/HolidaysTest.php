@@ -2,10 +2,20 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Localization;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Simplysmart\Mainboard\Enums\HolidaySource;
 use Simplysmart\Mainboard\Holidays\HolidaySync;
@@ -51,9 +61,10 @@ class HolidaysTest extends TestCase
         $this->assertSame(3, $saved);
         $holidays = Holiday::query()->orderBy('holiday_date')->get();
         $this->assertSame(['2026-11-01', '2026-11-10', '2026-11-11', '2026-12-25'], $holidays->map(fn(Holiday $holiday): string => $holiday->holiday_date->toDateString())->all());
-        $this->assertSame(HolidaySource::Manual, $holidays[1]->source);
-        $this->assertSame('Boże Narodzenie / Pierwszy dzień świąt', $holidays[3]->name);
-        $this->assertSame('Independence Day', $holidays[2]->translatedName('en'));
+        [, $company, $independence, $christmas] = $holidays->all();
+        $this->assertSame(HolidaySource::Manual, $company->source);
+        $this->assertSame('Boże Narodzenie / Pierwszy dzień świąt', $christmas->name);
+        $this->assertSame('Independence Day', $independence->translatedName('en'));
         $this->assertSame(0, $this->app->make(HolidaySync::class)->sync($this->poland, 2026));
     }
 
@@ -96,9 +107,9 @@ class HolidaysTest extends TestCase
     {
         Http::fake(['date.nager.at/*' => Http::response([$this->holiday('2027-01-01', 'Nowy Rok', "New Year's Day")])]);
 
-        $this->artisan('mainboard:holidays:sync', ['--year' => ['2027']])->assertSuccessful();
+        $this->command('mainboard:holidays:sync', ['--year' => ['2027']])->assertSuccessful();
 
-        Http::assertSent(static fn($request): bool => str_ends_with($request->url(), '/PublicHolidays/2027/PL'));
+        Http::assertSent(static fn(Request $request): bool => str_ends_with($request->url(), '/PublicHolidays/2027/PL'));
         $this->assertSame('Nowy Rok', Holiday::query()->sole()->name);
     }
 

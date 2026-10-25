@@ -14,8 +14,19 @@ declare(strict_types=1);
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Testing\PendingCommand;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    /**
+     * Komenda Artisana z asercjami (PendingCommand).
+     *
+     * @param array<string, mixed> $parameters
+     */
+    protected function command(string $command, array $parameters = []): PendingCommand
+    {
+        $pending = $this->artisan($command, $parameters);
+
+        return $pending instanceof PendingCommand ? $pending : throw new \LogicException('Artisan commands must be mocked in tests.');
+    }
 }

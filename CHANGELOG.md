@@ -4,6 +4,10 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Zmienne `LEGAL_CONTROLLER_NAME` i `LEGAL_CONTROLLER_EMAIL` w `.env.example` (administrator danych w pierwszych wersjach polityki prywatności i klauzuli RODO, `mainboard:legal:seed`).
+
 ## [0.3.0] - 2026-10-25
 
 ### Added

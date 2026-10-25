@@ -15,6 +15,7 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Simplysmart\Mainboard\Auth\AccountKey;
 use Simplysmart\Mainboard\Mail\LoginCodeMail;
 use Simplysmart\Mainboard\Mail\SecurityCodeMail;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -43,12 +44,14 @@ class RecoveryEmailTest extends SignInTestCase
 
         $this->put('/alpha/account/recovery-email', ['recovery_code' => $this->securityCode(self::RECOVERY)])
             ->assertSessionHas('status', text('account.recovery.saved'));
-        $this->assertSame(self::RECOVERY, $account->fresh()?->recoveryEmail());
+        $saved = $account->fresh();
+        $this->assertNotNull($saved);
+        $this->assertSame(self::RECOVERY, $saved->recoveryEmail());
         $this->assertNotSame(self::RECOVERY, DB::table('alpha_accounts')->where('id', $account->getKey())->value('recovery_email'));
         $this->get('/alpha/account/security')->assertSee(self::RECOVERY)->assertSee(text('audit.events.recovery_email_set'));
 
         $this->delete('/alpha/account/recovery-email')->assertSessionHas('status', text('account.recovery.removed'));
-        $this->assertNull($account->fresh()?->recoveryEmail());
+        $this->assertNull($saved->fresh()?->recoveryEmail());
         $this->get('/alpha/account/security')->assertSee(text('audit.events.recovery_email_removed'));
     }
 
@@ -79,9 +82,10 @@ class RecoveryEmailTest extends SignInTestCase
             ->assertSessionHas('status', text('sign_in.forgot_pin.recovery.done'));
 
         $fresh = $account->fresh();
-        $this->assertFalse($fresh?->hasPin());
-        $this->assertSame(1, $fresh?->authEpoch());
-        $this->assertDatabaseHas('audit_events', ['event' => 'access revoked', 'account_id' => (string) $account->getKey()]);
+        $this->assertNotNull($fresh);
+        $this->assertFalse($fresh->hasPin());
+        $this->assertSame(1, $fresh->authEpoch());
+        $this->assertDatabaseHas('audit_events', ['event' => 'access revoked', 'account_id' => (string) AccountKey::of($account)]);
     }
 
     public function test_reset_request_looks_the_same_without_a_recovery_e_mail_and_the_code_cannot_sign_in(): void

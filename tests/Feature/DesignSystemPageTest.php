@@ -224,7 +224,7 @@ class DesignSystemPageTest extends TestCase
             ->assertSee('<div class="ss-prose">', false)
             ->assertSee(text('layout.content.see_also'))
             ->assertSee('href="' . route('mainboard.design-system') . '"', false)
-            ->assertSee('data-ss-theme-toggle', false);
+            ->assertDontSee('class="ss-theme-toggle', false);
     }
 
     public function test_every_palette_overlays_the_accent_in_both_themes_and_beats_zone_tokens(): void

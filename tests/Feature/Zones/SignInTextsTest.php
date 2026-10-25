@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Zones;
 
 use Illuminate\Contracts\Translation\Translator;
@@ -18,7 +27,6 @@ class SignInTextsTest extends TestCase
     public function test_zone_texts_win_over_package_and_core_texts(): void
     {
         $translator = $this->app->make(Translator::class);
-        $this->assertTrue(method_exists($translator, 'addLines'));
         $translator->addLines(['sign_in.shop.title' => 'Sklep *otwarty*', 'sign_in.lead' => 'Wstęp paczki'], 'pl', 'shop');
         $factory = $this->app->make(ZoneDefinitionFactory::class);
         $shop = $factory->make(['name' => 'shop', 'texts' => 'shop'], 'shop', __DIR__);
