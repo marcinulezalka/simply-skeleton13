@@ -167,26 +167,18 @@ class ZoneLayoutTest extends ZoneTestCase
         $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_links' => [['route' => 'legal.privacy']]], 'shop', __DIR__);
     }
 
-    public function test_legal_links_and_the_theme_toggle_go_to_a_full_width_page_footer_opened_by_the_brand(): void
+    public function test_legal_links_and_the_theme_toggle_sit_in_the_form_card_without_the_page_footer(): void
     {
         $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
-        $this->assertStringContainsString('<div class="ss-auth__stage ss-footer-stage">', $html);
-        $this->assertStringContainsString('<footer class="ss-footer" id="ss-auth-footer" data-ss-footer data-ss-footer-media="(min-width: 56rem)">', $html);
-        $this->assertStringContainsString('data-ss-footer-root="ss-footer-host"', $html);
-        $this->assertStringContainsString('aria-controls="ss-auth-footer"', $html);
-        $this->assertLessThan(strpos($html, '<footer class="ss-footer"'), strpos($html, '<div class="ss-auth__stage ss-footer-stage">'));
+        $this->assertStringContainsString('<nav class="ss-auth__legal" aria-label="' . e(text('layout.legal')) . '">', $html);
         $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
-        $this->assertStringContainsString('<div class="ss-footer__meta">', $html);
-        $this->assertStringContainsString('<div class="ss-footer__brand" aria-hidden="true">', $html);
-        $this->assertStringContainsString(text('layout.copyright', ['year' => (string) now()->year]), $html);
-        $this->assertStringNotContainsString('<div class="ss-auth__theme">', $html);
-
-        $plain = Blade::render('<x-mainboard::auth.layout title="Start">x</x-mainboard::auth.layout>');
-
-        $this->assertStringContainsString('<div class="ss-auth__theme">', $plain);
-        $this->assertStringNotContainsString('<footer class="ss-footer"', $plain);
-        $this->assertStringNotContainsString('ss-footer-stage">', $plain);
+        $this->assertStringContainsString('<div class="ss-auth__theme">', $html);
+        $this->assertLessThan(strpos($html, '<div class="ss-auth__header">'), strpos($html, '<div class="ss-auth__theme">'));
+        $this->assertLessThan(strpos($html, '<nav class="ss-auth__legal"'), strpos($html, '<div class="ss-auth__header">'));
+        $this->assertStringNotContainsString('<footer class="ss-footer"', $html);
+        $this->assertStringNotContainsString('type="button" aria-expanded="false" aria-controls="ss-auth-footer"', $html);
+        $this->assertStringNotContainsString('<div class="ss-auth__stage', $html);
     }
 
     public function test_installed_packages_list_only_direct_dependencies_of_the_application_and_its_own_packages(): void
