@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\File;
-use Simplysmart\Mainboard\Zones\ZoneCacheKey;
+use Simplysmart\Admiro\Zones\ZoneCacheKey;
 use Tests\TestCase;
 
 /**

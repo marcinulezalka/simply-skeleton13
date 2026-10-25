@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Mainboard\Enums\TaxRateType;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
-use Simplysmart\Mainboard\Models\Dictionaries\TaxRate;
+use Simplysmart\Admiro\Enums\TaxRateType;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\Language;
+use Simplysmart\Admiro\Models\Dictionaries\TaxRate;
 
 /**
  * Słowniki w panelu: włączanie i wyłączanie krajów, języków i walut (bez wpisów domyślnych i języków

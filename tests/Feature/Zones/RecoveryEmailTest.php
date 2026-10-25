@@ -15,9 +15,9 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Simplysmart\Mainboard\Auth\AccountKey;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
-use Simplysmart\Mainboard\Mail\SecurityCodeMail;
+use Simplysmart\Admiro\Auth\AccountKey;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Mail\SecurityCodeMail;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

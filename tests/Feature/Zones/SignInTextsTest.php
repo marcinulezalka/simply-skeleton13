@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Contracts\Translation\Translator;
-use Simplysmart\Mainboard\View\AccentText;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\View\AccentText;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\TestCase;
 
 /**

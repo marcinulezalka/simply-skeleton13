@@ -14,16 +14,16 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Simplysmart\Mainboard\Enums\DesignSystemArea;
-use Simplysmart\Mainboard\Enums\DesignSystemView;
-use Simplysmart\Mainboard\Enums\Palette;
-use Simplysmart\Mainboard\Enums\Theme;
-use Simplysmart\Mainboard\View\CoreAssets;
-use Simplysmart\Mainboard\View\DesignTokens;
+use Simplysmart\Admiro\Enums\DesignSystemArea;
+use Simplysmart\Admiro\Enums\DesignSystemView;
+use Simplysmart\Admiro\Enums\Palette;
+use Simplysmart\Admiro\Enums\Theme;
+use Simplysmart\Admiro\View\CoreAssets;
+use Simplysmart\Admiro\View\DesignTokens;
 use Tests\TestCase;
 
 /**
- * Strona design systemu Core (`mainboard.design-system`): tokeny odczytane wprost z tokens.css (jasny i ciemny,
+ * Strona design systemu Core (`simplysmart.design-system`): tokeny odczytane wprost z tokens.css (jasny i ciemny,
  * z rozwiązanym var()), wszystkie ikony, nawigacja w dwóch grupach (widoki w rozwijanych obszarach DesignSystemArea),
  * gotowe widoki aplikacji z DesignSystemView,
  * brak indeksowania; wyłączona strona i nieznany widok odpowiadają 404.
@@ -32,7 +32,7 @@ class DesignSystemPageTest extends TestCase
 {
     public function test_page_shows_tokens_from_the_css_and_every_icon(): void
     {
-        $response = $this->get(route('mainboard.design-system'));
+        $response = $this->get(route('simplysmart.design-system'));
 
         $response->assertOk();
         $response->assertSee('<meta name="robots" content="noindex, nofollow">', false);
@@ -47,7 +47,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_button_panels_show_the_classic_and_the_raised_kind_with_sizes_of_buttons(): void
     {
-        $this->get(route('mainboard.design-system'))
+        $this->get(route('simplysmart.design-system'))
             ->assertOk()
             ->assertSee('<section class="ss-card" id="segmented" aria-labelledby="segmented-title">', false)
             ->assertSee('<ul class="ss-tabs ss-tabs--classic">', false)
@@ -60,7 +60,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_navigation_card_has_foundations_and_every_view(): void
     {
-        $response = $this->get(route('mainboard.design-system'));
+        $response = $this->get(route('simplysmart.design-system'));
 
         $response->assertSee(text('design_system.nav_foundations'));
         $response->assertSee(text('design_system.nav_views'));
@@ -70,7 +70,7 @@ class DesignSystemPageTest extends TestCase
         }
 
         foreach (DesignSystemView::cases() as $view) {
-            $response->assertSee(route('mainboard.design-system.view', $view), false);
+            $response->assertSee(route('simplysmart.design-system.view', $view), false);
         }
     }
 
@@ -90,7 +90,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_area_of_the_current_view_is_expanded(): void
     {
-        $html = $this->get(route('mainboard.design-system.view', DesignSystemView::List))->getContent();
+        $html = $this->get(route('simplysmart.design-system.view', DesignSystemView::List))->getContent();
 
         $this->assertIsString($html);
         $this->assertMatchesRegularExpression('~<details class="ss-ds__nav-group"\s+open\s*>\s*<summary class="ss-ds__nav-summary">' . preg_quote(DesignSystemArea::Workspace->label(), '~') . '~', $html);
@@ -111,14 +111,14 @@ class DesignSystemPageTest extends TestCase
     #[DataProvider('views')]
     public function test_every_ready_view_renders_without_indexing(DesignSystemView $view): void
     {
-        $this->get(route('mainboard.design-system.view', $view))
+        $this->get(route('simplysmart.design-system.view', $view))
             ->assertOk()
             ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
     }
 
     public function test_record_view_marks_the_current_step_in_text_too(): void
     {
-        $this->get(route('mainboard.design-system.view', DesignSystemView::Record))
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::Record))
             ->assertSee('aria-current="step"', false)
             ->assertSee('(' . text('layout.steps.current') . ')');
     }
@@ -135,10 +135,10 @@ class DesignSystemPageTest extends TestCase
     public function test_server_error_pages_offer_a_retry(): void
     {
         foreach ([DesignSystemView::Error500, DesignSystemView::Error503] as $view) {
-            $this->get(route('mainboard.design-system.view', $view))->assertOk()->assertSee(text('errors.retry'));
+            $this->get(route('simplysmart.design-system.view', $view))->assertOk()->assertSee(text('errors.retry'));
         }
 
-        $this->get(route('mainboard.design-system.view', DesignSystemView::Error404))->assertDontSee(text('errors.retry'));
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::Error404))->assertDontSee(text('errors.retry'));
     }
 
     public function test_sign_in_previews_render_the_real_screens_with_their_states(): void
@@ -151,10 +151,10 @@ class DesignSystemPageTest extends TestCase
         ];
 
         foreach ($states as $view => $message) {
-            $this->get(route('mainboard.design-system.view', $view))->assertOk()->assertSee('role="alert">' . e($message), false);
+            $this->get(route('simplysmart.design-system.view', $view))->assertOk()->assertSee('role="alert">' . e($message), false);
         }
 
-        $this->get(route('mainboard.design-system.view', DesignSystemView::SignInCode))->assertSee(text('sign_in.code_title'));
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInCode))->assertSee(text('sign_in.code_title'));
     }
 
     public function test_unknown_view_is_not_found(): void
@@ -164,10 +164,10 @@ class DesignSystemPageTest extends TestCase
 
     public function test_disabled_page_and_views_are_not_found(): void
     {
-        config(['mainboard.design_system.enabled' => false]);
+        config(['admiro.design_system.enabled' => false]);
 
-        $this->get(route('mainboard.design-system'))->assertNotFound();
-        $this->get(route('mainboard.design-system.view', DesignSystemView::Dashboard))->assertNotFound();
+        $this->get(route('simplysmart.design-system'))->assertNotFound();
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::Dashboard))->assertNotFound();
     }
 
     public function test_tokens_resolve_light_dark_values_also_inside_shadows(): void
@@ -215,7 +215,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_content_page_view_shows_the_table_of_contents_and_the_document(): void
     {
-        $this->get(route('mainboard.design-system.view', DesignSystemView::ContentPage))
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::ContentPage))
             ->assertOk()
             ->assertSee('<div class="ss-content-page">', false)
             ->assertSee('<a class="ss-toc__link" href="#administrator">' . text('design_system.demo.content.sections.administrator.title') . '</a>', false)
@@ -223,7 +223,7 @@ class DesignSystemPageTest extends TestCase
             ->assertSee('<h1 class="ss-content-page__title">' . text('design_system.demo.content.title') . '</h1>', false)
             ->assertSee('<div class="ss-prose">', false)
             ->assertSee(text('layout.content.see_also'))
-            ->assertSee('href="' . route('mainboard.design-system') . '"', false)
+            ->assertSee('href="' . route('simplysmart.design-system') . '"', false)
             ->assertDontSee('class="ss-theme-toggle', false);
     }
 
@@ -243,7 +243,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_page_shows_palettes_with_a_live_switch(): void
     {
-        $response = $this->get(route('mainboard.design-system'));
+        $response = $this->get(route('simplysmart.design-system'));
 
         $response->assertSee('<meta name="ss-palettes" content="' . implode(' ', array_column(Palette::cases(), 'value')) . '" data-scope="design-system">', false);
         $response->assertSee('id="palettes"', false);

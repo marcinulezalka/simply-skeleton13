@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Zones;
 
-use Simplysmart\Mainboard\Models\OrganizationDataModel;
+use Simplysmart\Admiro\Models\OrganizationDataModel;
 
 /**
  * Rekord organizacji w strefie alpha (tabela `alpha_notes` tworzona w teście), wiązany w trasach po `token`

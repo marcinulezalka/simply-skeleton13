@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Mainboard\Enums\LegalDocumentType;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\LegalDocument;
+use Simplysmart\Admiro\Enums\LegalDocumentType;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\LegalDocument;
 
 /**
  * Dokumenty prawne Core w panelu admiro (polityka prywatności, RODO): szkic i publikacja wersji każdego dokumentu

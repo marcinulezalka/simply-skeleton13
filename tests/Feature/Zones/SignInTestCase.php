@@ -15,7 +15,7 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
 
 /**
  * Baza testów logowania kodem i PIN-em w strefie alpha (poczta przechwytywana).

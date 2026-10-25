@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\AdmiroAccount;
-use Simplysmart\Mainboard\Auth\PinLength;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Enums\LegalDocumentType;
-use Simplysmart\Mainboard\Legal\LegalDocuments;
+use Simplysmart\Admiro\Auth\PinLength;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Enums\LegalDocumentType;
+use Simplysmart\Admiro\Legal\LegalDocuments;
 use Tests\Feature\Zones\ZoneTestCase;
 use Tests\Fixtures\Zones\AlphaAccount;
 
@@ -70,7 +70,7 @@ class AdmiroZoneTest extends ZoneTestCase
 
     public function test_sign_in_card_links_only_the_published_core_legal_documents(): void
     {
-        $this->get('/admiro/signin')->assertOk()->assertDontSee('href="' . route('mainboard.legal.privacy') . '"', false);
+        $this->get('/admiro/signin')->assertOk()->assertDontSee('href="' . route('admiro.legal.privacy') . '"', false);
 
         $documents = $this->app->make(LegalDocuments::class);
         $documents->saveDraft(LegalDocumentType::Privacy, ['pl' => ['title' => 'Polityka prywatności', 'body' => 'Treść']]);
@@ -78,8 +78,8 @@ class AdmiroZoneTest extends ZoneTestCase
 
         $this->get('/admiro/signin')
             ->assertOk()
-            ->assertSeeInOrder(['<nav class="ss-auth__legal"', 'href="' . route('mainboard.legal.privacy') . '"'], false)
-            ->assertDontSee('href="' . route('mainboard.legal.gdpr') . '"', false);
+            ->assertSeeInOrder(['<nav class="ss-auth__legal"', 'href="' . route('admiro.legal.privacy') . '"'], false)
+            ->assertDontSee('href="' . route('admiro.legal.gdpr') . '"', false);
     }
 
     public function test_sign_in_page_title_is_the_zone_name(): void

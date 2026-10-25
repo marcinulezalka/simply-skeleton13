@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Zones;
 
-use Simplysmart\Mainboard\Contracts\CurrentZone;
-use Simplysmart\Mainboard\Security\ErrorMasker;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Contracts\CurrentZone;
+use Simplysmart\Admiro\Security\ErrorMasker;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -31,7 +31,7 @@ class ErrorMaskingTest extends ZoneTestCase
 
         $this->signedIn($account, 'alpha')->get('/alpha/reports')->assertForbidden();
 
-        config(['mainboard.security.mask_errors' => true]);
+        config(['admiro.security.mask_errors' => true]);
 
         $this->signedIn($account, 'alpha')->get('/alpha/reports')->assertNotFound();
     }
@@ -48,7 +48,7 @@ class ErrorMaskingTest extends ZoneTestCase
 
     public function test_zone_overrides_the_global_setting(): void
     {
-        config(['mainboard.security.mask_errors' => true]);
+        config(['admiro.security.mask_errors' => true]);
         $zone = $this->app->make(ZoneDefinitionFactory::class)->make(['name' => 'shop', 'security' => ['mask_errors' => false]], 'shop', __DIR__);
 
         $masks = $this->app->make(CurrentZone::class)->within($zone, fn(): bool => $this->app->make(ErrorMasker::class)->masks(403));
@@ -58,7 +58,7 @@ class ErrorMaskingTest extends ZoneTestCase
 
     public function test_expired_form_still_returns_to_the_sign_in(): void
     {
-        config(['mainboard.security.mask_errors' => true]);
+        config(['admiro.security.mask_errors' => true]);
 
         $this->post('/alpha/expired-form')->assertRedirect('/alpha/signin');
     }

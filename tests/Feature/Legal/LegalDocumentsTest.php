@@ -15,13 +15,13 @@ namespace Tests\Feature\Legal;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
-use Simplysmart\Mainboard\Cookies\CookiePolicies;
-use Simplysmart\Mainboard\Enums\LegalDocumentType;
-use Simplysmart\Mainboard\Legal\LegalDocumentRejected;
-use Simplysmart\Mainboard\Legal\LegalDocuments;
-use Simplysmart\Mainboard\Models\CookiePolicy;
-use Simplysmart\Mainboard\Models\LegalDocument;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Cookies\CookiePolicies;
+use Simplysmart\Admiro\Enums\LegalDocumentType;
+use Simplysmart\Admiro\Legal\LegalDocumentRejected;
+use Simplysmart\Admiro\Legal\LegalDocuments;
+use Simplysmart\Admiro\Models\CookiePolicy;
+use Simplysmart\Admiro\Models\LegalDocument;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\TestCase;
 
@@ -67,8 +67,8 @@ class LegalDocumentsTest extends TestCase
             ->assertSee('<h2>Administrator</h2>', false)
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertSee('class="ss-link ss-content-page__back" href="' . url('/admiro/signin') . '"', false)
-            ->assertSee('<a class="ss-related" href="' . route('mainboard.legal.gdpr') . '"', false)
-            ->assertDontSee('<a class="ss-related" href="' . route('mainboard.legal.privacy') . '"', false);
+            ->assertSee('<a class="ss-related" href="' . route('admiro.legal.gdpr') . '"', false)
+            ->assertDontSee('<a class="ss-related" href="' . route('admiro.legal.privacy') . '"', false);
 
         $this->get('/rodo', ['referer' => 'https://example.org/'])
             ->assertOk()
@@ -78,10 +78,10 @@ class LegalDocumentsTest extends TestCase
 
     public function test_seeder_publishes_every_policy_once_with_the_data_controller(): void
     {
-        config(['mainboard.legal.controller' => ['name' => 'Jan Kowalski', 'email' => 'dane@example.com']]);
+        config(['admiro.legal.controller' => ['name' => 'Jan Kowalski', 'email' => 'dane@example.com']]);
 
-        $this->command('mainboard:legal:seed')->assertSuccessful();
-        $this->command('mainboard:legal:seed')->assertSuccessful();
+        $this->command('admiro:legal:seed')->assertSuccessful();
+        $this->command('admiro:legal:seed')->assertSuccessful();
 
         $privacy = LegalDocument::query()->where('document', LegalDocumentType::Privacy->value)->sole()->content('pl');
         $this->assertSame('Polityka prywatności', $privacy['title']);
@@ -97,7 +97,7 @@ class LegalDocumentsTest extends TestCase
         $policies->saveDraft(['pl' => ['title' => 'Własna polityka cookies', 'body' => 'Treść']]);
         $policies->publish('pl');
 
-        $this->command('mainboard:legal:seed')->assertSuccessful();
+        $this->command('admiro:legal:seed')->assertSuccessful();
 
         $this->assertSame(['Własna polityka cookies'], CookiePolicy::query()->get()->map(static fn(CookiePolicy $policy): string => $policy->content('pl')['title'])->all());
         $this->assertSame(2, LegalDocument::query()->count());

@@ -15,13 +15,13 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Simplysmart\Mainboard\Contracts\AccountLocator;
-use Simplysmart\Mainboard\Contracts\CurrentZone;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Database\ColumnNames;
-use Simplysmart\Mainboard\Database\History;
-use Simplysmart\Mainboard\Database\IdSlots;
-use Simplysmart\Mainboard\Database\ZoneTables;
+use Simplysmart\Admiro\Contracts\AccountLocator;
+use Simplysmart\Admiro\Contracts\CurrentZone;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Database\ColumnNames;
+use Simplysmart\Admiro\Database\History;
+use Simplysmart\Admiro\Database\IdSlots;
+use Simplysmart\Admiro\Database\ZoneTables;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

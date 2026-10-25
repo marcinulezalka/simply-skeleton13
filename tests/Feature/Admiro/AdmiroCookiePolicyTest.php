@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Str;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\CookiePolicy;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\CookiePolicy;
 
 /**
  * Polityka cookies w panelu: szkic w językach interfejsu, publikacja tylko z treścią w języku domyślnym, kolejne

@@ -19,12 +19,12 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\ViewErrorBag;
-use Simplysmart\Mainboard\Auth\SignIn\CompleteSignIn;
-use Simplysmart\Mainboard\Contracts\CodeAndPinAccount;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Database\ZoneTables;
-use Simplysmart\Mainboard\Zones\ZoneSessionConfigurator;
-use Simplysmart\Mainboard\Zones\ZoneSessionManager;
+use Simplysmart\Admiro\Auth\SignIn\CompleteSignIn;
+use Simplysmart\Admiro\Contracts\CodeAndPinAccount;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Database\ZoneTables;
+use Simplysmart\Admiro\Zones\ZoneSessionConfigurator;
+use Simplysmart\Admiro\Zones\ZoneSessionManager;
 use Tests\Fixtures\Zones\AlphaZoneServiceProvider;
 use Tests\Fixtures\Zones\BetaZoneServiceProvider;
 use Tests\Fixtures\Zones\OpenZoneServiceProvider;
@@ -35,7 +35,7 @@ use Tests\TestCase;
  * i tworzy tabele stref z logowaniem schematem Core (SQLite w pamięci). Migracje Core zakładają tabele
  * prawdziwych stref (np. admiro), bo ich paczki też są zarejestrowane.
  *
- * Strefy istnieją wyłącznie w testach; skeleton i mainboard nie mają własnej strefy.
+ * Strefy istnieją wyłącznie w testach; skeleton i rdzeń admiro nie mają własnej strefy.
  */
 abstract class ZoneTestCase extends TestCase
 {

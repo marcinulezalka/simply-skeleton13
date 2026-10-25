@@ -15,11 +15,11 @@ namespace Tests\Feature\Admiro;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Simplysmart\Mainboard\Enums\BrandAsset;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Organizations\OrganizationBranding;
-use Simplysmart\Mainboard\Organizations\OrganizationData;
-use Simplysmart\Mainboard\Organizations\OrganizationManagement;
+use Simplysmart\Admiro\Enums\BrandAsset;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Organizations\OrganizationBranding;
+use Simplysmart\Admiro\Organizations\OrganizationData;
+use Simplysmart\Admiro\Organizations\OrganizationManagement;
 
 /**
  * Marka organizacji w panelu (`organizations.manage`): wgranie, podgląd, podmiana (stary plik znika) i usunięcie

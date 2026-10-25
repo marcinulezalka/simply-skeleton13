@@ -17,9 +17,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Simplysmart\Mainboard\Database\ColumnNames;
-use Simplysmart\Mainboard\Database\History;
-use Simplysmart\Mainboard\Database\IdSlots;
+use Simplysmart\Admiro\Database\ColumnNames;
+use Simplysmart\Admiro\Database\History;
+use Simplysmart\Admiro\Database\IdSlots;
 use Tests\TestCase;
 
 /**

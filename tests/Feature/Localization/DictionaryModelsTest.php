@@ -17,12 +17,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Simplysmart\Mainboard\Enums\TaxRateType;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\CountryLanguage;
-use Simplysmart\Mainboard\Models\Dictionaries\Currency;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
-use Simplysmart\Mainboard\Models\Dictionaries\TaxRate;
+use Simplysmart\Admiro\Enums\TaxRateType;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\CountryLanguage;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Models\Dictionaries\Language;
+use Simplysmart\Admiro\Models\Dictionaries\TaxRate;
 use Tests\TestCase;
 
 /**

@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Mainboard\Audit\Events\AdminActionPerformed;
-use Simplysmart\Mainboard\Auth\AccountActor;
-use Simplysmart\Mainboard\Contracts\InterfaceLocales;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Audit\Events\AdminActionPerformed;
+use Simplysmart\Admiro\Auth\AccountActor;
+use Simplysmart\Admiro\Contracts\InterfaceLocales;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
 
 /**
  * Dziennik zdarzeń (`audit.view`, filtry) i ustawienia systemu (`settings.view` podgląd, `settings.manage`

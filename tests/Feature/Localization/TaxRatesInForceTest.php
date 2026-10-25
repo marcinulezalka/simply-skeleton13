@@ -15,10 +15,10 @@ namespace Tests\Feature\Localization;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Simplysmart\Mainboard\Enums\TaxRateType;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\TaxRate;
-use Simplysmart\Mainboard\Queries\Dictionaries\TaxRatesInForce;
+use Simplysmart\Admiro\Enums\TaxRateType;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\TaxRate;
+use Simplysmart\Admiro\Queries\Dictionaries\TaxRatesInForce;
 use Tests\TestCase;
 
 /**
@@ -55,7 +55,7 @@ class TaxRatesInForceTest extends TestCase
     public function test_application_rate_comes_from_the_default_country_or_config(): void
     {
         $rates = $this->app->make(TaxRatesInForce::class);
-        config(['mainboard.localization.vat_percent' => '21']);
+        config(['admiro.localization.vat_percent' => '21']);
 
         $this->assertSame('21', $rates->applicationPercent());
 

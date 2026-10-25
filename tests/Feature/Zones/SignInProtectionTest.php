@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Simplysmart\Mainboard\Mail\AccountLockedMail;
-use Simplysmart\Mainboard\Zones\ZoneCacheKey;
+use Simplysmart\Admiro\Mail\AccountLockedMail;
+use Simplysmart\Admiro\Zones\ZoneCacheKey;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -133,7 +133,7 @@ class SignInProtectionTest extends SignInTestCase
         $this->requestCode();
         $this->travel(25)->hours();
 
-        Artisan::call('mainboard:auth:prune');
+        Artisan::call('admiro:auth:prune');
 
         $this->assertSame(0, DB::table('alpha_login_challenges')->count());
     }

@@ -6,7 +6,11 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
-- Zmienne `LEGAL_CONTROLLER_NAME` i `LEGAL_CONTROLLER_EMAIL` w `.env.example` (administrator danych w pierwszych wersjach polityki prywatności i klauzuli RODO, `mainboard:legal:seed`).
+- Zmienne `LEGAL_CONTROLLER_NAME` i `LEGAL_CONTROLLER_EMAIL` w `.env.example` (administrator danych w pierwszych wersjach polityki prywatności i klauzuli RODO, `admiro:legal:seed`).
+
+### Changed
+
+- **BREAKING** Rdzeń aplikacji pochodzi z jednej paczki `simplysmart/admiro` (dawne `simplysmart/mainboard` scalone ze strefą administratorów): `simplysmart/mainboard` usunięty z `require`, repozytorium Composera `packages/*/*` nazywa się `simplysmart-local`. W `.env` (lokalnie i na serwerze) zmień `MAINBOARD_*` na `ADMIRO_*` (np. `ADMIRO_ORGANIZATION_BRAND_DISK`); komendy to `admiro:*` (np. `php artisan admiro:localization:seed`), nadpisania widoków i tekstów rdzenia w `resources/views/vendor/admiro/` i `lang/vendor/admiro/`.
 
 ## [0.3.0] - 2026-10-25
 

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Mail;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
-use Simplysmart\Mainboard\Security\Honeypot\FormHoneypot;
-use Simplysmart\Mainboard\Security\Honeypot\IpBans;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Security\Honeypot\FormHoneypot;
+use Simplysmart\Admiro\Security\Honeypot\IpBans;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -104,7 +104,7 @@ class HoneypotTest extends ZoneTestCase
     {
         $this->fromBot()->post('/wp-login.php');
 
-        $this->command('mainboard:honeypot:unban', ['ip' => self::BOT])->assertSuccessful();
+        $this->command('admiro:honeypot:unban', ['ip' => self::BOT])->assertSuccessful();
 
         $this->assertFalse($this->bans()->isBanned(self::BOT));
     }

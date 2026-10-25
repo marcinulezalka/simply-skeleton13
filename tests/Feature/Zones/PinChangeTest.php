@@ -16,9 +16,9 @@ namespace Tests\Feature\Zones;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Simplysmart\Mainboard\Auth\SignInLimit;
-use Simplysmart\Mainboard\Mail\PinChangedMail;
-use Simplysmart\Mainboard\Zones\ZoneCacheKey;
+use Simplysmart\Admiro\Auth\SignInLimit;
+use Simplysmart\Admiro\Mail\PinChangedMail;
+use Simplysmart\Admiro\Zones\ZoneCacheKey;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

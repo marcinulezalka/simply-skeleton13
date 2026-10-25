@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Zones;
 
-use Simplysmart\Mainboard\Models\ZoneAccount;
+use Simplysmart\Admiro\Models\ZoneAccount;
 
 /**
  * Konto strefy testowej beta.

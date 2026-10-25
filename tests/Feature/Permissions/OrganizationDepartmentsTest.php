@@ -15,14 +15,14 @@ namespace Tests\Feature\Permissions;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Database\Columns;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Organizations\OrganizationChangeRejected;
-use Simplysmart\Mainboard\Organizations\OrganizationData;
-use Simplysmart\Mainboard\Organizations\OrganizationManagement;
-use Simplysmart\Mainboard\Permissions\PermissionTables;
-use Simplysmart\Mainboard\Queries\Organizations\OrganizationUnits;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Database\Columns;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Organizations\OrganizationChangeRejected;
+use Simplysmart\Admiro\Organizations\OrganizationData;
+use Simplysmart\Admiro\Organizations\OrganizationManagement;
+use Simplysmart\Admiro\Permissions\PermissionTables;
+use Simplysmart\Admiro\Queries\Organizations\OrganizationUnits;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\AlphaNote;
 

@@ -15,7 +15,7 @@ namespace Tests\Feature\Database;
 
 use Illuminate\Support\Facades\DB;
 use OverflowException;
-use Simplysmart\Mainboard\Database\IdSlots;
+use Simplysmart\Admiro\Database\IdSlots;
 use Tests\Fixtures\Database\DemoItem;
 
 /**

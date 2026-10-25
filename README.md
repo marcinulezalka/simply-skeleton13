@@ -7,7 +7,7 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 - `public/` — document root (punkt wejścia: `public/index.php`)
 - `infrastructure/` — lokalne środowisko (vhost, PHP-FPM, SSL), poza repozytorium; zob. [infrastructure/README.md](infrastructure/README.md)
 - `packages/<vendor>/<pakiet>/` — lokalne pakiety (osobne repozytoria Git, ignorowane przez to repozytorium), podpięte przez repozytorium Composera typu `path`
-- `packages/simplysmart/admiro/` — strefa administratorów `simplysmart/admiro` (adres `/admiro`, `ADMIRO_SLUG`); pierwsze konto: `php artisan admiro:account:create <email> "<imię i nazwisko>"`, PIN administrator ustawia przy pierwszym logowaniu; dostarcza też narzędzia deweloperskie `vendor/bin/simplysmart` (wydania wersji, paczki prywatne, wdrożenie)
+- `packages/simplysmart/admiro/` — `simplysmart/admiro`: rdzeń aplikacji (baza danych, strefy, logowanie, uprawnienia, lokalizacja, UI; do wersji 0.3.0 osobny pakiet `simplysmart/mainboard`) i strefa administratorów (adres `/admiro`, `ADMIRO_SLUG`); pierwsze konto: `php artisan admiro:account:create <email> "<imię i nazwisko>"`, PIN administrator ustawia przy pierwszym logowaniu; dostarcza też narzędzia deweloperskie `vendor/bin/simplysmart` (wydania wersji, paczki prywatne, wdrożenie)
 - `CLAUDE.md` (i `AGENTS.md`, który do niego odsyła) — instrukcje dla agentów AI; blok `<laravel-boost-guidelines>` generuje Laravel Boost, a każdy pakiet ma własny `CLAUDE.md`
 - `.mcp.json`, `boost.json` — serwer MCP i konfiguracja [Laravel Boost](https://laravel.com/docs/boost) (`php artisan boost:update` odświeża wytyczne i skille). Skille w `.claude/skills/` są generowane: wspólne (`solid-dry`, `docs-after-tests`, `changelog-before-commit`) pochodzą z `simplysmart/admiro` (`resources/boost/skills/`), pozostałe z samego Boosta; zasady podziału opisuje `CLAUDE.md` (Skills Ownership)
 
@@ -19,7 +19,7 @@ Utworzono: 2026-10-19 przez [Smartboard](https://smartboard.local).
 | `.env` | produkcja — tworzony na serwerze na podstawie `.env.example` | nie |
 | `.env.example` | szablon zmiennych | tak |
 
-Adres aplikacji: lokalnie `https://skeleton13.local`, na produkcji `https://skeleton13.simplysmart.pl`. Logi trafiają do plików dziennych (`storage/logs/laravel-RRRR-MM-DD.log`, przechowywane `LOG_DAILY_DAYS` dni). Poczta wychodzi ze skrzynki `noreply@simplysmart.pl` (SMTP `smtp.dpoczta.pl:587`, wymagany STARTTLS); hasło `MAIL_PASSWORD` uzupełnij ręcznie. Maile są logowane osobno w `storage/logs/email-RRRR-MM-DD.log` (kanał `mail`, `MAIL_LOG_CHANNEL`): przy `MAIL_MAILER=log` cała treść wiadomości, przy SMTP wpis o wysyłce (odbiorcy, temat, Message-ID) — dostarcza to Core `simplysmart/mainboard` (`config/mainboard.php`, listener `LogSentMail`), bez zmian w plikach `config/` szkieletu.
+Adres aplikacji: lokalnie `https://skeleton13.local`, na produkcji `https://skeleton13.simplysmart.pl`. Logi trafiają do plików dziennych (`storage/logs/laravel-RRRR-MM-DD.log`, przechowywane `LOG_DAILY_DAYS` dni). Poczta wychodzi ze skrzynki `noreply@simplysmart.pl` (SMTP `smtp.dpoczta.pl:587`, wymagany STARTTLS); hasło `MAIL_PASSWORD` uzupełnij ręcznie. Maile są logowane osobno w `storage/logs/email-RRRR-MM-DD.log` (kanał `mail`, `MAIL_LOG_CHANNEL`): przy `MAIL_MAILER=log` cała treść wiadomości, przy SMTP wpis o wysyłce (odbiorcy, temat, Message-ID) — dostarcza to Core `simplysmart/admiro` (`config/admiro.php`, listener `LogSentMail`), bez zmian w plikach `config/` szkieletu.
 
 ### Baza danych
 
@@ -28,11 +28,11 @@ MySQL (lokalnie 8.4; na dhosting.pl MariaDB). Baza i użytkownik mają nazwę `x
 ```bash
 database/create-database.sh            # domyślnie .env.local, administrator: sudo mysql
 php artisan migrate
-php artisan mainboard:localization:seed  # słowniki: waluty, języki, kraje, stawki VAT (można powtarzać)
-php artisan mainboard:organizations:seed # organizacja operatora: zakres ról stref bez firm klientów (można powtarzać)
+php artisan admiro:localization:seed     # słowniki: waluty, języki, kraje, stawki VAT (można powtarzać)
+php artisan admiro:organizations:seed    # organizacja operatora: zakres ról stref bez firm klientów (można powtarzać)
 ```
 
-Tabele danych mają historię zmian zapisywaną triggerami MySQL (`<tabela>_history`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/mainboard/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.
+Tabele danych mają historię zmian zapisywaną triggerami MySQL (`<tabela>_history`), więc użytkownik bazy potrzebuje uprawnienia `TRIGGER`. Schemat, modele i słowniki opisuje `packages/simplysmart/admiro/docs/baza-danych.md`. Języki interfejsu wybiera administrator w słowniku języków, ale tylko spośród `APP_LOCALES`.
 
 ## Paczki prywatne
 

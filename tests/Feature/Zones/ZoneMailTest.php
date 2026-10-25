@@ -19,20 +19,20 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use LogicException;
-use Simplysmart\Mainboard\Contracts\CurrentZone;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Enums\BrandAsset;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
-use Simplysmart\Mainboard\Mail\MailBrandResolver;
-use Simplysmart\Mainboard\Mail\MailOrganization;
-use Simplysmart\Mainboard\Mail\NewTrustedDeviceMail;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Organizations\OrganizationBranding;
-use Simplysmart\Mainboard\Organizations\OrganizationData;
-use Simplysmart\Mainboard\Organizations\OrganizationManagement;
-use Simplysmart\Mainboard\Permissions\OrganizationMembership;
-use Simplysmart\Mainboard\Zones\ZoneBrand;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Contracts\CurrentZone;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Enums\BrandAsset;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Mail\MailBrandResolver;
+use Simplysmart\Admiro\Mail\MailOrganization;
+use Simplysmart\Admiro\Mail\NewTrustedDeviceMail;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Organizations\OrganizationBranding;
+use Simplysmart\Admiro\Organizations\OrganizationData;
+use Simplysmart\Admiro\Organizations\OrganizationManagement;
+use Simplysmart\Admiro\Permissions\OrganizationMembership;
+use Simplysmart\Admiro\Zones\ZoneBrand;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mime\Email;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -128,7 +128,7 @@ class ZoneMailTest extends ZoneTestCase
         $factory = $this->app->make(ZoneDefinitionFactory::class);
 
         foreach ([
-            ['brand' => ['logo' => __DIR__ . '/../../../packages/simplysmart/mainboard/public/assets/img/brand/logo.svg']],
+            ['brand' => ['logo' => __DIR__ . '/../../../packages/simplysmart/admiro/public/assets/img/brand/logo.svg']],
             ['brand' => ['favicon' => MailZoneServiceProvider::LOGO]],
             ['mail' => ['views' => 'no-namespace']],
             ['mail' => ['palette' => ['accent' => 'blue']]],

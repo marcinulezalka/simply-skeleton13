@@ -12,6 +12,6 @@ declare(strict_types=1);
  */
 
 use Illuminate\Support\Facades\Route;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
 
 Route::get('organization', fn(CurrentOrganization $organization): string => 'organization:' . $organization->id())->name('organization');

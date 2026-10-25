@@ -19,8 +19,7 @@
         "php": "^8.4",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
-        "simplysmart/admiro": "@dev",
-        "simplysmart/mainboard": "@dev"
+        "simplysmart/admiro": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -110,7 +109,7 @@
     "prefer-stable": true,
     "repositories": [
         {
-            "name": "mainboard-local",
+            "name": "simplysmart-local",
             "type": "path",
             "url": "packages/*/*",
             "options": {

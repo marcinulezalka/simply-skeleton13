@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Zones;
 
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Feature\Permissions\ZoneRolesTestCase;
 use Tests\Fixtures\Zones\AlphaAccount;
 

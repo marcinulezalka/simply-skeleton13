@@ -12,8 +12,8 @@ declare(strict_types=1);
  */
 
 use Illuminate\Support\Facades\Route;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Zones\ZonePermission;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Zones\ZonePermission;
 use Tests\Fixtures\Zones\AlphaNote;
 
 Route::get('organization', fn(CurrentOrganization $organization): string => 'organization:' . $organization->id())->name('organization');

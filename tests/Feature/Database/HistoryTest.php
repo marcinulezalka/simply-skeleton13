@@ -23,9 +23,9 @@ use Mockery;
 use Mockery\MockInterface;
 use PDO;
 use PDOException;
-use Simplysmart\Mainboard\Database\History;
-use Simplysmart\Mainboard\Database\History\MysqlHistoryTriggers;
-use Simplysmart\Mainboard\Database\HistoryTriggersRejected;
+use Simplysmart\Admiro\Database\History;
+use Simplysmart\Admiro\Database\History\MysqlHistoryTriggers;
+use Simplysmart\Admiro\Database\HistoryTriggersRejected;
 use Tests\Fixtures\Database\DemoItem;
 
 /**

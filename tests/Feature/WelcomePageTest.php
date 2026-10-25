@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Simplysmart\Mainboard\View\BrandNames;
-use Simplysmart\Mainboard\View\CoreVersion;
+use Simplysmart\Admiro\View\BrandNames;
+use Simplysmart\Admiro\View\CoreVersion;
 use Tests\TestCase;
 
 /**
  * Strona startowa `/` (stockowa trasa view('welcome')) pochodzi z Core: logo simplysmart, funkcje jako
- * ikona, tytuł i opis, wyróżnione nazwy simplysmart i mainboard, stopka z logo Laravela i wersją mainboard, teksty w języku aplikacji i style marki osadzone
+ * ikona, tytuł i opis, wyróżnione nazwy simplysmart i admiro, stopka z logo Laravela i wersją admiro, teksty w języku aplikacji i style marki osadzone
  * inline, bez akcji i bez stockowej strony Laravela.
  */
 class WelcomePageTest extends TestCase
@@ -35,17 +35,17 @@ class WelcomePageTest extends TestCase
         $response->assertSee('.ss-welcome__card', false);
         $response->assertSee('class="ss-icon ss-icon--tile"', false);
         $response->assertSee('aria-label="Laravel"', false);
-        $response->assertSee(text('welcome.mainboard_version', ['version' => CoreVersion::current()]));
+        $response->assertSee(text('welcome.admiro_version', ['version' => CoreVersion::current()]));
         $response->assertDontSee('laravel.com/docs', false);
         $response->assertDontSee('<form', false);
-        $response->assertSee('<strong class="ss-brand-name">mainboard</strong>', false);
-        $response->assertDontSee('simplysmart/mainboard', false);
+        $response->assertSee('<strong class="ss-brand-name">admiro</strong>', false);
+        $response->assertDontSee('simplysmart/admiro', false);
     }
 
     public function test_brand_names_are_highlighted_after_escaping(): void
     {
-        $html = BrandNames::highlight('Pakiet mainboard <b>x</b> & simplysmart, ale nie mainboards')->toHtml();
+        $html = BrandNames::highlight('Pakiet admiro <b>x</b> & simplysmart, ale nie admirowie')->toHtml();
 
-        $this->assertSame('Pakiet <strong class="ss-brand-name">mainboard</strong> &lt;b&gt;x&lt;/b&gt; &amp; <strong class="ss-brand-name">simplysmart</strong>, ale nie mainboards', $html);
+        $this->assertSame('Pakiet <strong class="ss-brand-name">admiro</strong> &lt;b&gt;x&lt;/b&gt; &amp; <strong class="ss-brand-name">simplysmart</strong>, ale nie admirowie', $html);
     }
 }

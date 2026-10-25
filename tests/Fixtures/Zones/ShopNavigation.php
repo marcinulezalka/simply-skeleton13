@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Zones;
 
-use Simplysmart\Mainboard\Contracts\ZoneNavigation;
-use Simplysmart\Mainboard\View\Navigation\NavigationGroup;
-use Simplysmart\Mainboard\View\Navigation\NavigationItem;
-use Simplysmart\Mainboard\View\Navigation\SearchBox;
+use Simplysmart\Admiro\Contracts\ZoneNavigation;
+use Simplysmart\Admiro\View\Navigation\NavigationGroup;
+use Simplysmart\Admiro\View\Navigation\NavigationItem;
+use Simplysmart\Admiro\View\Navigation\SearchBox;
 
 /**
  * Menu strefy testowej (neutralny przykład sklepu).

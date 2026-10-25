@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Zones;
 
-use Simplysmart\Mainboard\Contracts\CurrentZone;
+use Simplysmart\Admiro\Contracts\CurrentZone;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

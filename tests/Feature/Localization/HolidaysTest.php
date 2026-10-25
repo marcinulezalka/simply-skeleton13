@@ -17,13 +17,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Simplysmart\Mainboard\Enums\HolidaySource;
-use Simplysmart\Mainboard\Holidays\HolidaySync;
-use Simplysmart\Mainboard\Holidays\HolidaysRejected;
-use Simplysmart\Mainboard\Holidays\ManualHolidays;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\Holiday;
-use Simplysmart\Mainboard\Queries\Dictionaries\HolidaysIn;
+use Simplysmart\Admiro\Enums\HolidaySource;
+use Simplysmart\Admiro\Holidays\HolidaySync;
+use Simplysmart\Admiro\Holidays\HolidaysRejected;
+use Simplysmart\Admiro\Holidays\ManualHolidays;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\Holiday;
+use Simplysmart\Admiro\Queries\Dictionaries\HolidaysIn;
 use Tests\TestCase;
 
 /**
@@ -107,7 +107,7 @@ class HolidaysTest extends TestCase
     {
         Http::fake(['date.nager.at/*' => Http::response([$this->holiday('2027-01-01', 'Nowy Rok', "New Year's Day")])]);
 
-        $this->command('mainboard:holidays:sync', ['--year' => ['2027']])->assertSuccessful();
+        $this->command('admiro:holidays:sync', ['--year' => ['2027']])->assertSuccessful();
 
         Http::assertSent(static fn(Request $request): bool => str_ends_with($request->url(), '/PublicHolidays/2027/PL'));
         $this->assertSame('Nowy Rok', Holiday::query()->sole()->name);

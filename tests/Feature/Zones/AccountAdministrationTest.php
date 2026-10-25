@@ -17,12 +17,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use LogicException;
-use Simplysmart\Mainboard\Auth\AccessRevocationReason;
-use Simplysmart\Mainboard\Auth\AccountActor;
-use Simplysmart\Mainboard\Auth\AccountAdministration;
-use Simplysmart\Mainboard\Auth\Events\AccountAccessRevoked;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Zones\ZoneDefinition;
+use Simplysmart\Admiro\Auth\AccessRevocationReason;
+use Simplysmart\Admiro\Auth\AccountActor;
+use Simplysmart\Admiro\Auth\AccountAdministration;
+use Simplysmart\Admiro\Auth\Events\AccountAccessRevoked;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Zones\ZoneDefinition;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 

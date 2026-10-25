@@ -15,10 +15,10 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Simplysmart\Mainboard\Auth\AccountAdministration;
-use Simplysmart\Mainboard\Mail\DeviceTokenReusedMail;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
-use Simplysmart\Mainboard\Mail\NewTrustedDeviceMail;
+use Simplysmart\Admiro\Auth\AccountAdministration;
+use Simplysmart\Admiro\Mail\DeviceTokenReusedMail;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Mail\NewTrustedDeviceMail;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 
@@ -242,7 +242,7 @@ class TrustedDeviceTest extends SignInTestCase
         $this->signInRemembering();
         $this->travel(31)->days();
 
-        $this->command('mainboard:auth:prune')->assertSuccessful();
+        $this->command('admiro:auth:prune')->assertSuccessful();
 
         $this->assertDatabaseCount('alpha_trusted_devices', 0);
     }

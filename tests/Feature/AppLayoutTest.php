@@ -14,31 +14,31 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
-use Simplysmart\Mainboard\Enums\InputMask;
-use Simplysmart\Mainboard\Enums\Palette;
-use Simplysmart\Mainboard\Enums\Theme;
-use Simplysmart\Mainboard\Enums\ToastType;
-use Simplysmart\Mainboard\View\Navigation\NavigationGroup;
-use Simplysmart\Mainboard\View\Navigation\NavigationItem;
-use Simplysmart\Mainboard\View\Navigation\SearchBox;
-use Simplysmart\Mainboard\View\Navigation\SettingsMenu;
-use Simplysmart\Mainboard\View\Notifications\NotificationItem;
-use Simplysmart\Mainboard\View\Notifications\NotificationPanel;
-use Simplysmart\Mainboard\View\CoreAssets;
-use Simplysmart\Mainboard\View\Initials;
-use Simplysmart\Mainboard\View\Toast;
+use Simplysmart\Admiro\Enums\InputMask;
+use Simplysmart\Admiro\Enums\Palette;
+use Simplysmart\Admiro\Enums\Theme;
+use Simplysmart\Admiro\Enums\ToastType;
+use Simplysmart\Admiro\View\Navigation\NavigationGroup;
+use Simplysmart\Admiro\View\Navigation\NavigationItem;
+use Simplysmart\Admiro\View\Navigation\SearchBox;
+use Simplysmart\Admiro\View\Navigation\SettingsMenu;
+use Simplysmart\Admiro\View\Notifications\NotificationItem;
+use Simplysmart\Admiro\View\Notifications\NotificationPanel;
+use Simplysmart\Admiro\View\CoreAssets;
+use Simplysmart\Admiro\View\Initials;
+use Simplysmart\Admiro\View\Toast;
 use Tests\TestCase;
 
 /**
- * Layout aplikacji z menu bocznym (x-mainboard::app.layout): menu z bieżącą pozycją i licznikiem, przycisk
+ * Layout aplikacji z menu bocznym (x-admiro::app.layout): menu z bieżącą pozycją i licznikiem, przycisk
  * zwijania powiązany z menu, globalna wyszukiwarka (formularz GET, skrót „/”), menu konta pod awatarem, skrypt z nonce
- * CSP, brak indeksowania; przełącznik x-mainboard::switch.
+ * CSP, brak indeksowania; przełącznik x-admiro::switch.
  */
 class AppLayoutTest extends TestCase
 {
     public function test_renders_sidebar_menu_search_and_shell_script(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Zamówienia" :navigation="$navigation" :search="$search" :account="$account">treść</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Zamówienia" :navigation="$navigation" :search="$search" :account="$account">treść</x-admiro::app.layout>', [
             'navigation' => [
                 new NavigationGroup(null, [
                     new NavigationItem('Pulpit', '/pulpit', 'home'),
@@ -65,7 +65,7 @@ class AppLayoutTest extends TestCase
 
     public function test_item_with_children_is_an_expandable_branch_with_tree_lines_open_on_a_current_child(): void
     {
-        $render = static fn(bool $childCurrent): string => Blade::render('<x-mainboard::app.layout title="Grafik" :navigation="$navigation">x</x-mainboard::app.layout>', [
+        $render = static fn(bool $childCurrent): string => Blade::render('<x-admiro::app.layout title="Grafik" :navigation="$navigation">x</x-admiro::app.layout>', [
             'navigation' => [new NavigationGroup(null, [
                 new NavigationItem('Grafik', '/grafik', 'calendar', badge: '4', children: [
                     new NavigationItem('Dzień', '/grafik?zakres=dzien', 'calendar', current: $childCurrent),
@@ -90,7 +90,7 @@ class AppLayoutTest extends TestCase
 
     public function test_account_items_open_from_the_avatar_menu(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Profil" :account="$account">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Profil" :account="$account">x</x-admiro::app.layout>', [
             'account' => ['name' => 'Anna Nowak', 'subtitle' => 'Sklep · Kierownik', 'items' => [
                 new NavigationItem('Profil', '/profil', 'users', current: true),
                 new NavigationItem('Wyloguj', '/wyloguj', 'log-out'),
@@ -106,7 +106,7 @@ class AppLayoutTest extends TestCase
 
     public function test_bell_shows_the_unread_count_and_the_panel(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :notifications="$panel">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :notifications="$panel">x</x-admiro::app.layout>', [
             'panel' => new NotificationPanel([
                 new NotificationItem('Nowe zamówienie', '08:41', 'Zamówienie 1001', '/zamowienia/1001', true),
                 new NotificationItem('Eksport gotowy', 'wczoraj', unread: false),
@@ -128,7 +128,7 @@ class AppLayoutTest extends TestCase
             ['type' => 'unknown', 'message' => 'pominięty'],
         ]);
 
-        $html = Blade::render('<x-mainboard::app.layout title="Zamówienia">x</x-mainboard::app.layout>');
+        $html = Blade::render('<x-admiro::app.layout title="Zamówienia">x</x-admiro::app.layout>');
 
         $this->assertMatchesRegularExpression('~class="ss-toast ss-toast--success" role="status" data-ss-toast\s+data-ss-toast-auto~', $html);
         $this->assertMatchesRegularExpression('~class="ss-toast ss-toast--danger" role="alert" data-ss-toast\s+>~', $html);
@@ -148,7 +148,7 @@ class AppLayoutTest extends TestCase
 
     public function test_switch_is_a_labelled_checkbox_with_its_hint(): void
     {
-        $html = Blade::render('<x-mainboard::switch id="reminders" label="Przypomnienia" hint="Dzień przed terminem." :checked="true" name="reminders" />');
+        $html = Blade::render('<x-admiro::switch id="reminders" label="Przypomnienia" hint="Dzień przed terminem." :checked="true" name="reminders" />');
 
         $this->assertStringContainsString('<label class="ss-switch" for="reminders">', $html);
         $this->assertMatchesRegularExpression('~<input type="checkbox" role="switch" id="reminders" name="reminders" checked\s+aria-describedby="reminders-hint"\s*>~', $html);
@@ -157,7 +157,7 @@ class AppLayoutTest extends TestCase
 
     public function test_sidebar_starts_with_identity_and_actions_and_ends_with_a_subtle_logo(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :account="$account" :notifications="$panel">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :account="$account" :notifications="$panel">x</x-admiro::app.layout>', [
             'account' => ['name' => 'dr Anna Nowak', 'subtitle' => 'Sklep'],
             'panel' => new NotificationPanel([]),
         ]);
@@ -173,7 +173,7 @@ class AppLayoutTest extends TestCase
 
     public function test_context_switch_sits_between_collapse_and_bell_and_marks_the_current_context(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :contexts="$contexts" :notifications="$panel">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :contexts="$contexts" :notifications="$panel">x</x-admiro::app.layout>', [
             'contexts' => [new NavigationGroup('Sklep', [
                 new NavigationItem('Sklep Centrum', '/centrum', 'building', current: true),
                 new NavigationItem('Sklep Północ', '/polnoc', 'building'),
@@ -197,7 +197,7 @@ class AppLayoutTest extends TestCase
     public function test_menu_has_the_settings_link_and_a_centered_logo_opening_the_full_width_simplysmart_footer(): void
     {
         $settings = new SettingsMenu([], '/ustawienia', false, '/pulpit');
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :settings="$settings" :legal-links="$links">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :settings="$settings" :legal-links="$links">x</x-admiro::app.layout>', [
             'settings' => $settings,
             'links' => [['url' => '/prywatnosc', 'label' => 'Prywatność']],
         ]);
@@ -225,7 +225,7 @@ class AppLayoutTest extends TestCase
     public function test_settings_mode_shows_the_settings_groups_with_a_way_back_instead_of_the_settings_link(): void
     {
         $group = new NavigationGroup('Konto', [new NavigationItem('Profil', '/profil', 'user', true)]);
-        $html = Blade::render('<x-mainboard::app.layout title="Profil" :navigation="$navigation" :settings="$settings">x</x-mainboard::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Profil" :navigation="$navigation" :settings="$settings">x</x-admiro::app.layout>', [
             'navigation' => [$group],
             'settings' => new SettingsMenu([$group], '/profil', true, '/pulpit'),
         ]);
@@ -247,7 +247,7 @@ class AppLayoutTest extends TestCase
 
     public function test_theme_toggle_offers_every_theme_with_a_label(): void
     {
-        $html = Blade::render('<x-mainboard::theme-toggle />');
+        $html = Blade::render('<x-admiro::theme-toggle />');
 
         foreach (Theme::cases() as $theme) {
             $this->assertStringContainsString('<button class="ss-theme-toggle__option" type="button" aria-pressed="false" title="' . $theme->label() . '" data-ss-theme="' . $theme->value . '">', $html);
@@ -259,7 +259,7 @@ class AppLayoutTest extends TestCase
 
     public function test_layout_applies_the_palettes_without_showing_a_palette_switch(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit" :palettes="$palettes" palette-scope="shop">x</x-mainboard::app.layout>', ['palettes' => [Palette::Teal, Palette::Blue]]);
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :palettes="$palettes" palette-scope="shop">x</x-admiro::app.layout>', ['palettes' => [Palette::Teal, Palette::Blue]]);
         $head = substr($html, 0, (int) strpos($html, '</head>'));
 
         $this->assertStringContainsString('<meta name="ss-palettes" content="teal blue" data-scope="shop">', $head);
@@ -269,7 +269,7 @@ class AppLayoutTest extends TestCase
 
     public function test_palette_switch_offers_the_base_colors_and_the_given_palettes(): void
     {
-        $html = Blade::render('<x-mainboard::palette-switch :palettes="$palettes" />', ['palettes' => [Palette::Teal, Palette::Blue]]);
+        $html = Blade::render('<x-admiro::palette-switch :palettes="$palettes" />', ['palettes' => [Palette::Teal, Palette::Blue]]);
 
         $this->assertStringContainsString('data-ss-palette-switch hidden>', $html);
         $this->assertStringContainsString('data-ss-palette="">', $html);
@@ -281,14 +281,14 @@ class AppLayoutTest extends TestCase
 
     public function test_page_without_palettes_has_no_palette_meta(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit">x</x-admiro::app.layout>');
 
         $this->assertStringNotContainsString('<meta name="ss-palettes"', $html);
     }
 
     public function test_every_page_applies_the_saved_theme_before_rendering(): void
     {
-        $html = Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>');
+        $html = Blade::render('<x-admiro::page title="Start">x</x-admiro::page>');
 
         $this->assertLessThan(strpos($html, '</head>'), strpos($html, "const STORAGE_KEY = 'ss-theme';"));
     }
@@ -296,12 +296,12 @@ class AppLayoutTest extends TestCase
     public function test_pagination_shows_the_page_and_its_neighbours_only_with_several_pages(): void
     {
         $paginator = new \Illuminate\Pagination\LengthAwarePaginator([1], 30, 10, 2, ['path' => '/lista']);
-        $html = Blade::render('<x-mainboard::pagination :paginator="$paginator" />', ['paginator' => $paginator]);
+        $html = Blade::render('<x-admiro::pagination :paginator="$paginator" />', ['paginator' => $paginator]);
 
         $this->assertStringContainsString('href="/lista?page=1" rel="prev"', $html);
         $this->assertStringContainsString('href="/lista?page=3" rel="next"', $html);
         $this->assertStringContainsString(text('layout.pagination.page', ['page' => '2', 'pages' => '3']), $html);
-        $this->assertSame('', trim(Blade::render('<x-mainboard::pagination :paginator="$paginator" />', ['paginator' => new \Illuminate\Pagination\LengthAwarePaginator([1], 1, 10, 1)])));
+        $this->assertSame('', trim(Blade::render('<x-admiro::pagination :paginator="$paginator" />', ['paginator' => new \Illuminate\Pagination\LengthAwarePaginator([1], 1, 10, 1)])));
     }
 
     public function test_mask_completeness_counts_the_digits_of_the_pattern(): void
@@ -315,7 +315,7 @@ class AppLayoutTest extends TestCase
 
     public function test_signature_pad_has_a_canvas_a_hidden_value_and_its_script_once(): void
     {
-        $html = Blade::render('<x-mainboard::signature-pad id="a" name="first" label="Pierwszy" value="data:image/png;base64,AAA=" /><x-mainboard::signature-pad id="b" name="second" label="Drugi" error="Błąd" />');
+        $html = Blade::render('<x-admiro::signature-pad id="a" name="first" label="Pierwszy" value="data:image/png;base64,AAA=" /><x-admiro::signature-pad id="b" name="second" label="Drugi" error="Błąd" />');
 
         $this->assertStringContainsString('<canvas class="ss-signature__canvas" id="a"', $html);
         $this->assertStringContainsString('<input type="hidden" name="first" value="data:image/png;base64,AAA=" data-ss-signature-value>', $html);
@@ -333,7 +333,7 @@ class AppLayoutTest extends TestCase
 
     public function test_input_shows_an_icon_mask_format_and_error(): void
     {
-        $html = Blade::render('<x-mainboard::input id="tax" label="NIP" :mask="$mask" name="tax_id" error="Niepoprawny NIP." />', ['mask' => InputMask::TaxId]);
+        $html = Blade::render('<x-admiro::input id="tax" label="NIP" :mask="$mask" name="tax_id" error="Niepoprawny NIP." />', ['mask' => InputMask::TaxId]);
 
         $this->assertStringContainsString('<div class="ss-input-wrap ss-input-wrap--icon">', $html);
         $this->assertStringContainsString('class="ss-icon ss-input-wrap__icon"', $html);
@@ -350,7 +350,7 @@ class AppLayoutTest extends TestCase
 
     public function test_input_without_icon_or_mask_is_a_plain_field(): void
     {
-        $html = Blade::render('<x-mainboard::input id="name" label="Nazwa" name="name" value="Sklep" />');
+        $html = Blade::render('<x-admiro::input id="name" label="Nazwa" name="name" value="Sklep" />');
 
         $this->assertStringContainsString('<div class="ss-input-wrap">', $html);
         $this->assertStringNotContainsString('data-ss-mask', $html);
@@ -359,7 +359,7 @@ class AppLayoutTest extends TestCase
 
     public function test_layout_without_search_and_account_has_no_search_form(): void
     {
-        $html = Blade::render('<x-mainboard::app.layout title="Pulpit">x</x-mainboard::app.layout>');
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit">x</x-admiro::app.layout>');
 
         $this->assertStringNotContainsString('role="search"', $html);
         $this->assertStringNotContainsString('class="ss-avatar"', $html);

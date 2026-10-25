@@ -16,12 +16,12 @@ namespace Tests\Feature\Console;
 use Illuminate\Database\Console\Migrations\FreshCommand;
 use Illuminate\Database\Console\WipeCommand;
 use ReflectionProperty;
-use Simplysmart\Mainboard\Providers\SecurityServiceProvider;
+use Simplysmart\Admiro\Providers\SecurityServiceProvider;
 use Tests\TestCase;
 
 /**
  * Blokada destrukcyjnych komend bazy z Core: na produkcji `migrate:fresh` i `db:wipe` są zablokowane, a zdejmuje je
- * tylko `mainboard.security.allow_destructive_commands` (ustawiane przez `deploy:fresh` dla jednego procesu).
+ * tylko `admiro.security.allow_destructive_commands` (ustawiane przez `deploy:fresh` dla jednego procesu).
  * Komendy nie są uruchamiane — test czyta tylko flagę blokady Laravela po starcie providera.
  */
 class DestructiveCommandsTest extends TestCase
@@ -59,13 +59,13 @@ class DestructiveCommandsTest extends TestCase
 
     public function test_flag_is_off_by_default(): void
     {
-        $this->assertFalse(config('mainboard.security.allow_destructive_commands'));
+        $this->assertFalse(config('admiro.security.allow_destructive_commands'));
     }
 
     private function bootSecurityIn(string $environment, bool $allowDestructiveCommands): void
     {
         $this->app['env'] = $environment;
-        config(['mainboard.security.allow_destructive_commands' => $allowDestructiveCommands]);
+        config(['admiro.security.allow_destructive_commands' => $allowDestructiveCommands]);
 
         $this->app->call([new SecurityServiceProvider($this->app), 'boot']);
     }

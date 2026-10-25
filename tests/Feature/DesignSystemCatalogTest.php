@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use LogicException;
-use Simplysmart\Mainboard\Contracts\DesignSystemCatalog;
-use Simplysmart\Mainboard\Enums\DesignSystemView;
-use Simplysmart\Mainboard\View\Demo\DemoInvoices;
+use Simplysmart\Admiro\Contracts\DesignSystemCatalog;
+use Simplysmart\Admiro\Enums\DesignSystemView;
+use Simplysmart\Admiro\View\Demo\DemoInvoices;
 use Tests\TestCase;
 
 /**
@@ -43,8 +43,8 @@ class DesignSystemCatalogTest extends TestCase
             'invoices' => DemoInvoices::all(),
         ]);
 
-        $this->get(route('mainboard.design-system.view', 'package-view'))->assertOk();
-        $this->get(route('mainboard.design-system'))->assertSee(route('mainboard.design-system.view', 'package-view'), false);
+        $this->get(route('simplysmart.design-system.view', 'package-view'))->assertOk();
+        $this->get(route('simplysmart.design-system'))->assertSee(route('simplysmart.design-system.view', 'package-view'), false);
     }
 
     public function test_duplicate_view_key_is_rejected(): void

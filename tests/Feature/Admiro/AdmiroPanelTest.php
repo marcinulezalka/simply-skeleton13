@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\AdmiroAccount;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Models\ZoneAccount;
-use Simplysmart\Mainboard\Permissions\PermissionFiles;
-use Simplysmart\Mainboard\Permissions\ZoneOwnerProvisioners;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Models\ZoneAccount;
+use Simplysmart\Admiro\Permissions\PermissionFiles;
+use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 
@@ -153,7 +153,7 @@ class AdmiroPanelTest extends AdmiroTestCase
         $provisioners->addDefault('beta');
         $provisioners->addDefault('alpha');
         $this->app->make(PermissionFiles::class)->add(__DIR__ . '/../../Fixtures/Permissions');
-        $this->command('mainboard:permissions:sync', ['--zone' => 'beta'])->assertSuccessful();
+        $this->command('admiro:permissions:sync', ['--zone' => 'beta'])->assertSuccessful();
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
         $this->get('/admiro/owners/create')->assertOk()->assertSee('beta');

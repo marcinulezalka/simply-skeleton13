@@ -14,14 +14,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Permissions;
 
 use Illuminate\Support\Facades\DB;
-use Simplysmart\Mainboard\Database\IdSlots;
-use Simplysmart\Mainboard\Models\Permissions\Permission;
-use Simplysmart\Mainboard\Models\Permissions\Role;
-use Simplysmart\Mainboard\Permissions\PermissionFileParser;
-use Simplysmart\Mainboard\Permissions\PermissionFiles;
-use Simplysmart\Mainboard\Permissions\PermissionTables;
-use Simplysmart\Mainboard\Permissions\RoleDelegation;
-use Simplysmart\Mainboard\Permissions\ZoneRoleSynchronizer;
+use Simplysmart\Admiro\Database\IdSlots;
+use Simplysmart\Admiro\Models\Permissions\Permission;
+use Simplysmart\Admiro\Models\Permissions\Role;
+use Simplysmart\Admiro\Permissions\PermissionFileParser;
+use Simplysmart\Admiro\Permissions\PermissionFiles;
+use Simplysmart\Admiro\Permissions\PermissionTables;
+use Simplysmart\Admiro\Permissions\RoleDelegation;
+use Simplysmart\Admiro\Permissions\ZoneRoleSynchronizer;
 
 /**
  * Zapis ról z plików: idempotentny, z id z puli seederów, role globalne dla guardu strefy, przywracanie
@@ -70,10 +70,10 @@ class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
     {
         $this->extraPermission();
 
-        $this->command('mainboard:permissions:sync', ['--zone' => 'alpha'])->assertSuccessful();
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha'])->assertSuccessful();
         $this->assertNotNull(Permission::query()->where('name', 'legacy.view')->first());
 
-        $this->command('mainboard:permissions:sync', ['--zone' => 'alpha', '--prune' => true])
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha', '--prune' => true])
             ->expectsConfirmation('Usunąć uprawnienia i role, których nie ma w plikach?', 'yes')
             ->assertSuccessful();
         $this->assertNull(Permission::query()->where('name', 'legacy.view')->first());
@@ -84,10 +84,10 @@ class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
         $this->extraPermission();
         $this->app['env'] = 'production';
 
-        $this->command('mainboard:permissions:sync', ['--zone' => 'alpha', '--prune' => true])->assertFailed();
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha', '--prune' => true])->assertFailed();
         $this->assertNotNull(Permission::query()->where('name', 'legacy.view')->first());
 
-        $this->command('mainboard:permissions:sync', ['--zone' => 'alpha', '--prune' => true, '--force' => true])->assertSuccessful();
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha', '--prune' => true, '--force' => true])->assertSuccessful();
         $this->assertNull(Permission::query()->where('name', 'legacy.view')->first());
     }
 
@@ -99,7 +99,7 @@ class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
         Role::query()->where('name', 'analyst')->firstOrFail()->delete();
 
         try {
-            $this->command('mainboard:permissions:sync')->assertFailed();
+            $this->command('admiro:permissions:sync')->assertFailed();
         } finally {
             unlink($path);
         }
@@ -107,7 +107,7 @@ class ZoneRoleSynchronizerTest extends ZoneRolesTestCase
         $this->assertNull(Role::query()->where('name', 'analyst')->first());
     }
 
-    private function sync(string $zone): \Simplysmart\Mainboard\Permissions\ZoneRoleSyncReport
+    private function sync(string $zone): \Simplysmart\Admiro\Permissions\ZoneRoleSyncReport
     {
         return $this->app->make(ZoneRoleSynchronizer::class)->sync($this->app->make(PermissionFileParser::class)->parse(self::FIXTURES . "/{$zone}.json"));
     }

@@ -17,9 +17,9 @@ use Illuminate\Contracts\Foundation\Application;
 use InvalidArgumentException;
 use LogicException;
 use Illuminate\Routing\Router;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Http\Middleware\RecordHistoryActor;
-use Simplysmart\Mainboard\Zones\ZoneServiceProvider;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Http\Middleware\RecordHistoryActor;
+use Simplysmart\Admiro\Zones\ZoneServiceProvider;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -78,7 +78,7 @@ class ZoneRegistrationTest extends ZoneTestCase
 
     public function test_a_zone_slug_cannot_be_a_locale_code(): void
     {
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
 
         $this->expectException(InvalidArgumentException::class);
 

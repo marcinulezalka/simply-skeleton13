@@ -14,16 +14,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Permissions;
 
 use Illuminate\Support\Facades\DB;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Contracts\ZonePermissionChecker;
-use Simplysmart\Mainboard\Contracts\ZoneRegistry;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Models\ZoneAccount;
-use Simplysmart\Mainboard\Permissions\OrganizationMembership;
-use Simplysmart\Mainboard\Permissions\PermissionTables;
-use Simplysmart\Mainboard\Permissions\RoleAssignmentDenied;
-use Simplysmart\Mainboard\Permissions\RoleDelegation;
-use Simplysmart\Mainboard\Permissions\ZoneRoleAssignment;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Contracts\ZonePermissionChecker;
+use Simplysmart\Admiro\Contracts\ZoneRegistry;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Models\ZoneAccount;
+use Simplysmart\Admiro\Permissions\OrganizationMembership;
+use Simplysmart\Admiro\Permissions\PermissionTables;
+use Simplysmart\Admiro\Permissions\RoleAssignmentDenied;
+use Simplysmart\Admiro\Permissions\RoleDelegation;
+use Simplysmart\Admiro\Permissions\ZoneRoleAssignment;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 

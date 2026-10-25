@@ -20,7 +20,7 @@ use InvalidArgumentException;
 use Tests\TestCase;
 
 /**
- * Helpery local_* z Core (mainboard): formatowanie kwot, liczb, dat, dni i miesięcy według języka.
+ * Helpery local_* z Core (admiro): formatowanie kwot, liczb, dat, dni i miesięcy według języka.
  */
 class LocalHelpersTest extends TestCase
 {
@@ -34,7 +34,7 @@ class LocalHelpersTest extends TestCase
 
     public function test_money_default_currency_comes_from_config(): void
     {
-        config(['mainboard.locale.currency' => 'EUR']);
+        config(['admiro.locale.currency' => 'EUR']);
 
         $this->assertSame(Number::currency(10, 'EUR', 'pl'), local_money(10, locale: 'pl'));
     }

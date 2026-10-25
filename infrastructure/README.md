@@ -54,4 +54,4 @@ i `composer.deploy.lock`, wysyła je na serwer i uruchamia tam przez SSH skrypt 
 tylko z `--confirm=` równym `DEPLOY_SSH`.
 
 Na serwerze musi istnieć repozytorium aplikacji (`git clone`) z plikiem `.env`. Szczegóły: `docs/narzedzia.md` w `simplysmart/admiro`
-i `docs/wdrozenie.md` w mainboard.
+i `docs/wdrozenie.md` w admiro.

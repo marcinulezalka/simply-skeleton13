@@ -16,20 +16,20 @@ namespace Tests\Feature\Localization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
-use Simplysmart\Mainboard\Database\History;
-use Simplysmart\Mainboard\Database\IdSlots;
-use Simplysmart\Mainboard\Database\Seeders\LocalizationData;
-use Simplysmart\Mainboard\Enums\Continent;
-use Simplysmart\Mainboard\Enums\TaxRateType;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\Currency;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
-use Simplysmart\Mainboard\Models\Dictionaries\TaxRate;
-use Simplysmart\Mainboard\Queries\Dictionaries\DefaultEntries;
+use Simplysmart\Admiro\Database\History;
+use Simplysmart\Admiro\Database\IdSlots;
+use Simplysmart\Admiro\Database\Seeders\LocalizationData;
+use Simplysmart\Admiro\Enums\Continent;
+use Simplysmart\Admiro\Enums\TaxRateType;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Models\Dictionaries\Language;
+use Simplysmart\Admiro\Models\Dictionaries\TaxRate;
+use Simplysmart\Admiro\Queries\Dictionaries\DefaultEntries;
 use Tests\TestCase;
 
 /**
- * Komenda mainboard:localization:seed: słowniki z ICU, wartości domyślne z configu, powiązania krajów,
+ * Komenda admiro:localization:seed: słowniki z ICU, wartości domyślne z configu, powiązania krajów,
  * stawki VAT, ponowne uruchomienie bez zmian i z zachowaniem wyborów administratora.
  */
 class LocalizationSeederTest extends TestCase
@@ -40,7 +40,7 @@ class LocalizationSeederTest extends TestCase
     {
         parent::setUp();
 
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
         $this->seedLocalization();
     }
 
@@ -76,7 +76,7 @@ class LocalizationSeederTest extends TestCase
         $this->assertSame(0, Language::query()->whereNull('flag_icon')->count());
 
         $icons = Country::query()->pluck('flag_icon')->merge(Language::query()->pluck('flag_icon'))->unique();
-        $missing = $icons->reject(static fn(?string $icon): bool => str_contains(Blade::render('<x-mainboard::flag :icon="$icon" />', ['icon' => $icon]), 'id="flag-icons-' . $icon . '"'));
+        $missing = $icons->reject(static fn(?string $icon): bool => str_contains(Blade::render('<x-admiro::flag :icon="$icon" />', ['icon' => $icon]), 'id="flag-icons-' . $icon . '"'));
         $this->assertSame([], $missing->values()->all());
     }
 
@@ -146,7 +146,7 @@ class LocalizationSeederTest extends TestCase
 
     private function seedLocalization(): void
     {
-        $this->artisan('mainboard:localization:seed');
+        $this->artisan('admiro:localization:seed');
     }
 
     /**

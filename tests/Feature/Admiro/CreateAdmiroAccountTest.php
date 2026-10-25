@@ -16,7 +16,7 @@ namespace Tests\Feature\Admiro;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Simplysmart\Admiro\Models\AdmiroAccount;
 use Illuminate\Testing\PendingCommand;
-use Simplysmart\Mainboard\Contracts\CurrentZone;
+use Simplysmart\Admiro\Contracts\CurrentZone;
 use Tests\TestCase;
 
 /**

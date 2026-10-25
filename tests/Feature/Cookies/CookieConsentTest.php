@@ -16,14 +16,14 @@ namespace Tests\Feature\Cookies;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Simplysmart\Mainboard\Contracts\ConsentScripts;
-use Simplysmart\Mainboard\Cookies\ConsentScript;
+use Simplysmart\Admiro\Contracts\ConsentScripts;
+use Simplysmart\Admiro\Cookies\ConsentScript;
 use Illuminate\Support\Facades\Blade;
-use Simplysmart\Mainboard\Cookies\CookiePolicies;
-use Simplysmart\Mainboard\Cookies\CookiePolicyRejected;
-use Simplysmart\Mainboard\Enums\ConsentDecision;
-use Simplysmart\Mainboard\Enums\CookieCategory;
-use Simplysmart\Mainboard\Models\CookieConsent;
+use Simplysmart\Admiro\Cookies\CookiePolicies;
+use Simplysmart\Admiro\Cookies\CookiePolicyRejected;
+use Simplysmart\Admiro\Enums\ConsentDecision;
+use Simplysmart\Admiro\Enums\CookieCategory;
+use Simplysmart\Admiro\Models\CookieConsent;
 use Tests\TestCase;
 
 /**
@@ -77,7 +77,7 @@ class CookieConsentTest extends TestCase
 
     public function test_sign_in_card_lists_the_zone_documents_first_then_the_cookie_policy_and_settings(): void
     {
-        $render = static fn(): string => Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
+        $render = static fn(): string => Blade::render('<x-admiro::auth.layout title="Start" :legal-links="$links">x</x-admiro::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
         $this->assertStringNotContainsString('data-ss-cookie-settings>', $render());
 
@@ -145,7 +145,7 @@ class CookieConsentTest extends TestCase
 
     public function test_consent_endpoint_is_throttled(): void
     {
-        config(['mainboard.cookies.throttle_per_minute' => 2]);
+        config(['admiro.cookies.throttle_per_minute' => 2]);
         $this->publish('Polityka', 'Treść');
         $payload = ['consent_id' => (string) Str::uuid(), 'version' => 1, 'decision' => 'rejected', 'categories' => []];
 
@@ -167,17 +167,17 @@ class CookieConsentTest extends TestCase
 
     public function test_old_consents_are_pruned(): void
     {
-        config(['mainboard.cookies.retention_days' => 30]);
+        config(['admiro.cookies.retention_days' => 30]);
         $this->publish('Polityka', 'Treść');
         $this->postJson('/cookies/consent', ['consent_id' => (string) Str::uuid(), 'version' => 1, 'decision' => 'accepted', 'categories' => ['analytics', 'marketing', 'preferences']]);
         CookieConsent::query()->update(['recorded_at' => Carbon::now()->subDays(31)]);
 
-        $this->command('mainboard:cookies:prune')->assertSuccessful();
+        $this->command('admiro:cookies:prune')->assertSuccessful();
 
         $this->assertSame(0, CookieConsent::query()->count());
     }
 
-    private function publish(string $title, string $body): \Simplysmart\Mainboard\Models\CookiePolicy
+    private function publish(string $title, string $body): \Simplysmart\Admiro\Models\CookiePolicy
     {
         $policies = $this->app->make(CookiePolicies::class);
         $policies->saveDraft(['pl' => ['title' => $title, 'body' => $body]]);

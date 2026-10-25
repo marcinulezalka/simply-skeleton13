@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Facades\App;
-use Simplysmart\Admiro\Enums\Permission;
-use Simplysmart\Admiro\Enums\Role;
-use Simplysmart\Mainboard\Permissions\PermissionFileParser;
+use Simplysmart\Admiro\Panel\Enums\Permission;
+use Simplysmart\Admiro\Panel\Enums\Role;
+use Simplysmart\Admiro\Permissions\PermissionFileParser;
 use Tests\Feature\Zones\ZoneTestCase;
 
 /**
@@ -25,7 +25,7 @@ use Tests\Feature\Zones\ZoneTestCase;
  */
 class AdmiroPermissionsTest extends ZoneTestCase
 {
-    private const string FILE = __DIR__ . '/../../../packages/simplysmart/mainboard/database/seeders/permissions/admiro.json';
+    private const string FILE = __DIR__ . '/../../../packages/simplysmart/admiro/database/seeders/permissions/admiro.json';
 
     public function test_enums_match_the_roles_file(): void
     {

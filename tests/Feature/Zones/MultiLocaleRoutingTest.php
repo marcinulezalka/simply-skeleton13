@@ -21,7 +21,7 @@ class MultiLocaleRoutingTest extends ZoneTestCase
 {
     protected function configureZones(): void
     {
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
     }
 
     public function test_locale_comes_from_the_prefix(): void

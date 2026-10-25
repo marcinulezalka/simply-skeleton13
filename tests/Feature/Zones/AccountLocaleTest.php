@@ -23,7 +23,7 @@ class AccountLocaleTest extends SignInTestCase
 {
     protected function configureZones(): void
     {
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
     }
 
     public function test_chosen_language_opens_the_profile_and_the_next_sign_in_in_it(): void

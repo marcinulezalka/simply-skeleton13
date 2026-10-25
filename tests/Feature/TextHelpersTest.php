@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 /**
- * Helpery text_* z Core (mainboard): kaskada paczka strefy → mainboard → skeleton → klucz, bez fallbacku.
+ * Helpery text_* z Core (admiro): kaskada paczka strefy → admiro → skeleton → klucz, bez fallbacku.
  *
  * Paczkę strefy udaje namespace "zone" w katalogu tymczasowym, a skeleton tymczasowy katalog lang/.
  */

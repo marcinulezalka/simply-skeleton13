@@ -17,14 +17,14 @@ use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 /**
- * Komponent x-mainboard::flag: flaga z kodu flag_icon jako dekoracyjny inline SVG, neutralna flaga „xx”
+ * Komponent x-admiro::flag: flaga z kodu flag_icon jako dekoracyjny inline SVG, neutralna flaga „xx”
  * dla nieznanego kodu i nic bez kodu.
  */
 class FlagComponentTest extends TestCase
 {
     public function test_renders_the_flat_flag_as_a_decorative_svg(): void
     {
-        $html = Blade::render('<x-mainboard::flag icon="pl" />');
+        $html = Blade::render('<x-admiro::flag icon="pl" />');
 
         $this->assertStringContainsString('id="flag-icons-pl"', $html);
         $this->assertStringContainsString('class="ss-flag"', $html);
@@ -33,11 +33,11 @@ class FlagComponentTest extends TestCase
 
     public function test_unknown_icon_falls_back_to_the_flat_placeholder(): void
     {
-        $this->assertStringContainsString('id="flag-icons-xx"', Blade::render('<x-mainboard::flag icon="zz" />'));
+        $this->assertStringContainsString('id="flag-icons-xx"', Blade::render('<x-admiro::flag icon="zz" />'));
     }
 
     public function test_renders_nothing_without_an_icon(): void
     {
-        $this->assertSame('', trim(Blade::render('<x-mainboard::flag :icon="null" />')));
+        $this->assertSame('', trim(Blade::render('<x-admiro::flag :icon="null" />')));
     }
 }

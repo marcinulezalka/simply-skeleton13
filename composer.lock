@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2897b4be015edb695830c3b09ba22d6b",
+    "content-hash": "da43754508d06e94504f8d9cd71614bd",
     "packages": [
         {
             "name": "blade-ui-kit/blade-icons",
@@ -3427,12 +3427,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/simplysmart/admiro",
-                "reference": "a6773d0a0b2c81b5b5de577dcbdfde8601194c83"
+                "reference": "a25c788ead13a35535e6485587f6a899ad7f533c"
             },
             "require": {
+                "ext-bcmath": "*",
                 "laravel/framework": "^13.0",
+                "outhebox/blade-flags": "^1.7",
                 "php": "^8.4",
-                "simplysmart/mainboard": "@dev"
+                "spatie/laravel-permission": "^8.3"
             },
             "require-dev": {
                 "laravel/pint": "^1.27",
@@ -3448,14 +3450,18 @@
             "extra": {
                 "laravel": {
                     "providers": [
-                        "Simplysmart\\Admiro\\AdmiroServiceProvider"
+                        "Simplysmart\\Admiro\\AdmiroServiceProvider",
+                        "Simplysmart\\Admiro\\Panel\\PanelServiceProvider"
                     ]
                 }
             },
             "autoload": {
                 "psr-4": {
                     "Simplysmart\\Admiro\\": "src/"
-                }
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
             },
             "autoload-dev": {
                 "psr-4": {
@@ -3486,95 +3492,25 @@
                     "role": "Founder"
                 }
             ],
-            "description": "Admiro: the administrators' zone of simplysmart applications and the developer toolbox (SemVer releases, private packages, deployment).",
+            "description": "Admiro: the core of simplysmart applications (database, zones, sign-in, permissions, localization, UI), the administrators' zone and the developer toolbox (SemVer releases, private packages, deployment).",
             "homepage": "https://github.com/marcinulezalka/simply-admiro",
             "keywords": [
                 "administration",
                 "admiro",
                 "changelog",
+                "core",
+                "database",
                 "deploy",
+                "modular",
                 "release",
                 "semver",
                 "simplysmart",
                 "tools",
-                "zone"
+                "zones"
             ],
             "support": {
                 "issues": "https://github.com/marcinulezalka/simply-admiro/issues",
                 "source": "https://github.com/marcinulezalka/simply-admiro"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "simplysmart/mainboard",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/simplysmart/mainboard",
-                "reference": "4b8b9c1826a99ec99f2688429f454196a511dfe7"
-            },
-            "require": {
-                "ext-bcmath": "*",
-                "laravel/framework": "^13.0",
-                "outhebox/blade-flags": "^1.7",
-                "php": "^8.4",
-                "spatie/laravel-permission": "^8.3"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.27",
-                "phpstan/phpstan": "^2.1"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Simplysmart\\Mainboard\\MainboardServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Simplysmart\\Mainboard\\": "src/"
-                },
-                "files": [
-                    "src/helpers.php"
-                ]
-            },
-            "scripts": {
-                "lint": [
-                    "pint --test"
-                ],
-                "format": [
-                    "pint"
-                ],
-                "analyse": [
-                    "phpstan analyse --memory-limit=512M"
-                ]
-            },
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Marcin Ulezalka",
-                    "email": "marcin.ulezalka@simplysmart.pl",
-                    "role": "Founder"
-                }
-            ],
-            "description": "Modular mainboard for simplysmart applications: connect modules, management workspaces, and beyond.",
-            "homepage": "https://github.com/marcinulezalka/simply-mainboard",
-            "keywords": [
-                "mainboard",
-                "modular",
-                "modules",
-                "simplysmart"
-            ],
-            "support": {
-                "issues": "https://github.com/marcinulezalka/simply-mainboard/issues",
-                "source": "https://github.com/marcinulezalka/simply-mainboard"
             },
             "transport-options": {
                 "symlink": true,
@@ -9467,8 +9403,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "simplysmart/admiro": 20,
-        "simplysmart/mainboard": 20
+        "simplysmart/admiro": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

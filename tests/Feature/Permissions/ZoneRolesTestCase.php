@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Permissions;
 
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Database\Seeders\OperatorOrganizationSeeder;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Models\ZoneAccount;
-use Simplysmart\Mainboard\Permissions\OrganizationMembership;
-use Simplysmart\Mainboard\Permissions\PermissionFileParser;
-use Simplysmart\Mainboard\Permissions\PermissionFiles;
-use Simplysmart\Mainboard\Permissions\ZoneRoleSynchronizer;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Database\Seeders\OperatorOrganizationSeeder;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Models\ZoneAccount;
+use Simplysmart\Admiro\Permissions\OrganizationMembership;
+use Simplysmart\Admiro\Permissions\PermissionFileParser;
+use Simplysmart\Admiro\Permissions\PermissionFiles;
+use Simplysmart\Admiro\Permissions\ZoneRoleSynchronizer;
 use Tests\Feature\Zones\ZoneTestCase;
 
 /**

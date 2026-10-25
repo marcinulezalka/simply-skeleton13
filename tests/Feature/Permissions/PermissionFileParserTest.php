@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Permissions;
 
-use Simplysmart\Mainboard\Permissions\InvalidPermissionFile;
-use Simplysmart\Mainboard\Permissions\PermissionFileParser;
-use Simplysmart\Mainboard\Permissions\PermissionFiles;
+use Simplysmart\Admiro\Permissions\InvalidPermissionFile;
+use Simplysmart\Admiro\Permissions\PermissionFileParser;
+use Simplysmart\Admiro\Permissions\PermissionFiles;
 
 /**
  * Walidacja plików ról przed zapisem: strefa, role obowiązkowe, nazwy, odwołania do uprawnień i ról, cykle

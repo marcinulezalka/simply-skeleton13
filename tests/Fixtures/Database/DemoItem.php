@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Database;
 
-use Simplysmart\Mainboard\Models\Concerns\HasI18n;
-use Simplysmart\Mainboard\Models\DataModel;
+use Simplysmart\Admiro\Models\Concerns\HasI18n;
+use Simplysmart\Admiro\Models\DataModel;
 
 /**
  * Model testowy na tabeli `demo_items` (kolumny standardowe z tłumaczeniami i jedna kolumna domenowa).

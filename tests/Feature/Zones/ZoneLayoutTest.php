@@ -15,11 +15,11 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
-use Simplysmart\Mainboard\Enums\FaviconType;
-use Simplysmart\Mainboard\Enums\Palette;
-use Simplysmart\Mainboard\Queries\InstalledPackages;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
-use Simplysmart\Mainboard\Zones\ZoneNavigations;
+use Simplysmart\Admiro\Enums\FaviconType;
+use Simplysmart\Admiro\Enums\Palette;
+use Simplysmart\Admiro\Queries\InstalledPackages;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
 
@@ -50,7 +50,7 @@ class ZoneLayoutTest extends ZoneTestCase
     public function test_zone_stylesheets_must_be_existing_css_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
-        $css = base_path('packages/simplysmart/mainboard/public/assets/css/base.css');
+        $css = base_path('packages/simplysmart/admiro/public/assets/css/base.css');
 
         $this->assertSame([$css], $factory->make(['name' => 'shop', 'stylesheets' => [$css]], 'shop', __DIR__)->stylesheets);
         $this->assertSame([], $factory->make(['name' => 'shop'], 'shop', __DIR__)->stylesheets);
@@ -79,7 +79,7 @@ class ZoneLayoutTest extends ZoneTestCase
     public function test_zone_favicon_needs_known_types_with_matching_existing_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
-        $svg = base_path('packages/simplysmart/mainboard/public/assets/img/brand/logo.svg');
+        $svg = base_path('packages/simplysmart/admiro/public/assets/img/brand/logo.svg');
         $ico = public_path('favicon.ico');
         $favicon = $factory->make(['name' => 'shop', 'favicon' => ['svg' => $svg, 'ico' => $ico]], 'shop', __DIR__)->favicon;
 
@@ -101,7 +101,7 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_page_renders_favicon_links_in_the_head(): void
     {
-        $html = Blade::render('<x-mainboard::page title="Start" :favicons="$favicons">x</x-mainboard::page>', ['favicons' => [
+        $html = Blade::render('<x-admiro::page title="Start" :favicons="$favicons">x</x-admiro::page>', ['favicons' => [
             ['rel' => 'icon', 'href' => '/shop/favicon/ico?v=1', 'type' => null, 'sizes' => 'any'],
             ['rel' => 'icon', 'href' => '/shop/favicon/svg?v=2', 'type' => 'image/svg+xml', 'sizes' => null],
             ['rel' => 'apple-touch-icon', 'href' => '/shop/favicon/apple?v=3', 'type' => null, 'sizes' => null],
@@ -111,7 +111,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('<link rel="icon" href="/shop/favicon/ico?v=1" sizes="any">', $head);
         $this->assertStringContainsString('<link rel="icon" href="/shop/favicon/svg?v=2" type="image/svg+xml">', $head);
         $this->assertStringContainsString('<link rel="apple-touch-icon" href="/shop/favicon/apple?v=3">', $head);
-        $this->assertStringNotContainsString('<link rel="icon"', Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>'));
+        $this->assertStringNotContainsString('<link rel="icon"', Blade::render('<x-admiro::page title="Start">x</x-admiro::page>'));
     }
 
     public function test_zone_fonts_need_valid_faces_with_existing_woff2_files(): void
@@ -148,11 +148,11 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_page_renders_font_faces_in_the_head_with_the_csp_nonce(): void
     {
-        $html = Blade::render('<x-mainboard::page title="Start" :font-faces="$fontFaces">x</x-mainboard::page>', ['fontFaces' => '@font-face { font-family: "Brand Sans"; }']);
+        $html = Blade::render('<x-admiro::page title="Start" :font-faces="$fontFaces">x</x-admiro::page>', ['fontFaces' => '@font-face { font-family: "Brand Sans"; }']);
         $head = substr($html, 0, (int) strpos($html, '</head>'));
 
         $this->assertMatchesRegularExpression('/<style nonce="[^"]*">@font-face \{ font-family: "Brand Sans"; \}<\/style>/', $head);
-        $this->assertStringNotContainsString('@font-face', Blade::render('<x-mainboard::page title="Start">x</x-mainboard::page>'));
+        $this->assertStringNotContainsString('@font-face', Blade::render('<x-admiro::page title="Start">x</x-admiro::page>'));
     }
 
     public function test_zone_legal_links_need_a_route_and_a_label_and_only_apply_to_zones_with_sign_in(): void
@@ -169,7 +169,7 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_legal_links_sit_in_the_form_card_without_the_page_footer_or_the_theme_toggle(): void
     {
-        $html = Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
+        $html = Blade::render('<x-admiro::auth.layout title="Start" :legal-links="$links">x</x-admiro::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
 
         $this->assertStringContainsString('<nav class="ss-auth__legal" aria-label="' . e(text('layout.legal')) . '">', $html);
         $this->assertStringContainsString('<a class="ss-link" href="/shop/privacy">Privacy</a>', $html);
@@ -212,11 +212,11 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_zone_styles_are_embedded_after_the_core_styles(): void
     {
-        $html = Blade::render('<x-mainboard::zone-styles :paths="$paths" />', ['paths' => [base_path('packages/simplysmart/mainboard/public/assets/css/base.css')]]);
+        $html = Blade::render('<x-admiro::zone-styles :paths="$paths" />', ['paths' => [base_path('packages/simplysmart/admiro/public/assets/css/base.css')]]);
 
         $this->assertStringContainsString('<style nonce=', $html);
         $this->assertStringContainsString('box-sizing: border-box;', $html);
-        $this->assertSame('', trim(Blade::render('<x-mainboard::zone-styles :paths="[]" />')));
+        $this->assertSame('', trim(Blade::render('<x-admiro::zone-styles :paths="[]" />')));
     }
 
     public function test_zone_without_navigation_still_has_the_account_menu_and_sign_out(): void

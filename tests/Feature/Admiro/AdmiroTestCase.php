@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\AdmiroAccount;
-use Simplysmart\Mainboard\Contracts\InterfaceLocales;
-use Simplysmart\Mainboard\Database\Seeders\OperatorOrganizationSeeder;
-use Simplysmart\Mainboard\Models\Dictionaries\Country;
-use Simplysmart\Mainboard\Models\Dictionaries\Currency;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Permissions\SystemRoleGrant;
+use Simplysmart\Admiro\Contracts\InterfaceLocales;
+use Simplysmart\Admiro\Database\Seeders\OperatorOrganizationSeeder;
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Models\Dictionaries\Language;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Permissions\SystemRoleGrant;
 use Tests\Feature\Zones\ZoneTestCase;
 
 /**
@@ -34,7 +34,7 @@ abstract class AdmiroTestCase extends ZoneTestCase
         parent::setUp();
 
         $this->seed(OperatorOrganizationSeeder::class);
-        $this->command('mainboard:permissions:sync', ['--zone' => 'admiro'])->assertSuccessful();
+        $this->command('admiro:permissions:sync', ['--zone' => 'admiro'])->assertSuccessful();
     }
 
     /**
@@ -50,7 +50,7 @@ abstract class AdmiroTestCase extends ZoneTestCase
 
     protected function seedDictionaries(): void
     {
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
 
         foreach (['PL' => ['POL', '616'], 'DE' => ['DEU', '276']] as $alpha2 => [$alpha3, $numeric]) {
             (new Country())->forceFill(['name' => $alpha2, 'alpha_code_2' => $alpha2, 'alpha_code_3' => $alpha3, 'numeric_code' => $numeric, 'is_active' => true, 'is_default' => $alpha2 === 'PL'])->save();

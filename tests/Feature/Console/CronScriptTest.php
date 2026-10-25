@@ -18,7 +18,7 @@ use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 /**
- * Skrypt crona z `mainboard:cron:script`: harmonogram i worker kolejki z wartości `mainboard.cron.*`, czas pracy
+ * Skrypt crona z `admiro:cron:script`: harmonogram i worker kolejki z wartości `admiro.cron.*`, czas pracy
  * workera z interwału, bez workera przy kolejce `sync`, plik wykonywalny o poprawnej składni, bez sekretów.
  */
 class CronScriptTest extends TestCase
@@ -30,7 +30,7 @@ class CronScriptTest extends TestCase
         parent::setUp();
 
         $this->path = sys_get_temp_dir() . '/cron-' . bin2hex(random_bytes(8)) . '.sh';
-        config(['queue.default' => 'database', 'mainboard.cron' => ['php' => 'php84', 'interval_minutes' => 1, 'queue_tries' => 3, 'queue_worker' => true]]);
+        config(['queue.default' => 'database', 'admiro.cron' => ['php' => 'php84', 'interval_minutes' => 1, 'queue_tries' => 3, 'queue_worker' => true]]);
     }
 
     protected function tearDown(): void
@@ -55,7 +55,7 @@ class CronScriptTest extends TestCase
 
     public function test_longer_interval_keeps_the_worker_waiting_until_the_next_run(): void
     {
-        config(['mainboard.cron.interval_minutes' => 5, 'mainboard.cron.queue_tries' => 2]);
+        config(['admiro.cron.interval_minutes' => 5, 'admiro.cron.queue_tries' => 2]);
 
         $this->assertStringContainsString("\nphp84 artisan queue:work --max-time=290 --tries=2\n", $this->generate());
     }
@@ -73,7 +73,7 @@ class CronScriptTest extends TestCase
         config(['queue.default' => 'sync']);
         $this->assertStringNotContainsString('queue:work', $this->generate());
 
-        config(['queue.default' => 'database', 'mainboard.cron.queue_worker' => false]);
+        config(['queue.default' => 'database', 'admiro.cron.queue_worker' => false]);
         $this->assertStringNotContainsString('queue:work', $this->generate());
     }
 
@@ -90,7 +90,7 @@ class CronScriptTest extends TestCase
     {
         $this->cronScript(['--php' => 'php84; rm -rf /', '--output' => $this->path])->assertFailed();
 
-        config(['mainboard.cron.interval_minutes' => 0]);
+        config(['admiro.cron.interval_minutes' => 0]);
         $this->cronScript(['--output' => $this->path])->assertFailed();
 
         $this->assertFileDoesNotExist($this->path);
@@ -101,7 +101,7 @@ class CronScriptTest extends TestCase
      */
     private function cronScript(array $options): PendingCommand
     {
-        $pending = $this->artisan('mainboard:cron:script', $options);
+        $pending = $this->artisan('admiro:cron:script', $options);
 
         return $pending instanceof PendingCommand ? $pending : throw new \LogicException('Artisan commands must be mocked in tests.');
     }

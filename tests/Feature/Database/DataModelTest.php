@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Database;
 
 use Illuminate\Support\Facades\Schema;
-use Simplysmart\Mainboard\Database\ColumnNames;
-use Simplysmart\Mainboard\Models\MainModel;
+use Simplysmart\Admiro\Database\ColumnNames;
+use Simplysmart\Admiro\Models\MainModel;
 use Tests\Fixtures\Database\DemoItem;
 
 /**

@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Organizations\OrganizationData;
-use Simplysmart\Mainboard\Organizations\OrganizationManagement;
-use Simplysmart\Mainboard\Permissions\OrganizationMembership;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Organizations\OrganizationData;
+use Simplysmart\Admiro\Organizations\OrganizationManagement;
+use Simplysmart\Admiro\Permissions\OrganizationMembership;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

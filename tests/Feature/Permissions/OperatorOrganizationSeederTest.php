@@ -15,11 +15,11 @@ namespace Tests\Feature\Permissions;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\PendingCommand;
-use Simplysmart\Mainboard\Models\Organization;
+use Simplysmart\Admiro\Models\Organization;
 use Tests\TestCase;
 
 /**
- * Organizacja operatora aplikacji (`mainboard:organizations:seed`): stałe id, nazwa z app.name, idempotentnie.
+ * Organizacja operatora aplikacji (`admiro:organizations:seed`): stałe id, nazwa z app.name, idempotentnie.
  */
 class OperatorOrganizationSeederTest extends TestCase
 {
@@ -53,7 +53,7 @@ class OperatorOrganizationSeederTest extends TestCase
 
     private function seedOperator(): void
     {
-        $command = $this->artisan('mainboard:organizations:seed');
+        $command = $this->artisan('admiro:organizations:seed');
         $this->assertInstanceOf(PendingCommand::class, $command);
         $command->assertSuccessful()->run();
     }

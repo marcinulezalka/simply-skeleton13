@@ -17,13 +17,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Simplysmart\Mainboard\Enums\ExchangeRateSource;
-use Simplysmart\Mainboard\ExchangeRates\ExchangeRateSync;
-use Simplysmart\Mainboard\ExchangeRates\ExchangeRatesRejected;
-use Simplysmart\Mainboard\ExchangeRates\ManualExchangeRates;
-use Simplysmart\Mainboard\Models\Dictionaries\Currency;
-use Simplysmart\Mainboard\Models\Dictionaries\ExchangeRate;
-use Simplysmart\Mainboard\Queries\Dictionaries\ExchangeRatesOn;
+use Simplysmart\Admiro\Enums\ExchangeRateSource;
+use Simplysmart\Admiro\ExchangeRates\ExchangeRateSync;
+use Simplysmart\Admiro\ExchangeRates\ExchangeRatesRejected;
+use Simplysmart\Admiro\ExchangeRates\ManualExchangeRates;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Models\Dictionaries\ExchangeRate;
+use Simplysmart\Admiro\Queries\Dictionaries\ExchangeRatesOn;
 use Tests\TestCase;
 
 /**
@@ -80,8 +80,8 @@ class ExchangeRatesTest extends TestCase
     {
         Http::fake(['api.nbp.pl/*' => Http::response('error', 500)]);
 
-        $this->command('mainboard:exchange-rates:sync', ['--from' => '2026-10-20', '--to' => '2026-10-23'])->assertFailed();
-        $this->command('mainboard:exchange-rates:sync', ['--from' => '2026-10-24', '--to' => '2026-10-23'])->assertExitCode(2);
+        $this->command('admiro:exchange-rates:sync', ['--from' => '2026-10-20', '--to' => '2026-10-23'])->assertFailed();
+        $this->command('admiro:exchange-rates:sync', ['--from' => '2026-10-24', '--to' => '2026-10-23'])->assertExitCode(2);
     }
 
     public function test_rate_before_a_date_skips_days_without_publication_and_converts_amounts(): void

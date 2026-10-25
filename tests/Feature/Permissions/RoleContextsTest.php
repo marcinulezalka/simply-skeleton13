@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Permissions;
 
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Contracts\CurrentRole;
-use Simplysmart\Mainboard\Permissions\RoleSelector;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Contracts\CurrentRole;
+use Simplysmart\Admiro\Permissions\RoleSelector;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 

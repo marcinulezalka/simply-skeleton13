@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\DB;
-use Simplysmart\Mainboard\Audit\Events\AdminActionPerformed;
-use Simplysmart\Mainboard\Auth\AccountActor;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Queries\Audit\AuditLog;
-use Simplysmart\Mainboard\View\AuditEventLabel;
-use Simplysmart\Mainboard\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Audit\Events\AdminActionPerformed;
+use Simplysmart\Admiro\Auth\AccountActor;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Queries\Audit\AuditLog;
+use Simplysmart\Admiro\View\AuditEventLabel;
+use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -85,7 +85,7 @@ class AuditLogTest extends SignInTestCase
         $this->travel(366)->days();
         event(new AdminActionPerformed('new', new AccountActor('beta', 7)));
 
-        $this->command('mainboard:audit:prune')->assertSuccessful();
+        $this->command('admiro:audit:prune')->assertSuccessful();
 
         $this->assertSame(['new'], AuditEvent::query()->pluck('event')->all());
     }

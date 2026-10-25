@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Permissions;
 
 use LogicException;
-use Simplysmart\Mainboard\Contracts\CurrentOrganization;
-use Simplysmart\Mainboard\Models\Organization;
-use Simplysmart\Mainboard\Permissions\OwnerData;
-use Simplysmart\Mainboard\Permissions\ZoneOwnerProvisioners;
+use Simplysmart\Admiro\Contracts\CurrentOrganization;
+use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Permissions\OwnerData;
+use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
 

@@ -16,9 +16,9 @@ namespace Tests\Feature\Database;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
-use Simplysmart\Mainboard\Database\Columns;
-use Simplysmart\Mainboard\Database\History;
-use Simplysmart\Mainboard\Database\IdSlots;
+use Simplysmart\Admiro\Database\Columns;
+use Simplysmart\Admiro\Database\History;
+use Simplysmart\Admiro\Database\IdSlots;
 use Tests\Fixtures\Database\DemoItem;
 use Tests\TestCase;
 

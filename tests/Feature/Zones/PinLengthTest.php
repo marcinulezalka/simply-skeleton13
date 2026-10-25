@@ -16,8 +16,8 @@ namespace Tests\Feature\Zones;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Simplysmart\Mainboard\Auth\PinLength;
-use Simplysmart\Mainboard\Auth\PinRules;
+use Simplysmart\Admiro\Auth\PinLength;
+use Simplysmart\Admiro\Auth\PinRules;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

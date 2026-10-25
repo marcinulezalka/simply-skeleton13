@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Facades\Http;
-use Simplysmart\Mainboard\Enums\ExchangeRateSource;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\Dictionaries\ExchangeRate;
+use Simplysmart\Admiro\Enums\ExchangeRateSource;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\Dictionaries\ExchangeRate;
 
 /**
  * Kursy walut w panelu: lista z filtrem dla `settings.view`, pobranie z NBP, kurs ręczny i usunięcie tylko kursu

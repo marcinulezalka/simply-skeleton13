@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Facades\Http;
-use Simplysmart\Mainboard\Enums\HolidaySource;
-use Simplysmart\Mainboard\Models\AuditEvent;
-use Simplysmart\Mainboard\Models\Dictionaries\Holiday;
+use Simplysmart\Admiro\Enums\HolidaySource;
+use Simplysmart\Admiro\Models\AuditEvent;
+use Simplysmart\Admiro\Models\Dictionaries\Holiday;
 
 /**
  * Dni wolne w panelu: lista kraju w roku dla `settings.view`, pobranie z kalendarza świąt, dzień wolny ręczny

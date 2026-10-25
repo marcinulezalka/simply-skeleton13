@@ -16,8 +16,8 @@ namespace Tests\Feature\Zones;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
-use Simplysmart\Mainboard\Auth\SignIn\IssueSignInCode;
-use Simplysmart\Mainboard\Mail\LoginCodeMail;
+use Simplysmart\Admiro\Auth\SignIn\IssueSignInCode;
+use Simplysmart\Admiro\Mail\LoginCodeMail;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**

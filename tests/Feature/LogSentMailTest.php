@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
-use Simplysmart\Mainboard\Mail\MailLogDefaults;
+use Simplysmart\Admiro\Mail\MailLogDefaults;
 use Tests\TestCase;
 
 class LogSentMailTest extends TestCase
@@ -57,7 +57,7 @@ class LogSentMailTest extends TestCase
     {
         $this->assertSame('daily', config('logging.channels.mail.driver'));
         $this->assertSame(storage_path('logs/email.log'), config('logging.channels.mail.path'));
-        $this->assertSame(config('mainboard.mail.log_days'), config('logging.channels.mail.days'));
+        $this->assertSame(config('admiro.mail.log_days'), config('logging.channels.mail.days'));
     }
 
     public function test_core_routes_the_log_mailer_and_requires_tls_for_smtp(): void

@@ -25,7 +25,7 @@ class SecurityHeadersTest extends ZoneTestCase
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('Referrer-Policy', 'same-origin')
             ->assertHeader('Cross-Origin-Opener-Policy', 'same-origin')
-            ->assertHeader('Permissions-Policy', config('mainboard.security.permissions_policy'))
+            ->assertHeader('Permissions-Policy', config('admiro.security.permissions_policy'))
             ->assertHeaderMissing('X-Robots-Tag');
     }
 
@@ -39,7 +39,7 @@ class SecurityHeadersTest extends ZoneTestCase
 
     public function test_csp_can_be_switched_off(): void
     {
-        config(['mainboard.security.csp.enabled' => false]);
+        config(['admiro.security.csp.enabled' => false]);
 
         $this->get('/open')->assertHeaderMissing('Content-Security-Policy');
     }
@@ -55,6 +55,6 @@ class SecurityHeadersTest extends ZoneTestCase
         $response = $this->get('/alpha');
 
         $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
-        $response->assertHeader('X-Robots-Tag', config('mainboard.zones.robots'));
+        $response->assertHeader('X-Robots-Tag', config('admiro.zones.robots'));
     }
 }

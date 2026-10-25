@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Localization;
 
-use Simplysmart\Mainboard\Contracts\InterfaceLocales;
-use Simplysmart\Mainboard\Models\Dictionaries\Language;
+use Simplysmart\Admiro\Contracts\InterfaceLocales;
+use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Tests\Feature\Zones\ZoneTestCase;
 
 /**
@@ -25,7 +25,7 @@ class InterfaceLocalesTest extends ZoneTestCase
 {
     protected function configureZones(): void
     {
-        config(['mainboard.locale.enabled' => ['pl', 'en']]);
+        config(['admiro.locale.enabled' => ['pl', 'en']]);
     }
 
     public function test_without_dictionary_entries_the_config_decides(): void

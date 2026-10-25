@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Http\Middleware\TrustProxies;
-use Simplysmart\Mainboard\Security\TrustedProxies;
+use Simplysmart\Admiro\Security\TrustedProxies;
 
 /**
- * IP klienta z X-Forwarded-For tylko od proxy z mainboard.security.trusted_proxies.
+ * IP klienta z X-Forwarded-For tylko od proxy z admiro.security.trusted_proxies.
  */
 class TrustedProxiesTest extends ZoneTestCase
 {
@@ -25,7 +25,7 @@ class TrustedProxiesTest extends ZoneTestCase
     {
         parent::setUp();
 
-        config(['mainboard.security.trusted_proxies' => '10.0.0.1']);
+        config(['admiro.security.trusted_proxies' => '10.0.0.1']);
         $this->app->make(TrustedProxies::class)->apply();
     }
 

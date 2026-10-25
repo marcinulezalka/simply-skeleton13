@@ -18,12 +18,12 @@ use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 /**
- * Integracja szkieletu z polskimi tłumaczeniami frameworka dostarczanymi przez Core (mainboard).
+ * Integracja szkieletu z polskimi tłumaczeniami frameworka dostarczanymi przez Core (admiro).
  */
 class CoreTranslationsTest extends TestCase
 {
     /**
-     * Komunikat walidacji po polsku pochodzi z lang/pl/ paczki mainboard.
+     * Komunikat walidacji po polsku pochodzi z lang/pl/ paczki admiro.
      */
     public function test_polish_validation_message_comes_from_core(): void
     {

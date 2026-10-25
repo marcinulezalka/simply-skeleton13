@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Zones;
 
-use Simplysmart\Mainboard\Zones\ZoneServiceProvider;
+use Simplysmart\Admiro\Zones\ZoneServiceProvider;
 
 /**
  * Strefa testowa: nazwa strefy jest też prefiksem nazw tras, a trasy leżą w routes/<strefa>/.

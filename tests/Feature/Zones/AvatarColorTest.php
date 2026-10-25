@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
-use Simplysmart\Mainboard\Enums\AvatarColor;
+use Simplysmart\Admiro\Enums\AvatarColor;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
@@ -69,7 +69,7 @@ class AvatarColorTest extends ZoneTestCase
 
     public function test_avatar_uses_the_account_color(): void
     {
-        $html = Blade::render('<x-mainboard::avatar name="dr Anna Nowak" :color="$color" size="xs" />', ['color' => AvatarColor::Teal]);
+        $html = Blade::render('<x-admiro::avatar name="dr Anna Nowak" :color="$color" size="xs" />', ['color' => AvatarColor::Teal]);
 
         $this->assertStringContainsString('class="ss-avatar ss-avatar--xs ss-avatar--teal"', $html);
         $this->assertStringContainsString('AN', $html);

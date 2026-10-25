@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Simplysmart\Mainboard\MainboardServiceProvider;
+use Simplysmart\Admiro\AdmiroServiceProvider;
 use Tests\TestCase;
 
 /**
@@ -22,10 +22,10 @@ use Tests\TestCase;
 class PackageIntegrationTest extends TestCase
 {
     /**
-     * Sprawdza, że provider pakietu simplysmart/mainboard jest wykryty i załadowany.
+     * Sprawdza, że provider pakietu simplysmart/admiro jest wykryty i załadowany.
      */
-    public function test_mainboard_service_provider_is_loaded(): void
+    public function test_admiro_service_provider_is_loaded(): void
     {
-        $this->assertTrue($this->app->providerIsLoaded(MainboardServiceProvider::class));
+        $this->assertTrue($this->app->providerIsLoaded(AdmiroServiceProvider::class));
     }
 }

@@ -15,7 +15,7 @@ namespace Tests\Feature\Zones;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Translation\PotentiallyTranslatedString;
-use Simplysmart\Mainboard\Rules\StrongPin;
+use Simplysmart\Admiro\Rules\StrongPin;
 use Tests\TestCase;
 
 /**
