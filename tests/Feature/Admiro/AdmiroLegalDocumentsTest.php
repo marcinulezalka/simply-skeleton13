@@ -43,7 +43,7 @@ class AdmiroLegalDocumentsTest extends AdmiroTestCase
 
         $this->assertSame(1, LegalDocument::query()->where('document', 'privacy')->whereNotNull('version')->count());
         $this->assertSame(0, LegalDocument::query()->where('document', 'gdpr')->count());
-        $this->get('/polityka-prywatnosci')->assertOk()->assertSee('<h2>Administrator</h2>', false);
+        $this->get('/polityka-prywatnosci')->assertOk()->assertSee('<h2 id="administrator">Administrator</h2>', false);
         $html = (string) $this->get('/admiro/legal-documents/privacy')->assertOk()->assertSee(text('admiro::admin.cookie_policy_new_draft'))->getContent();
         $link = static fn(string $document): string => '~href="' . preg_quote(route('admiro.legal-documents.index', ['document' => $document]), '~') . '"[^>]*aria-current="page"~';
         $this->assertMatchesRegularExpression($link('privacy'), $html);

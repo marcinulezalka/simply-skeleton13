@@ -57,14 +57,16 @@ class LegalDocumentsTest extends TestCase
     {
         $this->get('/polityka-prywatnosci')->assertNotFound();
 
-        $this->publish(LegalDocumentType::Privacy, 'Polityka prywatności', "## Administrator\n\n<script>alert(1)</script>Treść");
+        $this->publish(LegalDocumentType::Privacy, 'Polityka prywatności', "## Administrator\n\n<script>alert(1)</script>Treść\n\n## Administrator\n\nDrugi");
         $this->publish(LegalDocumentType::Gdpr, 'Klauzula RODO', 'Treść');
 
         $this->get('/polityka-prywatnosci', ['referer' => url('/admiro/signin')])
             ->assertOk()
             ->assertSee('<h1 class="ss-content-page__title"><span class="ss-icon ss-content-page__title-icon"', false)
             ->assertSee('Polityka prywatności')
-            ->assertSee('<h2>Administrator</h2>', false)
+            ->assertSee('<h2 id="administrator">Administrator</h2>', false)
+            ->assertSee('<a class="ss-toc__link" href="#administrator">Administrator</a>', false)
+            ->assertSee('<a class="ss-toc__link" href="#administrator-2">Administrator</a>', false)
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertSee('class="ss-link ss-content-page__back" href="' . url('/admiro/signin') . '"', false)
             ->assertSee('<a class="ss-related" href="' . route('admiro.legal.gdpr') . '"', false)
