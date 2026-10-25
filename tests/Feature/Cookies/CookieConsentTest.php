@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of simplysmart/skeleton13.
+ *
+ * Copyright (c) 2026 Marcin Ulezalka <marcin.ulezalka@simplysmart.pl>
+ *
+ * Licensed under the Simplysmart Restricted Source License 1.0.
+ * See the LICENSE file distributed with this source code.
+ */
+
 namespace Tests\Feature\Cookies;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -9,6 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Simplysmart\Mainboard\Contracts\ConsentScripts;
 use Simplysmart\Mainboard\Cookies\ConsentScript;
+use Illuminate\Support\Facades\Blade;
 use Simplysmart\Mainboard\Cookies\CookiePolicies;
 use Simplysmart\Mainboard\Cookies\CookiePolicyRejected;
 use Simplysmart\Mainboard\Enums\ConsentDecision;
@@ -36,6 +46,25 @@ class CookieConsentTest extends TestCase
             ->assertSee(text('cookies.banner.title'))
             ->assertSee('href="' . url('/cookies') . '"', false)
             ->assertSee('data-cookie="ss_consent"', false);
+    }
+
+    public function test_sign_in_card_lists_the_cookie_policy_first_and_the_cookie_settings_last(): void
+    {
+        $render = static fn(): string => Blade::render('<x-mainboard::auth.layout title="Start" :legal-links="$links">x</x-mainboard::auth.layout>', ['links' => [['url' => '/shop/privacy', 'label' => 'Privacy']]]);
+
+        $this->assertStringNotContainsString('data-ss-cookie-settings>', $render());
+
+        $this->publish('Polityka cookies', 'Treść');
+        $html = $render();
+        $legal = substr($html, (int) strpos($html, '<nav class="ss-auth__legal"'));
+        $policy = strpos($legal, 'href="' . url('/cookies') . '"');
+        $privacy = strpos($legal, 'href="/shop/privacy"');
+        $settings = strpos($legal, 'data-ss-cookie-settings>');
+
+        $this->assertNotFalse($policy);
+        $this->assertNotFalse($settings);
+        $this->assertLessThan($privacy, $policy);
+        $this->assertLessThan($settings, $privacy);
     }
 
     public function test_publishing_needs_default_language_content_and_numbers_versions(): void
