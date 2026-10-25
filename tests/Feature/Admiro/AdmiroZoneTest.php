@@ -57,6 +57,15 @@ class AdmiroZoneTest extends ZoneTestCase
             ->assertSee('<span class="ss-logo ss-auth__brand-logo"><svg role="img" aria-label="admiro"', false);
     }
 
+    public function test_sign_in_title_highlights_precision_in_the_admiro_fonts(): void
+    {
+        $this->get('/admiro/signin')
+            ->assertOk()
+            ->assertSee('Kontrola, automatyzacja i <em class="ss-accent-text">precyzja</em> w każdym wdrożeniu', false)
+            ->assertSee('font-family: "Space Grotesk"', false)
+            ->assertSee('font-family: "Instrument Serif"', false);
+    }
+
     public function test_signed_in_administrator_sees_the_dashboard(): void
     {
         $account = $this->account(AdmiroAccount::class, ['name' => 'Ewa Admin'], '159357');

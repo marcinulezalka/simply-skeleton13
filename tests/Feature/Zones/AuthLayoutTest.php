@@ -47,6 +47,37 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertMatchesRegularExpression('~\.ss-auth--reversed \.ss-frame\.ss-frame--row \{\s*flex-direction: row-reverse;~', CoreAssets::contents('css/app.css'));
     }
 
+    public function test_code_and_pin_fields_show_a_subtle_icon(): void
+    {
+        $this->requestCode();
+
+        $this->get('/alpha/signin/code')
+            ->assertOk()
+            ->assertSee('<div class="ss-input-wrap ss-input-wrap--icon">', false)
+            ->assertSee('class="ss-icon ss-input-wrap__icon"', false);
+
+        $html = Blade::render('<x-mainboard::pin-field icon="lock" id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" />');
+
+        $this->assertStringContainsString('<div class="ss-input-wrap ss-input-wrap--icon ss-input-wrap--keypad">', $html);
+        $this->assertStringContainsString('<span class="ss-icon ss-input-wrap__icon">', $html);
+    }
+
+    public function test_zone_can_size_the_sign_in_title_controls_and_icon_stroke_with_tokens(): void
+    {
+        $tokens = CoreAssets::contents('css/tokens.css');
+        $css = CoreAssets::contents('css/app.css');
+
+        foreach (['--ss-auth-title-size: 1.5rem;', '--ss-auth-control-height: 2.5rem;', '--ss-icon-stroke: 1.75;', '--ss-radius-input: var(--ss-radius-control);'] as $token) {
+            $this->assertStringContainsString($token, $tokens);
+        }
+
+        $this->assertStringContainsString('font-size: var(--ss-auth-title-size);', $css);
+        $this->assertMatchesRegularExpression('~\.ss-auth \.ss-input \{\s*min-height: var\(--ss-auth-control-height\);~', $css);
+        $this->assertMatchesRegularExpression('~\.ss-auth \.ss-button:not\(\.ss-button--sm, \.ss-button--lg\) \{\s*--ss-button-height: var\(--ss-auth-control-height\);~', $css);
+        $this->assertMatchesRegularExpression('~\.ss-icon svg\[stroke\] \{\s*stroke-width: var\(--ss-icon-stroke\);~', $css);
+        $this->assertStringContainsString('border-radius: var(--ss-radius-input);', $css);
+    }
+
     public function test_zone_logo_must_be_an_existing_svg_file(): void
     {
         $factory = $this->app->make(ZoneAuthSettingsFactory::class);
