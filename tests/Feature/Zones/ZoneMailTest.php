@@ -28,6 +28,7 @@ use Simplysmart\Mainboard\Mail\MailOrganization;
 use Simplysmart\Mainboard\Mail\NewTrustedDeviceMail;
 use Simplysmart\Mainboard\Models\Organization;
 use Simplysmart\Mainboard\Organizations\OrganizationBranding;
+use Simplysmart\Mainboard\Organizations\OrganizationData;
 use Simplysmart\Mainboard\Organizations\OrganizationManagement;
 use Simplysmart\Mainboard\Permissions\OrganizationMembership;
 use Simplysmart\Mainboard\Zones\ZoneBrand;
@@ -91,7 +92,7 @@ class ZoneMailTest extends ZoneTestCase
 
     public function test_organization_logo_wins_over_the_zone_and_core_logo(): void
     {
-        $organization = $this->app->make(OrganizationManagement::class)->create('Firma');
+        $organization = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Firma'));
         $logo = UploadedFile::fake()->image('logo.png', 200, 50);
         $this->app->make(OrganizationBranding::class)->store($organization, BrandAsset::Logo, $logo);
 
@@ -156,11 +157,11 @@ class ZoneMailTest extends ZoneTestCase
         $this->assertSame(Organization::OPERATOR_ID, $organizations->for($zones->get('beta'), $account));
         $this->assertNull($organizations->for($zones->get('alpha'), $account));
 
-        $first = $management->create('Firma');
+        $first = $management->create(new OrganizationData('Firma'));
         $membership->add($account, $first);
         $this->assertSame($first->id, $organizations->for($zones->get('alpha'), $account));
 
-        $membership->add($account, $management->create('Druga firma'));
+        $membership->add($account, $management->create(new OrganizationData('Druga firma')));
         $this->assertNull($organizations->for($zones->get('alpha'), $account));
     }
 

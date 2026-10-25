@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Simplysmart\Mainboard\Models\Organization;
+use Simplysmart\Mainboard\Organizations\OrganizationData;
 use Simplysmart\Mainboard\Organizations\OrganizationManagement;
 use Simplysmart\Mainboard\Permissions\OrganizationMembership;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -56,11 +57,32 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertFalse(Organization::query()->where('name', 'Firma')->exists());
     }
 
+    public function test_organization_details_are_saved_and_billing_email_starts_as_the_organization_email(): void
+    {
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+        $details = ['nip' => '123-456-32-18', 'regon' => '123456785', 'krs' => '0000123456', 'phone' => '+48 600 100 200', 'email' => 'biuro@example.com', 'street' => 'ul. Prosta 1', 'postal_code' => '00-001', 'city' => 'Warszawa'];
+
+        $this->post('/admiro/organizations', ['name' => 'Firma', ...$details])->assertRedirect('/admiro/organizations');
+        $organization = Organization::query()->where('name', 'Firma')->sole();
+        $this->assertSame('1234563218', $organization->nip);
+        $this->assertSame('biuro@example.com', $organization->billing_email);
+        $this->assertSame('ul. Prosta 1, 00-001 Warszawa', $organization->address());
+        $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()
+            ->assertSeeInOrder([text('layout.organization_form.details'), text('layout.organization_form.contact'), text('layout.organization_form.address')]);
+
+        $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Firma', ...$details, 'billing_email' => 'faktury@example.com']);
+        $this->assertSame('faktury@example.com', $organization->fresh()?->billing_email);
+
+        $this->post('/admiro/organizations', ['name' => 'Zły NIP', 'nip' => '123-456-32-19']);
+        $this->assertSame(text('validation.nip'), $this->sessionError('nip'));
+        $this->assertFalse(Organization::query()->where('name', 'Zły NIP')->exists());
+    }
+
     public function test_tree_cycle_and_operator_changes_are_rejected(): void
     {
         $management = $this->app->make(OrganizationManagement::class);
-        $company = $management->create('Firma');
-        $branch = $management->create('Oddział', $company);
+        $company = $management->create(new OrganizationData('Firma'));
+        $branch = $management->create(new OrganizationData('Oddział'), $company);
         $operator = Organization::query()->findOrFail(Organization::OPERATOR_ID);
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
@@ -74,7 +96,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
 
     public function test_disabled_organization_is_not_a_parent_choice_and_can_be_enabled_again(): void
     {
-        $company = $this->app->make(OrganizationManagement::class)->create('Firma');
+        $company = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Firma'));
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
         $this->post('/admiro/organizations/' . $company->token . '/toggle');
@@ -89,7 +111,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
 
     public function test_support_views_members_but_cannot_change_anything(): void
     {
-        $company = $this->app->make(OrganizationManagement::class)->create('Firma');
+        $company = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Firma'));
         $this->app->make(OrganizationMembership::class)->add($this->account(AlphaAccount::class), $company);
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro');
 
@@ -100,7 +122,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
 
     public function test_member_of_another_zone_is_removed_and_signed_out(): void
     {
-        $company = $this->app->make(OrganizationManagement::class)->create('Firma');
+        $company = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Firma'));
         $member = $this->account(AlphaAccount::class);
         $this->app->make(OrganizationMembership::class)->add($member, $company);
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');

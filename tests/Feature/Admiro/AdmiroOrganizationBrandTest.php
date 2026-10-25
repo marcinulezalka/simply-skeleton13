@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Simplysmart\Mainboard\Enums\BrandAsset;
 use Simplysmart\Mainboard\Models\Organization;
 use Simplysmart\Mainboard\Organizations\OrganizationBranding;
+use Simplysmart\Mainboard\Organizations\OrganizationData;
 use Simplysmart\Mainboard\Organizations\OrganizationManagement;
 
 /**
@@ -33,7 +34,7 @@ class AdmiroOrganizationBrandTest extends AdmiroTestCase
         parent::setUp();
 
         Storage::fake('local');
-        $this->company = $this->app->make(OrganizationManagement::class)->create('Firma');
+        $this->company = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Firma'));
     }
 
     public function test_owner_uploads_previews_replaces_and_removes_the_logo(): void
