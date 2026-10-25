@@ -35,7 +35,8 @@ class WelcomePageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('aria-label="simplysmart"', false);
-        $response->assertSee(BrandNames::highlight(text('welcome.title'))->toHtml(), false);
+        $response->assertSee(BrandNames::withLogo(text('welcome.title'))->toHtml(), false);
+        $response->assertSee('<h1 class="ss-welcome__title">System <span class="ss-logo-inline"><svg role="img" aria-label="simplysmart"', false);
         $response->assertSee(text('welcome.features.dictionaries.title'));
         $response->assertSee('.ss-welcome__card', false);
         $response->assertSee('class="ss-icon ss-icon--tile"', false);
@@ -76,5 +77,14 @@ class WelcomePageTest extends TestCase
         $html = BrandNames::highlight('Pakiet admiro <b>x</b> & simplysmart, ale nie admirowie')->toHtml();
 
         $this->assertSame('Pakiet <strong class="ss-brand-name">admiro</strong> &lt;b&gt;x&lt;/b&gt; &amp; <strong class="ss-brand-name">simplysmart</strong>, ale nie admirowie', $html);
+    }
+
+    public function test_logo_replaces_the_simplysmart_name_after_escaping(): void
+    {
+        $html = BrandNames::withLogo('Pakiet simplysmart <b>x</b> & admiro, ale nie simplysmartowy')->toHtml();
+
+        $this->assertSame(1, substr_count($html, '<span class="ss-logo-inline"><svg'));
+        $this->assertStringStartsWith('Pakiet <span class="ss-logo-inline"><svg role="img" aria-label="simplysmart"', $html);
+        $this->assertStringEndsWith('</svg></span> &lt;b&gt;x&lt;/b&gt; &amp; <strong class="ss-brand-name">admiro</strong>, ale nie simplysmartowy', $html);
     }
 }
