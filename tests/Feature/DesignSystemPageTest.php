@@ -45,6 +45,19 @@ class DesignSystemPageTest extends TestCase
         }
     }
 
+    public function test_button_panels_show_the_classic_and_the_raised_kind_with_sizes_of_buttons(): void
+    {
+        $this->get(route('mainboard.design-system'))
+            ->assertOk()
+            ->assertSee('<section class="ss-card" id="segmented" aria-labelledby="segmented-title">', false)
+            ->assertSee('<ul class="ss-tabs ss-tabs--classic">', false)
+            ->assertSee('<ul class="ss-tabs">', false)
+            ->assertSee('<button class="ss-tabs__link" type="button" aria-pressed="true"', false)
+            ->assertSee('href="#segmented"', false)
+            ->assertSee('ss-button--lg', false)
+            ->assertSee('ss-button--sm', false);
+    }
+
     public function test_navigation_card_has_foundations_and_every_view(): void
     {
         $response = $this->get(route('mainboard.design-system'));
