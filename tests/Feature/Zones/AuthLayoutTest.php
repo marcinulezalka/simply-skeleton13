@@ -213,7 +213,7 @@ class AuthLayoutTest extends SignInTestCase
     {
         $html = Blade::render('<x-admiro::pin-field id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" error="Zły PIN" autofocus />');
 
-        $this->assertMatchesRegularExpression('~<input class="ss-input ss-input--code" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="8" required="required" aria-invalid="true" aria-describedby="pin-error" autofocus="autofocus"\s*>~', $html);
+        $this->assertMatchesRegularExpression('~<input class="ss-input ss-input--code" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="8" required="required" data-ss-pin-field="data-ss-pin-field" aria-invalid="true" aria-describedby="pin-error" autofocus="autofocus"\s*>~', $html);
         $this->assertStringContainsString('aria-controls="pin-keypad" title="' . text('layout.keypad.open') . '" data-ss-keypad-open hidden>', $html);
         $this->assertStringContainsString('<dialog class="ss-keypad" id="pin-keypad" aria-label="PIN" data-ss-keypad data-ss-keypad-for="pin">', $html);
         $this->assertStringNotContainsString('ss-keypad__title', $html);
@@ -222,7 +222,8 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('data-ss-keypad-clear', $html);
         $this->assertMatchesRegularExpression('~data-ss-keypad-for="pin">\s*<p class="ss-keypad__display"~', $html);
         $this->assertMatchesRegularExpression('~data-ss-keypad-digit="0">0</button>\s*<button class="ss-keypad__key ss-keypad__key--muted" type="button" data-ss-keypad-backspace>~', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-keypad__footer">\s*<button class="ss-button" type="button" data-ss-keypad-close><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.back'), '~') . '</button>\s*<button class="ss-button ss-button--primary ss-keypad__done" type="button" data-ss-keypad-done><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.done'), '~') . '</button>~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-keypad__footer">\s*<button class="ss-button ss-button--primary ss-keypad__done" type="button" data-ss-keypad-done>' . preg_quote(text('layout.keypad.done'), '~') . '<span class="ss-icon ss-button__icon">.*?</span>\s*</button>\s*<button class="ss-link ss-keypad__back" type="button" data-ss-keypad-close><span class="ss-icon ss-keypad__back-icon">.*?</span>\s*' . preg_quote(text('layout.keypad.back'), '~') . '</button>~s', $html);
+        $this->assertStringContainsString('data-ss-keypad-too-short="' . e(text('layout.keypad.too_short', ['min' => '4'])) . '" hidden></p>', $html);
         $this->assertStringContainsString('<p class="ss-field__error" id="pin-error" role="alert">Zły PIN</p>', $html);
 
         $plain = Blade::render('<x-admiro::pin-field id="code" name="code" label="Kod" type="text" autocomplete="one-time-code" :min="6" :max="6" :keypad="false" />');
@@ -257,5 +258,14 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('margin-top: calc(-1 * var(--ss-radius-nested));', $css);
         $this->assertStringContainsString('margin-left: calc(-1 * var(--ss-radius-nested));', $css);
         $this->assertMatchesRegularExpression('~\.ss-auth \{[^}]*linear-gradient\(160deg, var\(--ss-color-auth-from\), var\(--ss-color-auth-to\)\)~', $css);
+    }
+
+    public function test_sign_in_errors_are_global_toasts_and_fields_stay_unmarked(): void
+    {
+        $html = (string) $this->get('/design-system/views/sign-in-code-invalid')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<p class="ss-toast__message">' . e(text('sign_in.failure')) . '</p>', $html);
+        $this->assertStringNotContainsString('id="code-error"', $html);
+        $this->assertStringNotContainsString('aria-invalid="true" aria-describedby', $html);
     }
 }

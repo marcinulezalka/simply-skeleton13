@@ -153,7 +153,7 @@ class DesignSystemPageTest extends TestCase
         ];
 
         foreach ($states as $view => $message) {
-            $this->get(route('simplysmart.design-system.view', $view))->assertOk()->assertSee('role="alert">' . e($message), false);
+            $this->get(route('simplysmart.design-system.view', $view))->assertOk()->assertSee('<p class="ss-toast__message">' . e($message) . '</p>', false);
         }
 
         $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInCode))->assertSee(text('sign_in.code_title'));

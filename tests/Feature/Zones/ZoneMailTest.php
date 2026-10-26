@@ -81,11 +81,13 @@ class ZoneMailTest extends ZoneTestCase
         $this->assertEmbeddedLogo($email, (string) file_get_contents(MailZoneServiceProvider::LOGO));
     }
 
-    public function test_administrators_zone_mails_use_its_own_layout_with_the_code_in_digit_cells(): void
+    public function test_administrators_zone_mails_use_its_own_layout_with_the_code_in_digit_cells_and_the_brand_group(): void
     {
         $html = (new LoginCodeMail('admiro', null, 'Anna Nowak', '482913', 10))->render();
 
-        $this->assertStringContainsString('background-color: #f5b301;', $html);
+        $this->assertMatchesRegularExpression('~<img src="data:image/png;base64,[^"]+" alt="" width="560"~', $html);
+        $this->assertStringContainsString(text_email('layout.brand_group'), $html);
+        $this->assertMatchesRegularExpression('~alt="simplysmart" height="18".*alt="admiro" height="18"~s', $html);
         $this->assertStringContainsString('background-color: #f4f4f5;', $html);
         $this->assertSame(6, substr_count($html, 'font-size: 24px; font-weight: 700;'));
         $this->assertStringContainsString(text_email('login_code.ignore'), $html);

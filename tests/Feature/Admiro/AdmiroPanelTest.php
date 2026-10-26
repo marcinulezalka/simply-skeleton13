@@ -48,25 +48,28 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSeeInOrder([
                 text('admiro::dashboard.onboarding_title'),
                 text('admiro::dashboard.onboarding_lead'),
-                text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '7']),
+                text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']),
                 text('admiro::dashboard.onboarding_installation_title'),
                 text('admiro::dashboard.onboarding_languages_title'),
                 text('admiro::dashboard.onboarding_settings_title'),
-                text('admiro::dashboard.onboarding_legal_title'),
                 text('admiro::dashboard.onboarding_organizations_title'),
-                text('admiro::dashboard.onboarding_owners_title'),
                 text('admiro::dashboard.onboarding_administrators_title'),
+                text('admiro::dashboard.onboarding_owners_title'),
+                text('admiro::dashboard.onboarding_audit_title'),
+                text('admiro::dashboard.onboarding_legal_title'),
             ])
-            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">07</span>', false)
+            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">08</span>', false)
             ->assertSee('<div class="ss-context__actions ss-context__actions--progress" role="group"', false)
-            ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="1" max="7">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--dashed" href="' . url('/admiro/onboarding/installation') . '">', false)
+            ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="1" max="8">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/installation') . '">', false)
             ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/languages') . '">', false)
             ->assertDontSee('<section class="ss-card ss-onboarding"', false);
 
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro')->get('/admiro/onboarding')
             ->assertOk()
-            ->assertDontSee('<ol class="ss-onboarding__steps', false);
+            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/audit') . '">', false)
+            ->assertDontSee(url('/admiro/onboarding/installation'), false)
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '1']));
         $this->get('/admiro')->assertOk()->assertSee(text('admiro::admin.zones_title'))->assertDontSee('<ol class="ss-onboarding__steps', false);
     }
 
@@ -79,10 +82,10 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect('/admiro/administrators');
 
         $this->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '3', 'total' => '7']))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '3', 'total' => '8']))
             ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/settings') . '">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--dashed" href="' . url('/admiro/onboarding/organizations') . '">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--dashed" href="' . url('/admiro/onboarding/administrators') . '">', false);
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/organizations') . '">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/administrators') . '">', false);
     }
 
     public function test_legal_step_needs_every_document_and_the_section_goes_once_everything_is_done(): void
@@ -101,15 +104,15 @@ class AdmiroPanelTest extends AdmiroTestCase
         }
 
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_legal_lead'))
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '6', 'total' => '7']));
+            ->assertSee(text('admiro::dashboard.onboarding_step', ['number' => '8']) . ' · ' . text('admiro::dashboard.onboarding_states.in_progress'))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '7', 'total' => '8']));
 
         $lastLegal = end($legal);
         $this->assertIsString($lastLegal);
         $progress->mark($lastLegal);
 
         $this->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '7', 'total' => '7']))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '8', 'total' => '8']))
             ->assertSee(text('admiro::dashboard.onboarding_complete'));
     }
 
