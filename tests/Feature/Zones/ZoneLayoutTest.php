@@ -90,6 +90,18 @@ class ZoneLayoutTest extends ZoneTestCase
         $factory->make(['name' => 'shop', 'logo' => $this->packagePath('simplysmart/admiro', 'public/assets/css/base.css')], 'shop', __DIR__);
     }
 
+    public function test_zone_website_must_be_an_http_url(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+
+        $this->assertSame('https://shop.example', $factory->make(['name' => 'shop', 'website' => 'https://shop.example'], 'shop', __DIR__)->website);
+        $this->assertNull($factory->make(['name' => 'shop'], 'shop', __DIR__)->website);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zone [shop] website must be an http(s) URL.');
+        $factory->make(['name' => 'shop', 'website' => 'javascript://alert(1)'], 'shop', __DIR__);
+    }
+
     public function test_zone_favicon_needs_known_types_with_matching_existing_files(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);

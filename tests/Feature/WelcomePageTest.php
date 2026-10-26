@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Config;
 use Mockery;
 use Mockery\MockInterface;
 use Simplysmart\Admiro\Contracts\ZoneRegistry;
@@ -57,7 +58,17 @@ class WelcomePageTest extends TestCase
             ->assertSee('aria-label="admiro"', false);
     }
 
-    public function test_zone_logos_are_listed_once_each(): void
+    public function test_brand_and_zone_logos_link_to_their_websites_in_a_new_tab(): void
+    {
+        config(['admiro.welcome.website' => 'https://brand.example']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<a class="ss-welcome__brand-link" href="https://brand.example" target="_blank" rel="noopener noreferrer" aria-label="' . e(text('welcome.website', ['site' => 'brand.example'])) . '">', false)
+            ->assertSee('<a class="ss-welcome__zone-link" href="' . Config::string('admiro.zone.website') . '" target="_blank" rel="noopener noreferrer"', false);
+    }
+
+    public function test_zone_logos_are_listed_once_each_with_the_first_given_website(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
         $logo = $this->packagePath('simplysmart/admiro', 'public/images/logo.svg');
@@ -65,11 +76,11 @@ class WelcomePageTest extends TestCase
         $zones = Mockery::mock(ZoneRegistry::class);
         $zones->shouldReceive('all')->andReturn([
             'shop' => $factory->make(['name' => 'shop', 'logo' => $logo], 'shop', __DIR__),
-            'outlet' => $factory->make(['name' => 'outlet', 'logo' => $logo], 'outlet', __DIR__),
+            'outlet' => $factory->make(['name' => 'outlet', 'logo' => $logo, 'website' => 'https://outlet.example'], 'outlet', __DIR__),
             'plain' => $factory->make(['name' => 'plain'], 'plain', __DIR__),
         ]);
 
-        $this->assertSame([(string) file_get_contents($logo)], (new ZoneLogos($zones))->svgs());
+        $this->assertSame([['svg' => (string) file_get_contents($logo), 'website' => 'https://outlet.example']], (new ZoneLogos($zones))->all());
     }
 
     public function test_brand_names_are_highlighted_after_escaping(): void

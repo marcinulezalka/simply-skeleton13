@@ -53,13 +53,28 @@ class AuthLayoutTest extends SignInTestCase
 
         $this->get('/alpha/signin/code')
             ->assertOk()
-            ->assertSee('<div class="ss-input-wrap ss-input-wrap--icon">', false)
+            ->assertSee('<div class="ss-input-wrap ss-input-wrap--icon" data-ss-code-fallback>', false)
             ->assertSee('class="ss-icon ss-input-wrap__icon"', false);
 
         $html = Blade::render('<x-admiro::pin-field icon="lock" id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" />');
 
         $this->assertStringContainsString('<div class="ss-input-wrap ss-input-wrap--icon ss-input-wrap--keypad">', $html);
         $this->assertStringContainsString('<span class="ss-icon ss-input-wrap__icon">', $html);
+    }
+
+    public function test_code_step_has_a_cell_per_digit_bolds_the_address_and_offers_icon_buttons(): void
+    {
+        $this->requestCode();
+
+        $html = $this->get('/alpha/signin/code')->assertOk()->getContent();
+
+        $this->assertIsString($html);
+        $this->assertSame(6, substr_count($html, 'data-ss-code-cell>'));
+        $this->assertStringContainsString('<input class="ss-input ss-code__cell" id="code-1" type="text" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" aria-label="' . text('layout.code_digit', ['position' => 1, 'length' => 6]) . '"', $html);
+        $this->assertMatchesRegularExpression('~<input class="ss-input ss-input--code" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="6" pattern="\[0-9\]\{6\}" required="required" autofocus="autofocus" data-ss-code-input>~', $html);
+        $this->assertStringContainsString('<strong>' . self::EMAIL . '</strong>', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-button" href="[^"]+/alpha/signin"><span class="ss-icon ss-button__icon">~', $html);
+        $this->assertStringContainsString("input.type = 'hidden';", $html);
     }
 
     public function test_page_title_is_the_heading_unless_the_zone_gives_its_own(): void
@@ -172,6 +187,13 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringNotContainsString('class="ss-notice"', $html);
     }
 
+    public function test_sign_in_card_links_back_to_the_welcome_page(): void
+    {
+        $html = Blade::render('<x-admiro::auth.layout title="Logowanie">x</x-admiro::auth.layout>');
+
+        $this->assertMatchesRegularExpression('~<div class="ss-auth__home">\s*<a class="ss-button" href="' . preg_quote(url('/'), '~') . '"><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.home'), '~') . '</a>~s', $html);
+    }
+
     public function test_pin_field_opens_an_on_screen_numeric_keypad_in_a_modal(): void
     {
         $html = Blade::render('<x-admiro::pin-field id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" error="Zły PIN" autofocus />');
@@ -182,6 +204,8 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertSame(10, substr_count($html, 'data-ss-keypad-digit='));
         $this->assertStringContainsString('data-ss-keypad-backspace', $html);
         $this->assertStringContainsString('data-ss-keypad-clear', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-keypad__bar">\s*<p class="ss-keypad__display"[^>]*></p>\s*<button class="ss-icon-button ss-keypad__close" type="button" data-ss-keypad-close>~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-keypad__footer">\s*<button class="ss-icon-button ss-keypad__backspace" type="button" data-ss-keypad-backspace>.*?</button>\s*<button class="ss-button ss-button--primary ss-keypad__done" type="button" data-ss-keypad-done><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.done'), '~') . '</button>~s', $html);
         $this->assertStringContainsString('<p class="ss-field__error" id="pin-error" role="alert">Zły PIN</p>', $html);
 
         $plain = Blade::render('<x-admiro::pin-field id="code" name="code" label="Kod" type="text" autocomplete="one-time-code" :min="6" :max="6" :keypad="false" />');
@@ -196,6 +220,7 @@ class AuthLayoutTest extends SignInTestCase
 
         $this->assertStringContainsString('const init = (dialog) => {', $html);
         $this->assertStringContainsString("dialog.querySelector('[data-ss-keypad-backspace]')", $html);
+        $this->assertStringContainsString('form.requestSubmit();', $html);
     }
 
     public function test_sign_in_page_has_neither_the_theme_toggle_nor_the_palette_switch(): void

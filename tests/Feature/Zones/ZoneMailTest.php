@@ -81,6 +81,16 @@ class ZoneMailTest extends ZoneTestCase
         $this->assertEmbeddedLogo($email, (string) file_get_contents(MailZoneServiceProvider::LOGO));
     }
 
+    public function test_administrators_zone_mails_use_its_own_layout_with_the_code_in_digit_cells(): void
+    {
+        $html = (new LoginCodeMail('admiro', null, 'Anna Nowak', '482913', 10))->render();
+
+        $this->assertStringContainsString('background-color: #f5b301;', $html);
+        $this->assertStringContainsString('background-color: #f4f4f5;', $html);
+        $this->assertSame(6, substr_count($html, 'font-size: 24px; font-weight: 700;'));
+        $this->assertStringContainsString(text_email('login_code.ignore'), $html);
+    }
+
     public function test_core_template_is_used_in_the_zone_layout_when_the_zone_has_no_template_of_that_name(): void
     {
         $html = (new NewTrustedDeviceMail('mailing', null, 'Anna Nowak', 'Firefox', now(), 'https://example.com/devices'))->render();

@@ -73,7 +73,11 @@ class RecoveryEmailTest extends SignInTestCase
         $this->post('/alpha/signin/forgot-pin/code', ['email' => self::EMAIL])
             ->assertRedirect('/alpha/signin/forgot-pin')
             ->assertSessionHas('status', text('sign_in.forgot_pin.recovery.code_sent'));
-        $this->get('/alpha/signin/forgot-pin')->assertOk()->assertSee(text('sign_in.forgot_pin.recovery.code_lead'));
+        $this->get('/alpha/signin/forgot-pin')
+            ->assertOk()
+            ->assertSee(text('sign_in.forgot_pin.recovery.code_lead'))
+            ->assertSee('<details class="ss-forgot__recovery"  open >', false)
+            ->assertSee('data-ss-code-cell', false);
         $code = $this->securityCode(self::RECOVERY);
         Mail::assertNotQueued(SecurityCodeMail::class, static fn(SecurityCodeMail $mail): bool => $mail->hasTo(self::EMAIL));
 
@@ -86,6 +90,16 @@ class RecoveryEmailTest extends SignInTestCase
         $this->assertFalse($fresh->hasPin());
         $this->assertSame(1, $fresh->authEpoch());
         $this->assertDatabaseHas('audit_events', ['event' => 'access revoked', 'account_id' => (string) AccountKey::of($account)]);
+    }
+
+    public function test_forgot_pin_page_starts_with_the_steps_and_a_collapsed_recovery_section(): void
+    {
+        $this->get('/alpha/signin/forgot-pin')
+            ->assertOk()
+            ->assertSee('<details class="ss-forgot__recovery" >', false)
+            ->assertSee('<summary class="ss-forgot__toggle">', false)
+            ->assertSee('ss-forgot__steps', false)
+            ->assertDontSee('class="ss-button ss-button--primary ss-button--pill"', false);
     }
 
     public function test_reset_request_looks_the_same_without_a_recovery_e_mail_and_the_code_cannot_sign_in(): void
