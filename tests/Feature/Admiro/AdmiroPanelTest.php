@@ -40,6 +40,26 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertDontSee(text('admiro::admin.zones_title'));
     }
 
+    public function test_dashboard_starts_with_the_onboarding_steps_in_order_for_the_permitted_ones(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
+            ->assertSeeInOrder([
+                text('admiro::dashboard.onboarding_title'),
+                text('admiro::dashboard.onboarding_dictionaries_title'),
+                text('admiro::dashboard.onboarding_settings_title'),
+                text('admiro::dashboard.onboarding_legal_title'),
+                text('admiro::dashboard.onboarding_organizations_title'),
+                text('admiro::dashboard.onboarding_owners_title'),
+                text('admiro::dashboard.onboarding_administrators_title'),
+                text('admiro::dashboard.shortcuts_title'),
+            ])
+            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">06</span>', false);
+
+        $this->signedIn($this->admin('support@example.com', 'support'), 'admiro')->get('/admiro')
+            ->assertDontSee(text('admiro::dashboard.onboarding_title'))
+            ->assertSee(text('admiro::admin.zones_title'));
+    }
+
     public function test_admin_without_a_role_cannot_open_the_sections(): void
     {
         $guest = $this->admin('guest@example.com');

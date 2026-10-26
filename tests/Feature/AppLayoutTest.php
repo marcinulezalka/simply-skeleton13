@@ -104,6 +104,18 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('href="/wyloguj"', $html);
     }
 
+    public function test_sign_out_is_at_the_bottom_of_the_menu_not_in_the_account_menu(): void
+    {
+        $html = Blade::render('<x-admiro::app.layout title="Profil" :account="$account" sign-out="/wyjdz">x</x-admiro::app.layout>', [
+            'account' => ['name' => 'Anna Nowak', 'items' => [new NavigationItem('Profil', '/profil', 'users')]],
+        ]);
+        $accountMenu = substr($html, (int) strpos($html, '<details class="ss-account-menu ss-sidebar__account"'), (int) strpos($html, '</details>') - (int) strpos($html, '<details class="ss-account-menu ss-sidebar__account"'));
+
+        $this->assertStringNotContainsString('/wyjdz', $accountMenu);
+        $this->assertSame(1, substr_count($html, 'action="/wyjdz"'));
+        $this->assertStringContainsString('<form class="ss-sidebar__sign-out" method="POST" action="/wyjdz">', $html);
+    }
+
     public function test_bell_shows_the_unread_count_and_the_panel(): void
     {
         $html = Blade::render('<x-admiro::app.layout title="Pulpit" :notifications="$panel">x</x-admiro::app.layout>', [
@@ -194,11 +206,12 @@ class AppLayoutTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('~href="/polnoc"\s+aria-current~', $html);
     }
 
-    public function test_menu_has_the_settings_link_and_a_centered_logo_opening_the_full_width_simplysmart_footer(): void
+    public function test_settings_icon_sits_before_the_bell_and_sign_out_and_a_centered_logo_close_the_menu(): void
     {
         $settings = new SettingsMenu([], '/ustawienia', false, '/pulpit');
-        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :settings="$settings" :legal-links="$links">x</x-admiro::app.layout>', [
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :settings="$settings" :notifications="$panel" sign-out="/wyloguj" :legal-links="$links">x</x-admiro::app.layout>', [
             'settings' => $settings,
+            'panel' => new NotificationPanel([]),
             'links' => [['url' => '/prywatnosc', 'label' => 'Prywatność']],
         ]);
         $head = substr($html, 0, (int) strpos($html, '</head>'));
@@ -206,7 +219,15 @@ class AppLayoutTest extends TestCase
 
         $this->assertStringContainsString("const STORAGE_KEY = 'ss-theme';", $head);
         $this->assertStringNotContainsString('data-ss-theme-toggle', $sidebar);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="/ustawienia" title="' . text('layout.settings') . '">', $sidebar);
+        $settingsIcon = strpos($sidebar, '<a class="ss-icon-button ss-sidebar__settings-toggle" href="/ustawienia" title="' . text('layout.settings') . '"');
+        $signOut = strpos($sidebar, '<form class="ss-sidebar__sign-out" method="POST" action="/wyloguj">');
+
+        $this->assertNotFalse($settingsIcon);
+        $this->assertNotFalse($signOut);
+        $this->assertLessThan(strpos($sidebar, 'ss-notifications__toggle'), $settingsIcon);
+        $this->assertLessThan($signOut, strpos($sidebar, 'ss-sidebar__nav'));
+        $this->assertLessThan(strpos($sidebar, 'ss-sidebar__brand'), $signOut);
+        $this->assertStringContainsString('<span class="ss-sidebar__label">' . text('sign_in.sign_out') . '</span>', $sidebar);
         $this->assertStringContainsString('<div class="ss-sidebar__brand">', $sidebar);
         $this->assertStringContainsString('aria-controls="ss-app-footer"', $sidebar);
         $this->assertStringContainsString('data-ss-footer-toggle', $sidebar);
@@ -222,7 +243,7 @@ class AppLayoutTest extends TestCase
         $this->assertSame(1, substr_count($html, 'Wysuwana stopka simplysmart'));
     }
 
-    public function test_settings_mode_shows_the_settings_groups_with_a_way_back_instead_of_the_settings_link(): void
+    public function test_settings_mode_shows_the_settings_groups_with_a_way_back_and_marks_the_settings_icon(): void
     {
         $group = new NavigationGroup('Konto', [new NavigationItem('Profil', '/profil', 'user', true)]);
         $html = Blade::render('<x-admiro::app.layout title="Profil" :navigation="$navigation" :settings="$settings">x</x-admiro::app.layout>', [
@@ -233,7 +254,7 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('<nav class="ss-sidebar__nav" aria-label="' . text('layout.settings') . '">', $html);
         $this->assertStringContainsString('<a class="ss-sidebar__link ss-sidebar__back" href="/pulpit" title="' . text('layout.back_to_app') . '">', $html);
         $this->assertStringContainsString('<p class="ss-sidebar__title">' . text('layout.settings') . '</p>', $html);
-        $this->assertStringNotContainsString('<ul class="ss-sidebar__list ss-sidebar__settings">', $html);
+        $this->assertMatchesRegularExpression('~ss-sidebar__settings-toggle" href="/profil" title="' . text('layout.settings') . '"\s+aria-current="page"~', $html);
     }
 
     public function test_flashed_status_joins_the_flashed_toasts_as_a_success_toast(): void

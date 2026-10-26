@@ -254,7 +254,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString(url('/alpha/account/appearance'), $html);
         $this->assertMatchesRegularExpression('~href="' . preg_quote(url('/alpha/account/profile'), '~') . '"\s+aria-current="page"~', $html);
         $this->assertStringContainsString(url('/alpha/account/security'), $html);
-        $this->assertStringContainsString('<form method="POST" action="' . url('/alpha/signin/out') . '">', $html);
+        $this->assertStringContainsString('<form class="ss-sidebar__sign-out" method="POST" action="' . url('/alpha/signin/out') . '">', $html);
         $this->assertStringContainsString(text('sign_in.signed_in_as', ['name' => 'Anna Nowak']), $html);
     }
 }

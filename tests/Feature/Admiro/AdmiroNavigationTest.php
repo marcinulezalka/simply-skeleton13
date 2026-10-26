@@ -29,7 +29,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
 
         $this->assertStringContainsString('href="' . url('/admiro/audit') . '"', $html);
         $this->assertStringNotContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/dictionaries/countries') . '"', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/settings') . '" title="' . text('layout.settings') . '">', $html);
+        $this->assertStringContainsString('<a class="ss-icon-button ss-sidebar__settings-toggle" href="' . url('/admiro/settings') . '" title="' . text('layout.settings') . '"', $html);
         $this->assertStringContainsString(text('roles.admiro.owner'), $html);
         $this->assertStringContainsString('class="ss-card ss-card--link"', $html);
     }
