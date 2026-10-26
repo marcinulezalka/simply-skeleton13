@@ -64,6 +64,19 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('treść', $html);
     }
 
+    public function test_page_header_has_an_icon_a_title_a_mono_line_below_and_an_actions_panel(): void
+    {
+        $html = Blade::render('<x-admiro::app.context icon="building" title="Organizacje" meta="12 organizacji"><x-slot:actions><button class="ss-button" type="button">Eksport</button></x-slot:actions></x-admiro::app.context>');
+
+        $this->assertMatchesRegularExpression('~<div class="ss-context__heading">\s*<span class="ss-icon ss-context__icon">.*?</span>\s*<div class="ss-context__text">\s*<h1 class="ss-context__title">Organizacje</h1>\s*<p class="ss-context__meta">12 organizacji</p>~s', $html);
+        $this->assertStringContainsString('<div class="ss-context__actions" role="group" aria-label="' . text('layout.page_actions') . '"><button class="ss-button" type="button">Eksport</button></div>', $html);
+
+        $plain = Blade::render('<x-admiro::app.context title="Status" />');
+
+        $this->assertStringNotContainsString('ss-context__icon', $plain);
+        $this->assertStringNotContainsString('ss-context__actions', $plain);
+    }
+
     public function test_item_with_children_is_an_expandable_branch_with_tree_lines_open_on_a_current_child(): void
     {
         $render = static fn(bool $childCurrent): string => Blade::render('<x-admiro::app.layout title="Grafik" :navigation="$navigation">x</x-admiro::app.layout>', [

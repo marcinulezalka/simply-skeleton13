@@ -15,8 +15,10 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
+use Simplysmart\Admiro\Enums\AppLayout;
 use Simplysmart\Admiro\Enums\FaviconType;
 use Simplysmart\Admiro\Enums\Palette;
+use Simplysmart\Admiro\Enums\SocialNetwork;
 use Simplysmart\Admiro\Queries\InstalledPackages;
 use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Simplysmart\Admiro\Zones\ZoneNavigations;
@@ -88,6 +90,30 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Zone [shop] logo must be the path of an existing SVG file.');
         $factory->make(['name' => 'shop', 'logo' => $this->packagePath('simplysmart/admiro', 'public/assets/css/base.css')], 'shop', __DIR__);
+    }
+
+    public function test_app_layout_is_sidebar_by_default_and_must_be_a_known_variant(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+
+        $this->assertSame(AppLayout::Sidebar, $factory->make(['name' => 'shop'], 'shop', __DIR__)->appLayout);
+        $this->assertSame(AppLayout::Workspace, $factory->make(['name' => 'shop', 'app_layout' => 'workspace'], 'shop', __DIR__)->appLayout);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace.');
+        $factory->make(['name' => 'shop', 'app_layout' => 'grid'], 'shop', __DIR__);
+    }
+
+    public function test_social_links_skip_empty_addresses_and_reject_unknown_networks(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $zone = $factory->make(['name' => 'shop', 'social_links' => ['github' => 'https://github.com/shop', 'linkedin' => 'https://linkedin.com/company/shop', 'youtube' => '']], 'shop', __DIR__);
+
+        $this->assertSame([[SocialNetwork::LinkedIn, 'https://linkedin.com/company/shop'], [SocialNetwork::GitHub, 'https://github.com/shop']], array_map(static fn(array $link): array => [$link['network'], $link['url']], $zone->socialLinks));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zone [shop] social_links has unknown networks: myspace.');
+        $factory->make(['name' => 'shop', 'social_links' => ['myspace' => 'https://myspace.com/shop']], 'shop', __DIR__);
     }
 
     public function test_zone_website_must_be_an_http_url(): void

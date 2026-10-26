@@ -31,9 +31,13 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         (new Language())->forceFill(['name' => 'niemiecki', 'code' => 'de', 'is_active' => false, 'json_attributes' => [Language::FLAG_ICONS => ['de', 'at', 'ch']]])->save();
     }
 
-    public function test_entry_opens_the_first_pending_step(): void
+    public function test_entry_shows_the_steps_overview_with_links_to_the_wizard(): void
     {
-        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')->assertRedirect('/admiro/onboarding/languages');
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
+            ->assertOk()
+            ->assertSee('<section class="ss-card ss-onboarding"', false)
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '6']))
+            ->assertSee('href="' . url('/admiro/onboarding/languages') . '"', false);
     }
 
     public function test_languages_step_lists_enabled_languages_above_all_languages_with_switches_and_flags(): void
@@ -63,8 +67,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
 
         $this->post('/admiro/onboarding/languages/confirm')->assertRedirect('/admiro/onboarding/settings');
-        $this->get('/admiro/onboarding')->assertRedirect('/admiro/onboarding/settings');
-        $this->get('/admiro')->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '6']));
+        $this->get('/admiro/onboarding')->assertOk()->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '6']));
         $this->get('/admiro/onboarding/settings')
             ->assertOk()
             ->assertSee(text('admiro::dashboard.onboarding_open', ['name' => text('admiro::dashboard.onboarding_settings_title')]))

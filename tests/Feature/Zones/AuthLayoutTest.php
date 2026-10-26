@@ -62,6 +62,14 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('<span class="ss-icon ss-input-wrap__icon">', $html);
     }
 
+    public function test_zone_orders_and_names_the_legal_links_without_cookie_settings(): void
+    {
+        $this->get('/admiro/signin')->assertOk()->assertDontSee('data-ss-cookie-settings', false);
+        $this->get('/alpha/signin')->assertOk();
+        $this->assertSame(['cookie_policy_first' => true, 'cookie_settings' => false], config()->array('admiro.zone.auth.legal'));
+        $this->assertSame('Polityka Prywatności', $this->app->make(\Simplysmart\Admiro\Contracts\ZoneRegistry::class)->get('admiro')->signInText('legal_privacy'));
+    }
+
     public function test_zone_can_turn_off_the_home_link_under_the_sign_in_form(): void
     {
         $this->get('/alpha/signin')->assertOk()->assertSee('<div class="ss-auth__home">', false);
@@ -207,12 +215,14 @@ class AuthLayoutTest extends SignInTestCase
 
         $this->assertMatchesRegularExpression('~<input class="ss-input ss-input--code" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="8" required="required" aria-invalid="true" aria-describedby="pin-error" autofocus="autofocus"\s*>~', $html);
         $this->assertStringContainsString('aria-controls="pin-keypad" title="' . text('layout.keypad.open') . '" data-ss-keypad-open hidden>', $html);
-        $this->assertStringContainsString('<dialog class="ss-keypad" id="pin-keypad" aria-labelledby="pin-keypad-title" data-ss-keypad data-ss-keypad-for="pin">', $html);
+        $this->assertStringContainsString('<dialog class="ss-keypad" id="pin-keypad" aria-label="PIN" data-ss-keypad data-ss-keypad-for="pin">', $html);
+        $this->assertStringNotContainsString('ss-keypad__title', $html);
         $this->assertSame(10, substr_count($html, 'data-ss-keypad-digit='));
         $this->assertStringContainsString('data-ss-keypad-backspace', $html);
         $this->assertStringContainsString('data-ss-keypad-clear', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-keypad__bar">\s*<p class="ss-keypad__display"[^>]*></p>\s*<button class="ss-icon-button ss-keypad__close" type="button" data-ss-keypad-close>~', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-keypad__footer">\s*<button class="ss-icon-button ss-keypad__backspace" type="button" data-ss-keypad-backspace>.*?</button>\s*<button class="ss-button ss-button--primary ss-keypad__done" type="button" data-ss-keypad-done><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.done'), '~') . '</button>~s', $html);
+        $this->assertMatchesRegularExpression('~data-ss-keypad-for="pin">\s*<p class="ss-keypad__display"~', $html);
+        $this->assertMatchesRegularExpression('~data-ss-keypad-digit="0">0</button>\s*<button class="ss-keypad__key ss-keypad__key--muted" type="button" data-ss-keypad-backspace>~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-keypad__footer">\s*<button class="ss-button" type="button" data-ss-keypad-close><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.back'), '~') . '</button>\s*<button class="ss-button ss-button--primary ss-keypad__done" type="button" data-ss-keypad-done><span class="ss-icon ss-button__icon">.*?</span>\s*' . preg_quote(text('layout.keypad.done'), '~') . '</button>~s', $html);
         $this->assertStringContainsString('<p class="ss-field__error" id="pin-error" role="alert">Zły PIN</p>', $html);
 
         $plain = Blade::render('<x-admiro::pin-field id="code" name="code" label="Kod" type="text" autocomplete="one-time-code" :min="6" :max="6" :keypad="false" />');

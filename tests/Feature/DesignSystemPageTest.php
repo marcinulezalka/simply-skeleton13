@@ -37,6 +37,8 @@ class DesignSystemPageTest extends TestCase
         $response->assertOk();
         $response->assertSee('<meta name="robots" content="noindex, nofollow">', false);
         $response->assertSee('--ss-color-surface');
+        $response->assertSee('<section class="ss-card" id="header" aria-labelledby="header-title">', false);
+        $response->assertSee(text('design_system.sample.header_primary'));
         $response->assertSee('.ss-ds-chip--bg-light { background: #f8fafc; }', false);
         $response->assertSee('.ss-ds-chip--bg-dark { background: #020617; }', false);
 

@@ -42,7 +42,8 @@ class AdmiroSearchTest extends AdmiroTestCase
             ->assertOk()
             ->assertSee('data-ss-search-suggest="' . route('admiro.search.suggest') . '"', false)
             ->assertSee('role="combobox"', false)
-            ->assertSee('<input type="checkbox" name="in[]" value="languages" checked data-ss-search-scope>', false)
+            ->assertSee('<label class="ss-switch ss-search__scope" for="ss-search-scope-languages">', false)
+            ->assertSee('value="languages"', false)
             ->assertSee('value="pages"', false)
             ->assertSee("const MIN_LENGTH = 2;", false);
     }
