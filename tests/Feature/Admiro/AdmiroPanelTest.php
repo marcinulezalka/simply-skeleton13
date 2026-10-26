@@ -47,7 +47,7 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
             ->assertSeeInOrder([
                 text('admiro::dashboard.onboarding_title'),
-                text('admiro::dashboard.onboarding_dictionaries_title'),
+                text('admiro::dashboard.onboarding_languages_title'),
                 text('admiro::dashboard.onboarding_settings_title'),
                 text('admiro::dashboard.onboarding_legal_title'),
                 text('admiro::dashboard.onboarding_organizations_title'),
@@ -99,10 +99,12 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_legal_lead'))
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '5', 'total' => '6']));
 
-        $progress->mark($legal[array_key_last($legal)]);
+        $lastLegal = end($legal);
+        $this->assertIsString($lastLegal);
+        $progress->mark($lastLegal);
 
         $this->get('/admiro')
-            ->assertDontSee(text('admiro::dashboard.onboarding_title'))
+            ->assertDontSee('<section class="ss-card ss-onboarding"', false)
             ->assertSee(text('admiro::dashboard.shortcuts_title'));
     }
 

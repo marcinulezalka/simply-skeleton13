@@ -96,6 +96,24 @@ class AdmiroDictionariesTest extends AdmiroTestCase
         $this->assertSame('2025-12-31', $rate->valid_to?->toDateString());
     }
 
+    public function test_entries_switch_on_and_off_with_a_switch_and_languages_show_their_flags(): void
+    {
+        Language::query()->where('code', 'en')->sole()->forceFill(['json_attributes' => [Language::FLAG_ICONS => ['gb', 'us']]])->save();
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+
+        $this->get('/admiro/dictionaries/languages')
+            ->assertOk()
+            ->assertSee('<tr id="entry-en">', false)
+            ->assertSee('id="flag-icons-gb"', false)
+            ->assertSee('id="flag-icons-us"', false)
+            ->assertSee('data-ss-autosubmit', false)
+            ->assertSee('role="switch" id="entry-switch-en" checked', false)
+            ->assertSee('role="switch" id="entry-switch-pl" disabled', false);
+
+        $this->from('/admiro/onboarding/languages')->post('/admiro/dictionaries/languages/en/toggle')->assertRedirect('/admiro/onboarding/languages');
+        $this->assertFalse(Language::query()->where('code', 'en')->sole()->is_active);
+    }
+
     public function test_support_sees_dictionaries_without_changing_them(): void
     {
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro');

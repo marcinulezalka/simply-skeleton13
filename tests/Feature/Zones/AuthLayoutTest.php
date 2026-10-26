@@ -62,6 +62,13 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('<span class="ss-icon ss-input-wrap__icon">', $html);
     }
 
+    public function test_zone_can_turn_off_the_home_link_under_the_sign_in_form(): void
+    {
+        $this->get('/alpha/signin')->assertOk()->assertSee('<div class="ss-auth__home">', false);
+        $this->get('/admiro/signin')->assertOk()->assertDontSee('<div class="ss-auth__home">', false);
+        $this->assertSame(['home_link' => false], array_intersect_key(config()->array('admiro.zone.auth'), ['home_link' => true]));
+    }
+
     public function test_code_step_has_a_cell_per_digit_bolds_the_address_and_offers_icon_buttons(): void
     {
         $this->requestCode();

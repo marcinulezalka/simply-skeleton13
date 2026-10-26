@@ -80,6 +80,22 @@ class LocalizationSeederTest extends TestCase
         $this->assertSame([], $missing->values()->all());
     }
 
+    public function test_new_install_enables_only_the_interface_languages(): void
+    {
+        $this->assertSame(['en', 'pl'], Language::query()->active()->orderBy('code')->pluck('code')->all());
+    }
+
+    public function test_languages_keep_the_flags_of_every_country_they_are_official_in(): void
+    {
+        $english = Language::query()->where('code', 'en')->sole();
+        $german = Language::query()->where('code', 'de')->sole();
+
+        $this->assertSame('gb', $english->flagIcons()[0]);
+        $this->assertContains('us', $english->flagIcons());
+        $this->assertSame(['de', 'at', 'ch'], array_slice(array_values(array_intersect($german->flagIcons(), ['de', 'at', 'ch'])), 0, 3));
+        $this->assertSame($german->flagIcons(), $german->json_attributes[Language::FLAG_ICONS] ?? null);
+    }
+
     public function test_countries_have_iso_codes_and_territory(): void
     {
         $poland = Country::query()->where('alpha_code_2', 'PL')->sole();
