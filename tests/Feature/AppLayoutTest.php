@@ -54,7 +54,8 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('aria-controls="ss-sidebar" aria-expanded="true" data-ss-sidebar-toggle', $html);
         $this->assertMatchesRegularExpression('~href="/zamowienia" title="Zamówienia"\s+aria-current="page"~', $html);
         $this->assertStringContainsString('<span class="ss-sidebar__badge">3</span>', $html);
-        $this->assertStringContainsString('<p class="ss-sidebar__group">Sklep</p>', $html);
+        $this->assertSame(2, substr_count($html, '<div class="ss-sidebar__section">'));
+        $this->assertMatchesRegularExpression('~<div class="ss-sidebar__section">\s*<p class="ss-sidebar__group">Sklep</p>\s*<ul class="ss-sidebar__list">~', $html);
         $this->assertStringContainsString('<form class="ss-search" role="search" method="GET" action="/szukaj">', $html);
         $this->assertStringContainsString('name="q" type="search"', $html);
         $this->assertStringContainsString(text('layout.search_shortcut'), $html);

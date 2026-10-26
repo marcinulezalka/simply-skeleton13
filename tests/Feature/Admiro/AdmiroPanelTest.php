@@ -17,6 +17,8 @@ use Simplysmart\Admiro\Models\AdmiroAccount;
 use Simplysmart\Admiro\Contracts\CurrentOrganization;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Models\ZoneAccount;
+use Simplysmart\Admiro\Panel\Enums\OnboardingStep;
+use Simplysmart\Admiro\Panel\Onboarding\OnboardingProgress;
 use Simplysmart\Admiro\Permissions\PermissionFiles;
 use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 use Tests\Fixtures\Zones\AlphaAccount;
@@ -53,11 +55,55 @@ class AdmiroPanelTest extends AdmiroTestCase
                 text('admiro::dashboard.onboarding_administrators_title'),
                 text('admiro::dashboard.shortcuts_title'),
             ])
-            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">06</span>', false);
+            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">06</span>', false)
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '6']))
+            ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="0" max="6">', false);
 
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro')->get('/admiro')
             ->assertDontSee(text('admiro::dashboard.onboarding_title'))
             ->assertSee(text('admiro::admin.zones_title'));
+    }
+
+    public function test_steps_done_in_the_panel_disappear_from_the_onboarding_and_advance_the_progress(): void
+    {
+        $hero = $this->admin('hero@example.com', 'hero');
+        $newcomer = $this->admin('new@example.com');
+
+        $this->signedIn($hero, 'admiro')->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect('/admiro/organizations');
+        $this->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect('/admiro/administrators');
+
+        $this->get('/admiro')
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '2', 'total' => '6']))
+            ->assertSee(text('admiro::dashboard.onboarding_settings_lead'))
+            ->assertDontSee(text('admiro::dashboard.onboarding_organizations_lead'))
+            ->assertDontSee(text('admiro::dashboard.onboarding_administrators_lead'))
+            ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">05</span>', false);
+    }
+
+    public function test_legal_step_needs_every_document_and_the_section_goes_once_everything_is_done(): void
+    {
+        $progress = $this->app->make(OnboardingProgress::class);
+        $legal = OnboardingStep::Legal->milestones();
+
+        foreach (OnboardingStep::cases() as $step) {
+            if ($step !== OnboardingStep::Legal) {
+                $progress->mark($step->value);
+            }
+        }
+
+        foreach (array_slice($legal, 0, -1) as $milestone) {
+            $progress->mark($milestone);
+        }
+
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
+            ->assertSee(text('admiro::dashboard.onboarding_legal_lead'))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '5', 'total' => '6']));
+
+        $progress->mark($legal[array_key_last($legal)]);
+
+        $this->get('/admiro')
+            ->assertDontSee(text('admiro::dashboard.onboarding_title'))
+            ->assertSee(text('admiro::dashboard.shortcuts_title'));
     }
 
     public function test_admin_without_a_role_cannot_open_the_sections(): void
