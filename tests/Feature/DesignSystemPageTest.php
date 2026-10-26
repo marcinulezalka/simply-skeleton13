@@ -82,8 +82,8 @@ class DesignSystemPageTest extends TestCase
         $this->assertCount(count(DesignSystemView::cases()), $grouped);
         $this->assertSame([
             DesignSystemView::SignIn, DesignSystemView::SignInSplit, DesignSystemView::SignInCode, DesignSystemView::SignInCodeInvalid,
-            DesignSystemView::SignInPin, DesignSystemView::SignInPinLimit, DesignSystemView::SignInPinSetup, DesignSystemView::SignInExpired,
-            DesignSystemView::ForgotPin,
+            DesignSystemView::SignInPin, DesignSystemView::SignInPinKeypad, DesignSystemView::SignInPinLimit, DesignSystemView::SignInPinSetup,
+            DesignSystemView::SignInExpired, DesignSystemView::ForgotPin, DesignSystemView::ForgotPinRecovery, DesignSystemView::ForgotPinCode,
         ], DesignSystemArea::Authorization->views());
         $this->assertCount(7, DesignSystemArea::Errors->views());
     }
@@ -155,6 +155,26 @@ class DesignSystemPageTest extends TestCase
         }
 
         $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInCode))->assertSee(text('sign_in.code_title'));
+    }
+
+    public function test_variants_show_the_open_keypad_and_the_forgot_pin_recovery_states(): void
+    {
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPin))->assertOk()->assertSee('data-ss-keypad-for="pin">', false);
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPinKeypad))
+            ->assertOk()
+            ->assertSee('data-ss-keypad-for="pin" data-ss-keypad-show>', false)
+            ->assertSee("dialog.hasAttribute('data-ss-keypad-show')", false);
+
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::ForgotPin))->assertOk()->assertSee('<details class="ss-forgot__recovery" >', false);
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::ForgotPinRecovery))
+            ->assertOk()
+            ->assertSee('<details class="ss-forgot__recovery"  open >', false)
+            ->assertSee('id="forgot-pin-email"', false);
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::ForgotPinCode))
+            ->assertOk()
+            ->assertSee('<details class="ss-forgot__recovery"  open >', false)
+            ->assertSee(text('sign_in.forgot_pin.recovery.code_lead'))
+            ->assertSee('id="forgot-pin-code-1"', false);
     }
 
     public function test_unknown_view_is_not_found(): void
