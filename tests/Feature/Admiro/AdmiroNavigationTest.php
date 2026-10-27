@@ -55,13 +55,13 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote(url('/admiro/account/security'), '~') . '.*?' . preg_quote(url('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
         $this->assertStringContainsString('<details class="ss-calendar-panel" data-ss-dropdown>', $html);
         $this->assertStringContainsString('<summary class="ss-calendar-panel__toggle" data-ss-clock>', $html);
-        $this->assertMatchesRegularExpression('~<span class="ss-calendar-panel__chip">.*?<span class="ss-calendar-panel__date" data-ss-clock-date>[^<]+</span><span class="ss-calendar-panel__week">, <span data-ss-clock-week>[^<]+</span></span></span>\s*</span>\s*<span class="ss-calendar-panel__weekday" data-ss-clock-weekday>[^<]+</span>~s', $html);
+        $this->assertStringNotContainsString('data-ss-clock-week', $html);
         $this->assertStringNotContainsString('data-ss-clock-time', $html);
         $this->assertStringContainsString(text('layout.mailbox_connect'), $html);
         $this->assertStringNotContainsString('ss-account-card', $html);
         $this->assertStringNotContainsString('ss-workspace-footer__wordmark', $html);
         $this->assertStringContainsString('<a class="ss-account-menu__link" href="' . url('/admiro/account/profile') . '"', $html);
-        $this->assertStringContainsString('<span data-ss-clock-week>' . text('layout.calendar_week', ['week' => (string) now()->isoWeek()]) . '</span>', $html);
+        $this->assertStringNotContainsString('data-ss-clock-week', $html);
         $this->assertMatchesRegularExpression('~<button class="ss-search__send" type="submit">\s*<span class="ss-icon ss-search__send-icon">~', $html);
         $this->assertStringContainsString('<form class="ss-search ss-search--compose"', $html);
         $this->assertStringContainsString('href="' . url('/admiro/organizations/create') . '"><span class="ss-icon ss-account-menu__icon">', $html);
