@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
+use Simplysmart\Admiro\Models\Dictionaries\Country;
+use Simplysmart\Admiro\Models\Dictionaries\CountryLanguage;
+use Simplysmart\Admiro\Models\Dictionaries\Currency;
 use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Enums\RecordStatus;
@@ -28,8 +31,9 @@ use Simplysmart\Admiro\Wiki\Wiki;
 use Simplysmart\Admiro\Wiki\WikiEntry;
 
 /**
- * Kreator onboardingu: wejście do pierwszego niezrobionego kroku, krok „Języki” (włączone osobno nad listą,
- * przełączniki, flagi krajów w kolumnie kodu, filtr z wyszukiwarki), krok „Organizacje” (drzewo z przeciąganiem i listą „Przenieś pod”, wiersze ze strefami i właścicielem), zatwierdzenie zamyka krok i prowadzi dalej,
+ * Kreator onboardingu: wejście do pierwszego niezrobionego kroku, krok „Języki” (wyszukiwarka w rogu z podpowiedziami
+ * i przełącznikiem, panel „Język aplikacji” z ustawieniami regionalnymi — propozycja i „Zapisz jako domyślne” —,
+ * przełączniki ON / OFF zapisywane od razu), krok „Organizacje” (drzewo z przeciąganiem i listą „Przenieś pod”, wiersze ze strefami i właścicielem), zatwierdzenie zamyka krok i prowadzi dalej,
  * kroki spoza uprawnień to 404.
  */
 class AdmiroOnboardingTest extends AdmiroTestCase
@@ -61,51 +65,73 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee('<a class="ss-icon-button ss-onboarding-wizard__remaining-link" href="' . url('/admiro/onboarding/installation') . '"', false);
     }
 
-    public function test_languages_step_shows_enabled_languages_above_a_search_field_without_the_full_list(): void
+    public function test_languages_step_has_the_search_in_the_corner_and_the_application_language_panel(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding/languages')
             ->assertOk()
             ->assertSee('<title>' . text('admiro::dashboard.onboarding_title'), false)
-            ->assertSeeInOrder([text('admiro::dashboard.onboarding_languages_enabled'), text('admiro::dashboard.onboarding_languages_search_title'), 'id="ss-languages-search"'], false)
-            ->assertSee('data-ss-live-search="ss-languages-results"', false)
-            ->assertSee('<div class="ss-onboarding-picker__live" id="ss-languages-results" aria-live="polite">', false)
-            ->assertSee(text('admiro::dashboard.onboarding_languages_hint'))
+            ->assertSeeInOrder(['<div class="ss-onboarding-wizard__header">', 'id="ss-languages-search"', text('admiro::dashboard.onboarding_languages_enabled'), 'id="enabled-language-pl-row"', 'id="enabled-language-en-row"'], false)
+            ->assertSee('<input type="hidden" name="in[]" value="languages">', false)
+            ->assertSee('<span class="ss-badge" title="' . text('admiro::dashboard.onboarding_languages_active_count', ['active' => 2, 'all' => 3]) . '">2/3</span>', false)
+            ->assertDontSee('<form class="ss-search ss-onboarding-picker__search" role="search" method="GET" action="' . url('/admiro/onboarding/languages') . '" data-ss-live-search', false)
+            ->assertDontSee('id="ss-languages-all-title"', false)
             ->assertDontSee('id="language-de"', false)
-            ->assertDontSee('<p class="ss-context__meta">', false)
+            ->assertSee('<span class="ss-switch__state" aria-hidden="true">', false)
+            ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'languages']), false)
             ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro/onboarding') . '">', false)
-            ->assertSee('<span class="ss-onboarding-wizard__step-number">' . text('admiro::dashboard.onboarding_step', ['number' => '1']) . '</span>', false)
-            ->assertDontSee('type="submit" data-ss-autosubmit-fallback', false)
             ->assertSee('<a class="ss-onboarding-wizard__step-link" href="' . url('/admiro/onboarding/languages') . '" aria-current="step">', false)
-            ->assertSee('<a class="ss-onboarding-wizard__step-link ss-onboarding-wizard__step-link--done" href="' . url('/admiro/onboarding/installation') . '">', false)
-            ->assertDontSee('<span class="ss-onboarding-wizard__step-lead">' . e(text('admiro::dashboard.onboarding_installation_lead')), false)
-            ->assertSee('<span class="ss-onboarding-wizard__step-lead">' . e(text('admiro::dashboard.onboarding_settings_lead')), false)
-            ->assertSee(route('admiro.onboarding.confirm', ['step' => 'languages']), false);
+            ->assertSee('<a class="ss-onboarding-wizard__step-link ss-onboarding-wizard__step-link--done" href="' . url('/admiro/onboarding/installation') . '">', false);
     }
 
-    public function test_enabled_languages_show_the_default_one_first_with_regional_settings_and_the_others_one_per_row(): void
+    public function test_default_language_proposes_regional_settings_and_saves_them_as_default_at_once(): void
     {
+        $poland = Country::query()->where('alpha_code_2', 'PL')->sole();
+        $germany = Country::query()->where('alpha_code_2', 'DE')->sole();
+        $zloty = Currency::query()->where('alpha_code_3', 'PLN')->sole();
+        $poland->forceFill(['currency_id' => $zloty->id, 'is_default' => false])->save();
+        $germany->forceFill(['is_default' => true])->save();
+        $polish = Language::query()->where('code', 'pl')->sole();
+        $poland->languages()->attach($polish->id, [CountryLanguage::IS_PRIMARY => true]);
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
 
         $this->get('/admiro/onboarding/languages')
             ->assertOk()
-            ->assertSeeInOrder([
-                '<header class="ss-onboarding-languages__header">',
-                '<div class="ss-onboarding-languages__default">',
-                '<span class="ss-badge ss-badge--outline ss-badge--info" title="' . text('admiro::dashboard.onboarding_language_locked') . '">' . text('admiro::dashboard.onboarding_language_default') . '</span>',
-                '<a class="ss-onboarding-languages__regional ss-onboarding-languages__regional--missing" href="' . url('/admiro/onboarding/settings') . '">',
-                '<ul class="ss-onboarding-languages__rows">',
-                'role="switch" id="enabled-language-en"',
-            ], false);
+            ->assertSee('<dl class="ss-onboarding-languages__regional ss-onboarding-languages__regional--proposed"', false)
+            ->assertSeeInOrder(['id="enabled-language-pl-row"', 'PLN · ', text('admiro::dashboard.onboarding_regional_proposed'), text('admiro::dashboard.onboarding_regional_save'), text('admiro::dashboard.onboarding_language_default')], false)
+            ->assertSee('action="' . route('admiro.onboarding.regional') . '"', false);
 
-        $this->app->make(OnboardingProgress::class)->mark(OnboardingStep::Settings->value);
+        $this->post('/admiro/onboarding/languages/regional', ['language' => 'pl'])
+            ->assertRedirect('/admiro/onboarding/languages')
+            ->assertSessionHas('status', text('admiro::dashboard.onboarding_regional_saved'));
 
+        $this->assertTrue($poland->fresh()?->is_default);
+        $this->assertFalse($germany->fresh()?->is_default);
+        $this->assertTrue($zloty->fresh()?->is_default);
+        $this->assertTrue($this->stepDone(OnboardingStep::Settings));
+        $this->assertTrue($this->stepDone(OnboardingStep::Languages));
         $this->get('/admiro/onboarding/languages')
             ->assertOk()
-            ->assertDontSee('ss-onboarding-languages__regional--missing" href', false)
-            ->assertSee('<dl class="ss-onboarding-languages__regional" aria-label="' . text('admiro::dashboard.onboarding_regional_title') . '">', false)
-            ->assertSee('PLN · ', false)
-            ->assertSee('<div class="ss-onboarding-languages__regional-item ss-onboarding-languages__regional-item--missing">', false)
-            ->assertSee('<a class="ss-link" href="' . url('/admiro/holidays') . '">' . text('admiro::dashboard.onboarding_regional_set') . '</a>', false);
+            ->assertDontSee('action="' . route('admiro.onboarding.regional') . '"', false)
+            ->assertDontSee('>' . text('admiro::dashboard.onboarding_regional_proposed') . '</span>', false);
+        $this->post('/admiro/onboarding/languages/regional', ['language' => 'de'])->assertSessionHasErrors('language');
+    }
+
+    public function test_language_suggestions_switch_it_on_and_any_language_switch_closes_the_step(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/search/suggest?q=niem&in[]=languages')
+            ->assertOk()
+            ->assertSee('data-ss-post-toggle="' . route('admiro.dictionaries.toggle', ['dictionary' => 'languages', 'code' => 'de']) . '"', false)
+            ->assertSee(url('/admiro/onboarding/languages') . '?q=niem#language-de', false);
+        $this->get('/admiro/search/suggest?q=pl&in[]=languages')
+            ->assertOk()
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info">' . text('admiro::dashboard.onboarding_language_default') . '</span>', false);
+
+        $this->post('/admiro/dictionaries/languages/de/toggle')->assertRedirect();
+
+        $this->assertTrue(Language::query()->where('code', 'de')->sole()->is_active);
+        $this->assertTrue($this->stepDone(OnboardingStep::Languages));
     }
 
     public function test_search_puts_the_default_language_first(): void
@@ -363,5 +389,10 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/onboarding/languages')->assertNotFound();
         $this->post('/admiro/onboarding/languages/confirm')->assertForbidden();
         $this->assertNotNull(Organization::query()->find(Organization::OPERATOR_ID));
+    }
+
+    private function stepDone(OnboardingStep $step): bool
+    {
+        return $this->app->make(OnboardingProgress::class)->checklist([$step])[0]['done'];
     }
 }
