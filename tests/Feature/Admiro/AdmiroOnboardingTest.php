@@ -24,6 +24,8 @@ use Simplysmart\Admiro\Panel\Enums\OnboardingStep;
 use Simplysmart\Admiro\Permissions\OwnerData;
 use Simplysmart\Admiro\Permissions\PermissionFiles;
 use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
+use Simplysmart\Admiro\Wiki\Wiki;
+use Simplysmart\Admiro\Wiki\WikiEntry;
 
 /**
  * Kreator onboardingu: wejście do pierwszego niezrobionego kroku, krok „Języki” (włączone osobno nad listą,
@@ -164,7 +166,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $response = $this->get('/admiro/onboarding/organizations')->assertOk();
         $html = (string) $response->getContent();
 
-        $this->assertMatchesRegularExpression('~Przychodnia Zdrowie.*?<a class="ss-onboarding-organizations__zone" href="' . preg_quote(route('admiro.zones.accounts', ['managedZone' => 'alpha']), '~') . '" title="/alpha">\s*<span class="ss-icon ss-onboarding-organizations__zone-icon">.*?</span>\s*alpha</a>.*?Jan Kowalski.*?</li>~s', $html);
+        $this->assertMatchesRegularExpression('~Przychodnia Zdrowie.*?<a class="ss-onboarding-organizations__zone"\s+href="' . preg_quote(route('admiro.zones.accounts', ['managedZone' => 'alpha']), '~') . '"\s+title="alpha · /alpha">\s*<span class="ss-icon ss-onboarding-organizations__zone-icon">.*?</span>\s*alpha\s*</a>.*?Jan Kowalski.*?</li>~s', $html);
         $this->assertMatchesRegularExpression('~Firma Bez Strefy.*?' . preg_quote(text('admiro::dashboard.onboarding_organization_no_zone'), '~') . '.*?href="' . preg_quote(route('admiro.owners.create', ['organization' => $empty->token]), '~') . '">' . preg_quote(text('admiro::dashboard.onboarding_organization_add_owner'), '~') . '</a>~s', $html);
         $this->get(route('admiro.owners.create', ['organization' => $empty->token]))
             ->assertOk()
@@ -278,11 +280,55 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertSame(RecordStatus::Blocked, $clinic->status);
         $html = (string) $this->get('/admiro/onboarding/organizations')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('~ss-onboarding-organizations__row--inactive" data-ss-tree-row>.*?Przychodnia Zdrowie.*?<span class="ss-badge ss-badge--outline ss-badge--warning">' . preg_quote(RecordStatus::Blocked->label(), '~') . '</span>\s*<span class="ss-badge ss-badge--outline ss-badge--info">Partner</span>~s', $html);
-        $this->assertMatchesRegularExpression('~<span class="ss-avatars">\s*<span class="ss-avatar ss-avatar--sm[^"]*" title="Jan Kowalski"\s+role="img" aria-label="Jan Kowalski"~', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-avatars">\s*<a class="ss-onboarding-organizations__owner" href="' . preg_quote(e(route('admiro.zones.accounts', ['managedZone' => 'alpha', 'email' => 'jan@example.com'])), '~') . '" title="Jan Kowalski"><span class="ss-avatar ss-avatar--sm[^"]*"\s+role="img" aria-label="Jan Kowalski"~', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-switch__state" aria-hidden="true"><span class="ss-switch__state-on">ON</span><span class="ss-switch__state-off">OFF</span></span>~', $html);
 
         $this->post('/admiro/organizations/' . $clinic->token . '/toggle');
         $this->assertSame(RecordStatus::Active, $clinic->fresh()?->status);
         $this->assertTrue($clinic->fresh()?->is_active);
+    }
+
+    public function test_organizations_step_explains_the_term_with_a_wiki_tip_and_shows_zone_favicons(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $html = (string) $this->get('/admiro/onboarding/organizations')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<aside class="ss-wiki-tip" id="wiki-organizacja" role="note" aria-labelledby="wiki-organizacja-term">.*?wiki-organizacja.*?<strong class="ss-wiki-tip__term" id="wiki-organizacja-term">' . preg_quote(text('wiki.organizacja.term'), '~') . '</strong>.*?' . preg_quote(e(text('wiki.organizacja.definition')), '~') . '.*?<span class="ss-wiki-tip__example-label">' . text('wiki.example') . '</span>~s', $html);
+        $this->assertLessThan(strpos($html, 'ss-onboarding-picker__enabled'), strpos($html, 'id="wiki-organizacja"'));
+        $this->assertMatchesRegularExpression('~<a class="ss-onboarding-organizations__zone"\s+href="' . preg_quote(route('admiro.zones.accounts', ['managedZone' => 'admiro']), '~') . '"\s+title="admiro · /admiro">\s*<img class="ss-onboarding-organizations__zone-favicon" src="[^"]*/favicon/svg~', $html);
+    }
+
+    public function test_wiki_lists_core_terms_with_the_prefix_and_packages_add_their_own(): void
+    {
+        $wiki = $this->app->make(Wiki::class);
+        $wiki->add('cennik', 'invoice', 'shop::');
+
+        $keys = array_map(static fn(WikiEntry $entry): string => $entry->key, $wiki->all());
+        $this->assertSame(['organizacja', 'organizacja-operatora', 'departament', 'strefa', 'wlasciciel'], array_slice($keys, 0, 5));
+        $this->assertSame('cennik', $keys[array_key_last($keys)]);
+        $this->assertSame(text('wiki.departament.question'), $wiki->entry('departament')?->question);
+        $this->assertSame(['departament'], array_map(static fn(WikiEntry $entry): string => $entry->key, $wiki->search('RÓŻNI SIĘ OD')));
+        $this->assertSame('wiki-departament', $wiki->entry('departament')?->id());
+        $this->assertNull($wiki->entry('nieznane'));
+        $this->assertSame('shop::wiki.cennik.term', $wiki->entry('cennik')?->term);
+        $this->assertNull($wiki->entry('cennik')?->example);
+    }
+
+    public function test_wiki_page_lists_tips_and_questions_with_search_and_steps_explain_their_term(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/wiki')
+            ->assertOk()
+            ->assertSee('id="wiki-organizacja"', false)
+            ->assertSee('id="wiki-departament"', false)
+            ->assertSee('<p class="ss-wiki-tip__question"><span class="ss-wiki-tip__qa" aria-hidden="true">Q</span>' . e(text('wiki.departament.question')) . '</p>', false)
+            ->assertSee(route('admiro.wiki'), false);
+        $this->get('/admiro/wiki?q=strefach')->assertOk()->assertSee('id="wiki-strefa"', false)->assertDontSee('id="wiki-organizacja"', false);
+        $this->get('/admiro/wiki?q=zzz')->assertOk()->assertSee(text('wiki.none', ['term' => 'zzz']));
+        $this->get('/admiro/onboarding/owners')->assertOk()->assertSee('id="wiki-wlasciciel"', false);
+        $this->get('/admiro/onboarding/organizations')->assertOk()->assertSee(text('admiro::dashboard.onboarding_organizations_enabled'))->assertSee('id="wiki-organizacja"', false);
+        $this->get('/admiro/onboarding/languages')->assertOk()->assertDontSee('class="ss-wiki-tip"', false);
     }
 
     public function test_confirming_languages_closes_the_step_and_moves_on(): void
