@@ -149,7 +149,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search ss-onboarding-wizard__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
     }
 
-    public function test_organization_rows_show_member_zones_and_the_owner_or_a_link_to_add_one(): void
+    public function test_organization_rows_link_member_zones_and_show_the_owner_or_a_link_to_add_one(): void
     {
         $this->app->make(ZoneOwnerProvisioners::class)->addDefault('alpha');
         $this->app->make(PermissionFiles::class)->add(__DIR__ . '/../../Fixtures/Permissions');
@@ -164,7 +164,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $response = $this->get('/admiro/onboarding/organizations')->assertOk();
         $html = (string) $response->getContent();
 
-        $this->assertMatchesRegularExpression('~Przychodnia Zdrowie.*?<span class="ss-badge ss-badge--outline" title="/alpha">alpha</span>.*?Jan Kowalski.*?</li>~s', $html);
+        $this->assertMatchesRegularExpression('~Przychodnia Zdrowie.*?<a class="ss-onboarding-organizations__zone" href="' . preg_quote(route('admiro.zones.accounts', ['managedZone' => 'alpha']), '~') . '" title="/alpha">\s*<span class="ss-icon ss-onboarding-organizations__zone-icon">.*?</span>\s*alpha</a>.*?Jan Kowalski.*?</li>~s', $html);
         $this->assertMatchesRegularExpression('~Firma Bez Strefy.*?' . preg_quote(text('admiro::dashboard.onboarding_organization_no_zone'), '~') . '.*?href="' . preg_quote(route('admiro.owners.create', ['organization' => $empty->token]), '~') . '">' . preg_quote(text('admiro::dashboard.onboarding_organization_add_owner'), '~') . '</a>~s', $html);
         $this->get(route('admiro.owners.create', ['organization' => $empty->token]))
             ->assertOk()
