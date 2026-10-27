@@ -87,8 +87,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSeeInOrder([
                 '<header class="ss-onboarding-languages__header">',
                 '<div class="ss-onboarding-languages__default">',
-                '<span class="ss-badge ss-badge--outline ss-badge--info">' . text('admiro::dashboard.onboarding_language_default') . '</span>',
-                'role="switch" id="enabled-language-pl"',
+                '<span class="ss-badge ss-badge--outline ss-badge--info" title="' . text('admiro::dashboard.onboarding_language_locked') . '">' . text('admiro::dashboard.onboarding_language_default') . '</span>',
                 '<a class="ss-onboarding-languages__regional ss-onboarding-languages__regional--missing" href="' . url('/admiro/onboarding/settings') . '">',
                 '<ul class="ss-onboarding-languages__rows">',
                 'role="switch" id="enabled-language-en"',
@@ -140,7 +139,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $response->assertOk()
             ->assertSeeInOrder([text('admiro::dashboard.onboarding_organizations_enabled'), $operator->name, text('admiro::dashboard.onboarding_organizations_search_title'), 'id="ss-organizations-search"'], false)
             ->assertSee('<input type="hidden" name="in[]" value="directory">', false)
-            ->assertSee('role="switch" id="enabled-organization-' . $operator->token . '"', false)
+            ->assertDontSee('role="switch" id="enabled-organization-' . $operator->token . '"', false)
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info" title="' . text('admiro::dashboard.onboarding_organization_locked') . '">' . text('admiro::dashboard.onboarding_organization_default') . '</span>', false)
             ->assertDontSee('Wyłączona Firma')
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'organizations']), false);
         $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
@@ -186,6 +186,29 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertStringContainsString('<option value="' . $company->token . '" selected>', $html);
         $this->assertStringNotContainsString('<option value="' . $department->token . '"', $html);
         $this->assertStringContainsString('data-ss-tree-root', $html);
+    }
+
+    public function test_organization_suggestions_switch_it_on_and_lead_to_the_results_under_the_search(): void
+    {
+        $company = new Organization();
+        $company->forceFill(['name' => 'Wyłączona Firma', 'is_active' => false])->save();
+        $operator = Organization::query()->findOrFail(Organization::OPERATOR_ID);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $wizard = route('admiro.onboarding.show', ['step' => 'organizations', 'q' => 'wyłączona']);
+
+        $this->get('/admiro/search/suggest?q=wy%C5%82%C4%85czona&in[]=directory')
+            ->assertOk()
+            ->assertSee('href="' . e($wizard) . '#organization-' . $company->token . '"', false)
+            ->assertSee('data-ss-post-toggle="' . route('admiro.organizations.toggle', ['organization' => $company->token]) . '"', false)
+            ->assertSee(text('admiro::admin.state_inactive'));
+        $this->get('/admiro/search/suggest?q=' . urlencode($operator->name) . '&in[]=directory')
+            ->assertOk()
+            ->assertDontSee('data-ss-post-toggle="' . route('admiro.organizations.toggle', ['organization' => $operator->token]) . '"', false)
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info">' . text('admiro::dashboard.onboarding_organization_default') . '</span>', false);
+
+        $this->from($wizard)->post('/admiro/organizations/' . $company->token . '/toggle', [], ['X-Requested-With' => 'XMLHttpRequest'])->assertRedirect($wizard);
+        $this->assertTrue($company->fresh()?->is_active);
+        $this->get('/admiro/onboarding/organizations')->assertSeeInOrder([text('admiro::dashboard.onboarding_organizations_enabled'), 'Wyłączona Firma', 'id="ss-organizations-search"'], false);
     }
 
     public function test_organization_found_in_the_wizard_is_switched_on_at_once_and_the_wizard_stays_open(): void
