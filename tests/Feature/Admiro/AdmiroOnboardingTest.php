@@ -466,7 +466,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/onboarding/languages/de/translations')->assertNotFound();
     }
 
-    public function test_countries_show_continent_region_eu_and_schengen_and_currencies_their_rate_and_sync(): void
+    public function test_countries_show_continent_region_eu_schengen_and_local_time_and_currencies_their_rate_and_sync(): void
     {
         Country::query()->where('alpha_code_2', 'PL')->update(['is_eu' => true, 'continent' => 'europe', 'region_code' => '151', 'population' => 36600000]);
         $euro = Currency::query()->where('alpha_code_3', 'EUR')->sole();
@@ -475,7 +475,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->get('/admiro/onboarding/countries')
             ->assertOk()
-            ->assertSeeInOrder(['id="country-PL"', text('admiro::dashboard.onboarding_country_continent'), Continent::Europe->label(), text('admiro::dashboard.onboarding_country_population', ['count' => local_number(36600000)]), '<span class="ss-onboarding-dictionary__yes"', text('admiro::dashboard.onboarding_country_schengen'), 'id="country-DE"', '<span class="ss-onboarding-dictionary__no"', text('admiro::dashboard.onboarding_country_schengen')], false);
+            ->assertSeeInOrder(['id="country-PL"', text('admiro::dashboard.onboarding_country_continent'), Continent::Europe->label(), text('admiro::dashboard.onboarding_country_population', ['count' => local_number(36600000)]), '<span class="ss-onboarding-dictionary__yes"', text('admiro::dashboard.onboarding_country_schengen'), 'id="country-DE"', '<span class="ss-onboarding-dictionary__no"', text('admiro::dashboard.onboarding_country_schengen')], false)
+            ->assertSeeInOrder(['id="country-PL"', text('admiro::dashboard.onboarding_country_time'), 'UTC' . now('Europe/Warsaw')->format('P')], false)
+            ->assertDontSee(text('admiro::dashboard.onboarding_regional_taxes'));
 
         $this->get('/admiro/onboarding/currencies')
             ->assertOk()
