@@ -47,7 +47,6 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
             ->assertSeeInOrder([
                 text('admiro::dashboard.onboarding_title'),
-                text('admiro::dashboard.onboarding_lead'),
                 text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']),
                 text('admiro::dashboard.onboarding_installation_title'),
                 text('admiro::dashboard.onboarding_languages_title'),

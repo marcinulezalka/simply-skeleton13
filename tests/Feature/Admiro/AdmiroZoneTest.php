@@ -97,7 +97,6 @@ class AdmiroZoneTest extends ZoneTestCase
             ->get('/admiro')
             ->assertOk()
             ->assertSee(text('admiro::dashboard.title'))
-            ->assertSee(text('admiro::dashboard.lead'))
             ->assertSee('Zalogowano jako Ewa Admin.')
             ->assertSee(route('admiro.auth.logout'), false);
     }

@@ -85,7 +85,9 @@ class ZoneMailTest extends ZoneTestCase
     {
         $html = (new LoginCodeMail('admiro', null, 'Anna Nowak', '482913', 10))->render();
 
-        $this->assertMatchesRegularExpression('~<img src="data:image/png;base64,[^"]+" alt="" width="560"~', $html);
+        $this->assertMatchesRegularExpression('~<img src="data:image/png;base64,[^"]+" alt="admiro" width="560"~', $html);
+        $this->assertSame(1, substr_count($html, 'alt="admiro" height="18"'));
+        $this->assertStringNotContainsString('height="28"', $html);
         $this->assertStringContainsString(text_email('layout.brand_group'), $html);
         $this->assertMatchesRegularExpression('~alt="simplysmart" height="18".*alt="admiro" height="18"~s', $html);
         $this->assertStringContainsString('background-color: #f4f4f5;', $html);

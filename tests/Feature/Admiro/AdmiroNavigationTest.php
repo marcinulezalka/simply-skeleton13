@@ -55,7 +55,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote(url('/admiro/account/security'), '~') . '.*?' . preg_quote(url('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
         $this->assertStringContainsString('<details class="ss-calendar-panel" data-ss-dropdown>', $html);
         $this->assertStringContainsString('<summary class="ss-calendar-panel__toggle" data-ss-clock>', $html);
-        $this->assertMatchesRegularExpression('~<span class="ss-calendar-panel__chip">.*?<span data-ss-clock-weekday>[^<]+</span><span class="ss-calendar-panel__week">, <span data-ss-clock-week>[^<]+</span></span></span>\s*</span>\s*<span class="ss-calendar-panel__date" data-ss-clock-date>[^<]+</span>~s', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-calendar-panel__chip">.*?<span class="ss-calendar-panel__date" data-ss-clock-date>[^<]+</span><span class="ss-calendar-panel__week">, <span data-ss-clock-week>[^<]+</span></span></span>\s*</span>\s*<span class="ss-calendar-panel__weekday" data-ss-clock-weekday>[^<]+</span>~s', $html);
         $this->assertStringNotContainsString('data-ss-clock-time', $html);
         $this->assertStringContainsString(text('layout.mailbox_connect'), $html);
         $this->assertStringNotContainsString('ss-account-card', $html);
@@ -89,6 +89,30 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $firstPath = trim(explode("\n", $building)[1] ?? '');
         $this->assertNotSame('', $firstPath);
         $this->assertStringContainsString($firstPath, substr($html, (int) strpos($html, '<span class="ss-icon ss-context__icon">'), 1000));
+    }
+
+    public function test_page_header_links_back_to_the_previous_page_above_the_title(): void
+    {
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+
+        $html = (string) $this->from('/admiro/organizations')->get('/admiro/organizations/create')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<div class="ss-context__text">\s*<a class="ss-context__back ss-link" href="' . preg_quote(url('/admiro/organizations'), '~') . '">.*?</a>\s*<h1 class="ss-context__title">~s', $html);
+        $this->assertStringNotContainsString('<p class="ss-context__meta">', $html);
+    }
+
+    public function test_notifications_panel_switches_between_notifications_mailbox_and_the_latest_audit_entries(): void
+    {
+        $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/organizations')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<div class="ss-tabs ss-tabs--slider ss-notifications__tabs" role="tablist" aria-label="' . text('layout.notifications') . '" hidden data-ss-tabs-list>', $html);
+        $this->assertSame(3, substr_count($html, 'data-ss-tab>'));
+        $this->assertStringContainsString('id="ss-notifications-mailbox" role="tabpanel"', $html);
+        $this->assertMatchesRegularExpression('~id="ss-notifications-audit" role="tabpanel".*?<a class="ss-notifications__all ss-link" href="' . preg_quote(url('/admiro/audit'), '~') . '">~s', $html);
+
+        $guest = (string) $this->signedIn($this->admin('guest@example.com', 'guest'), 'admiro')->get('/admiro')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('id="ss-notifications-audit"', $guest);
     }
 
     public function test_support_sees_only_what_its_permissions_allow(): void
