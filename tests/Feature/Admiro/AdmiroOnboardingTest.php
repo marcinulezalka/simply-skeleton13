@@ -63,7 +63,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_languages_hint'))
             ->assertDontSee('id="language-de"', false)
             ->assertDontSee('<p class="ss-context__meta">', false)
-            ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro') . '">', false)
+            ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro/onboarding') . '">', false)
             ->assertSee('<span class="ss-onboarding-wizard__step-number">' . text('admiro::dashboard.onboarding_step', ['number' => '1']) . '</span>', false)
             ->assertDontSee('type="submit" data-ss-autosubmit-fallback', false)
             ->assertSee('<a class="ss-onboarding-wizard__step-link" href="' . url('/admiro/onboarding/languages') . '" aria-current="step">', false)

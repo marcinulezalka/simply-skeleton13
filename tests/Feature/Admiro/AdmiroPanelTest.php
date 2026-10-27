@@ -31,15 +31,19 @@ use Tests\Fixtures\Zones\BetaAccount;
  */
 class AdmiroPanelTest extends AdmiroTestCase
 {
-    public function test_dashboard_shows_only_permitted_sections(): void
+    public function test_dashboard_shows_one_onboarding_card_with_the_progress_of_the_permitted_tasks(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
-            ->assertSee(text('admiro::admin.zones_title'))
-            ->assertSee(text('admiro::admin.administrators_title'));
+            ->assertSee('<a class="ss-card ss-onboarding-card" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']))
+            ->assertSee('<span class="ss-onboarding-card__percent">13%</span>', false)
+            ->assertSee('<progress class="ss-progress" value="1" max="8"', false)
+            ->assertSee(text('admiro::dashboard.onboarding_card_next', ['name' => text('admiro::dashboard.onboarding_languages_title')]))
+            ->assertDontSee('class="ss-card ss-card--link"', false);
 
         $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro')
             ->assertSee(text('admiro::admin.no_sections'))
-            ->assertDontSee(text('admiro::admin.zones_title'));
+            ->assertDontSee('<a class="ss-card ss-onboarding-card', false);
     }
 
     public function test_onboarding_page_lists_the_steps_in_order_for_the_permitted_ones(): void
@@ -78,7 +82,7 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/audit') . '">', false)
             ->assertDontSee(url('/admiro/onboarding/installation'), false)
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '1']));
-        $this->get('/admiro')->assertOk()->assertSee(text('admiro::admin.zones_title'))->assertDontSee('<ol class="ss-onboarding__steps', false);
+        $this->get('/admiro')->assertOk()->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '1']))->assertDontSee('<ol class="ss-onboarding__steps', false);
     }
 
     public function test_steps_done_in_the_panel_are_marked_done_and_advance_the_progress(): void
@@ -122,6 +126,12 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->get('/admiro/onboarding')
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '8', 'total' => '8']))
             ->assertSee(text('admiro::dashboard.onboarding_complete'));
+
+        $this->get('/admiro')
+            ->assertSee('<a class="ss-card ss-onboarding-card ss-onboarding-card--complete" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee(text('admiro::dashboard.onboarding_card_complete_title'))
+            ->assertSee(text('admiro::dashboard.onboarding_review'))
+            ->assertDontSee(text('admiro::dashboard.onboarding_card_next', ['name' => '']));
     }
 
     public function test_admin_without_a_role_cannot_open_the_sections(): void
