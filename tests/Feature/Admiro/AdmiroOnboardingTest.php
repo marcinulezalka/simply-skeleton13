@@ -137,13 +137,14 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $response = $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding/organizations');
 
         $response->assertOk()
-            ->assertSeeInOrder([text('admiro::dashboard.onboarding_organizations_enabled'), $operator->name, text('admiro::dashboard.onboarding_organizations_search_title'), 'id="ss-organizations-search"'], false)
+            ->assertSeeInOrder(['<h2 class="ss-onboarding-wizard__title"', '<p class="ss-onboarding-wizard__status">', 'id="ss-organizations-search"', text('admiro::dashboard.onboarding_organizations_enabled'), $operator->name], false)
+            ->assertDontSee('<p class="ss-muted ss-onboarding-wizard__lead">', false)
             ->assertSee('<input type="hidden" name="in[]" value="directory">', false)
             ->assertDontSee('role="switch" id="enabled-organization-' . $operator->token . '"', false)
             ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info" title="' . text('admiro::dashboard.onboarding_organization_locked') . '">' . text('admiro::dashboard.onboarding_organization_default') . '</span>', false)
             ->assertDontSee('Wyłączona Firma')
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'organizations']), false);
-        $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
+        $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search ss-onboarding-wizard__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
     }
 
     public function test_organization_rows_show_member_zones_and_the_owner_or_a_link_to_add_one(): void
@@ -208,7 +209,25 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->from($wizard)->post('/admiro/organizations/' . $company->token . '/toggle', [], ['X-Requested-With' => 'XMLHttpRequest'])->assertRedirect($wizard);
         $this->assertTrue($company->fresh()?->is_active);
-        $this->get('/admiro/onboarding/organizations')->assertSeeInOrder([text('admiro::dashboard.onboarding_organizations_enabled'), 'Wyłączona Firma', 'id="ss-organizations-search"'], false);
+        $this->get('/admiro/onboarding/organizations')->assertSeeInOrder(['id="ss-organizations-search"', text('admiro::dashboard.onboarding_organizations_enabled'), 'Wyłączona Firma'], false);
+    }
+
+    public function test_disabled_organization_from_the_results_is_dragged_into_the_active_tree(): void
+    {
+        $company = new Organization();
+        $company->forceFill(['name' => 'Wyłączona Firma', 'is_active' => false])->save();
+        $parent = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Grupa Aktywna'));
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $wizard = '/admiro/onboarding/organizations?q=wy%C5%82%C4%85czona';
+
+        $html = (string) $this->get($wizard)->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<li class="ss-card ss-onboarding-picker__result" id="organization-' . $company->token . '"\s+draggable="true" data-ss-tree-item="' . $company->token . '"~', $html);
+        $this->assertStringContainsString('<input type="hidden" name="activate" value="1">', $html);
+
+        $this->from($wizard)->put('/admiro/organizations/' . $company->token . '/parent', ['parent' => $parent->token, 'activate' => '1'])->assertRedirect($wizard);
+
+        $this->assertTrue($company->fresh()?->is_active);
+        $this->assertSame($parent->id, $company->fresh()?->parent_id);
     }
 
     public function test_organization_found_in_the_wizard_is_switched_on_at_once_and_the_wizard_stays_open(): void
@@ -220,11 +239,24 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->get($wizard)
             ->assertOk()
-            ->assertSee('<li class="ss-card ss-onboarding-picker__result" id="organization-' . $company->token . '">', false)
+            ->assertSee('<li class="ss-card ss-onboarding-picker__result" id="organization-' . $company->token . '"', false)
             ->assertSee('<form method="POST" action="' . route('admiro.organizations.toggle', ['organization' => $company->token]) . '" data-ss-autosubmit>', false);
 
         $this->from($wizard)->post('/admiro/organizations/' . $company->token . '/toggle')->assertRedirect($wizard);
         $this->assertTrue($company->fresh()?->is_active);
+    }
+
+    public function test_task_card_has_the_state_under_the_title_and_done_tasks_as_filled_icons_in_the_footer(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $html = (string) $this->get('/admiro/onboarding/organizations?q=xyz')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<p class="ss-onboarding-wizard__status">\s*<span class="ss-badge ss-badge--outline ss-badge--~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-onboarding-wizard__header">.*?<form class="ss-search ss-onboarding-picker__search ss-onboarding-wizard__search"~s', $html);
+        $this->assertStringContainsString('<nav class="ss-onboarding-wizard__remaining ss-onboarding-wizard__finished" aria-label="' . text('admiro::dashboard.onboarding_finished') . '">', $html);
+        $this->assertStringContainsString('<a class="ss-icon-button ss-onboarding-wizard__finished-link" href="' . route('admiro.onboarding.show', ['step' => 'installation']) . '"', $html);
+        $this->assertStringNotContainsString('arrow-left', substr($html, (int) strpos($html, 'ss-onboarding-wizard__footer')));
+        $this->assertLessThan(strpos($html, 'ss-onboarding-picker__enabled'), strpos($html, text('admiro::dashboard.onboarding_organizations_none', ['term' => 'xyz'])));
     }
 
     public function test_confirming_languages_closes_the_step_and_moves_on(): void
