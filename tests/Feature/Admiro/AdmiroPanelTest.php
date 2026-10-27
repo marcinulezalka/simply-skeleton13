@@ -62,6 +62,8 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee('<div class="ss-context__actions ss-context__actions--progress" role="group"', false)
             ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="1" max="8" aria-labelledby="ss-onboarding-progress-label">', false)
             ->assertSee('<details class="ss-onboarding__progress-menu" data-ss-dropdown>', false)
+            ->assertSee('<span class="ss-onboarding__progress-button" aria-hidden="true">', false)
+            ->assertSee('class="ss-icon-button" type="button" title="' . text('layout.close') . '" data-ss-dropdown-close>', false)
             ->assertSee('<div class="ss-onboarding__progress-setting" data-ss-hide-done-control hidden>', false)
             ->assertSee('data-ss-hide-done="ss-onboarding-steps"', false)
             ->assertSee(text('admiro::dashboard.onboarding_hide_done'))

@@ -19,18 +19,17 @@ namespace Tests\Feature\Admiro;
  */
 class AdmiroNavigationTest extends AdmiroTestCase
 {
-    public function test_sidebar_keeps_the_system_group_and_the_sitemap_lists_every_page(): void
+    public function test_workspace_has_no_side_menu_and_the_sitemap_lists_every_page(): void
     {
         $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro')->assertOk()->getContent();
 
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro') . '"', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/onboarding') . '"', $html);
-        $this->assertStringContainsString('<p class="ss-sidebar__group">' . text('admiro::navigation.groups.system') . '</p>', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="#ss-sitemap" title="' . text('admiro::navigation.sitemap') . '"', $html);
+        $this->assertStringNotContainsString('<aside class="ss-sidebar"', $html);
+        $this->assertStringNotContainsString('<header class="ss-topbar">', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-backdrop" aria-hidden="true">\s*<span class="ss-logo ss-backdrop__logo">~', $html);
+        $this->assertStringNotContainsString('aria-controls="ss-sidebar"', $html);
         $this->assertStringNotContainsString('data-ss-sitemap-toggle', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/audit') . '"', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/settings') . '"', $html);
-        $this->assertStringNotContainsString('<a class="ss-sidebar__link" href="' . url('/admiro/zones') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/onboarding') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/audit') . '"', $html);
 
         foreach (['zones', 'organizations', 'system', 'application', 'dictionaries'] as $group) {
             $this->assertStringContainsString('<h2 class="ss-workspace-footer__heading">' . text('admiro::navigation.groups.' . $group) . '</h2>', $html);
@@ -43,18 +42,15 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertStringContainsString('class="ss-card ss-card--link"', $html);
     }
 
-    public function test_workspace_layout_has_expanding_actions_a_drawer_and_a_sticky_footer_with_the_search(): void
+    public function test_workspace_footer_has_the_account_menu_tools_and_the_search(): void
     {
         $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/dictionaries/countries')->assertOk()->getContent();
 
         $this->assertStringContainsString('class="ss-shell ss-footer-stage ss-shell--workspace"', $html);
         $this->assertMatchesRegularExpression('~<a class="ss-link ss-workspace-footer__link" href="' . preg_quote(url('/admiro/dictionaries/countries'), '~') . '"\s+aria-current="page"~', $html);
         $this->assertStringNotContainsString('<div class="ss-workspace-notch"', $html);
-        $this->assertMatchesRegularExpression('~<span class="ss-account-card__first-name">owner@example.com</span>\s*</p>\s*<form class="ss-account-card__sign-out"~', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-sidebar__footer">\s*<button class="ss-icon-button ss-icon-button--expand ss-sidebar__collapse"~', $html);
-        $this->assertStringNotContainsString('<li><button class="ss-icon-button ss-icon-button--expand ss-sidebar__collapse"', $html);
-        $this->assertStringContainsString('<a class="ss-sidebar__link ss-sidebar__back"', (string) $this->get('/admiro/settings')->getContent());
-        $this->assertMatchesRegularExpression('~<nav class="ss-account-panel"[^>]*>\s*<ul class="ss-account-panel__list">~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__bar">\s*<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>\s*<summary class="ss-workspace-footer__account-toggle">.*?<span class="ss-workspace-footer__account-name">owner@example.com</span>~s', $html);
+        $this->assertStringNotContainsString('<aside class="ss-sidebar"', (string) $this->get('/admiro/settings')->getContent());
         $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__tools">\s*<details class="ss-account-menu ss-notifications ss-notifications--right" data-ss-dropdown>\s*<summary class="ss-icon-button ss-workspace-footer__tool ss-notifications__toggle"\s*title="' . preg_quote(text('layout.notifications'), '~') . '"\s*>.*?</details>\s*<details class="ss-calendar-panel"~s', $html);
         $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote(url('/admiro/account/security'), '~') . '.*?' . preg_quote(url('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
         $this->assertStringContainsString('<details class="ss-calendar-panel" data-ss-dropdown>', $html);
@@ -62,14 +58,11 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<span class="ss-calendar-panel__chip">.*?<span data-ss-clock-weekday>[^<]+</span><span class="ss-calendar-panel__week">, <span data-ss-clock-week>[^<]+</span></span></span>\s*</span>\s*<span class="ss-calendar-panel__date" data-ss-clock-date>[^<]+</span>~s', $html);
         $this->assertStringNotContainsString('data-ss-clock-time', $html);
         $this->assertStringContainsString(text('layout.mailbox_connect'), $html);
-        $this->assertMatchesRegularExpression('~<section class="ss-account-card" aria-label="[^"]+">~', $html);
-        $this->assertStringNotContainsString('<span class="ss-account-card__presence"', $html);
-        $this->assertMatchesRegularExpression('~<form class="ss-account-card__sign-out"[^>]*>.*?<button class="ss-icon-button ss-icon-button--expand" type="submit">.*?<span class="ss-icon-button__label">' . preg_quote(text('sign_in.sign_out'), '~') . '</span>~s', $html);
-        $this->assertStringContainsString('<p class="ss-workspace-footer__wordmark" aria-hidden="true">', $html);
-        $this->assertStringContainsString('<a class="ss-icon-button ss-icon-button--expand" href="' . url('/admiro/account/profile') . '">', $html);
+        $this->assertStringNotContainsString('ss-account-card', $html);
+        $this->assertStringNotContainsString('ss-workspace-footer__wordmark', $html);
+        $this->assertStringContainsString('<a class="ss-account-menu__link" href="' . url('/admiro/account/profile') . '"', $html);
         $this->assertStringContainsString('<span data-ss-clock-week>' . text('layout.calendar_week', ['week' => (string) now()->isoWeek()]) . '</span>', $html);
         $this->assertMatchesRegularExpression('~<button class="ss-search__send" type="submit">\s*<span class="ss-icon ss-search__send-icon">~', $html);
-        $this->assertStringNotContainsString('<ul class="ss-account-panel__list ss-account-panel__social">', $html);
         $this->assertStringContainsString('<form class="ss-search ss-search--compose"', $html);
         $this->assertStringContainsString('href="' . url('/admiro/organizations/create') . '"><span class="ss-icon ss-account-menu__icon">', $html);
         $this->assertStringContainsString('<button class="ss-search__send" type="submit">', $html);
@@ -78,7 +71,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertStringContainsString('<footer class="ss-workspace-footer">', $html);
         $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__search">\s*<form class="ss-search ss-search--compose"~', $html);
         $this->assertStringNotContainsString('<header class="ss-topbar">' . "\n" . '<form', $html);
-        $this->assertStringContainsString('<span class="ss-badge ss-workspace-footer__version">' . text('welcome.admiro_version', ['version' => \Simplysmart\Admiro\View\CoreVersion::current()]) . '</span>', $html);
+        $this->assertStringNotContainsString('ss-workspace-footer__version', $html);
         $this->assertStringContainsString('<nav class="ss-workspace-footer__sitemap" id="ss-sitemap"', $html);
         $this->assertStringNotContainsString('<div class="ss-theme-toggle"', $html);
         $this->assertStringNotContainsString('<button class="ss-sidebar__brand-toggle"', $html);
