@@ -15,6 +15,8 @@ namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Enums\RecordStatus;
+use Simplysmart\Admiro\Organizations\OrganizationBadges;
 use Simplysmart\Admiro\Organizations\OrganizationData;
 use Simplysmart\Admiro\Organizations\OrganizationManagement;
 use Simplysmart\Admiro\Panel\Onboarding\OnboardingProgress;
@@ -50,8 +52,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_installation_title'))
             ->assertSee(text('admiro::dashboard.onboarding_installation_guide.hero.title'))
             ->assertSee('php artisan admiro:account:create &lt;e-mail&gt; &quot;&lt;imię i nazwisko&gt;&quot; --role=hero', false)
-            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . '</span>', false)
-            ->assertSee(text('admiro::dashboard.onboarding_completed_at', ['date' => local_date(Organization::query()->findOrFail(Organization::OPERATOR_ID)->created_at ?? now(), 'D MMM YYYY')]))
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . ' <time class="ss-onboarding-wizard__completed"', false)
+            ->assertSee(local_date(Organization::query()->findOrFail(Organization::OPERATOR_ID)->created_at ?? now(), 'D MMM YYYY'))
             ->assertSee('<nav class="ss-onboarding-wizard__remaining" aria-label="' . text('admiro::dashboard.onboarding_remaining') . '">', false)
             ->assertSee('<a class="ss-icon-button ss-onboarding-wizard__remaining-link" href="' . url('/admiro/onboarding/languages') . '"', false)
             ->assertDontSee('<a class="ss-icon-button ss-onboarding-wizard__remaining-link" href="' . url('/admiro/onboarding/installation') . '"', false);
@@ -142,7 +144,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee('<input type="hidden" name="in[]" value="directory">', false)
             ->assertDontSee('role="switch" id="enabled-organization-' . $operator->token . '"', false)
             ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info" title="' . text('admiro::dashboard.onboarding_organization_locked') . '">' . text('admiro::dashboard.onboarding_organization_default') . '</span>', false)
-            ->assertDontSee('Wyłączona Firma')
+            ->assertSeeInOrder(['<div class="ss-onboarding-organizations__row ss-onboarding-organizations__row--inactive" data-ss-tree-row>', 'Wyłączona Firma', text('admiro::admin.state_inactive')], false)
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'organizations']), false);
         $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search ss-onboarding-wizard__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
     }
@@ -169,7 +171,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee('<option value="' . $empty->token . '" selected>', false);
     }
 
-    public function test_organizations_are_a_draggable_tree_with_a_move_list(): void
+    public function test_organizations_are_a_draggable_tree_without_a_parent_select(): void
     {
         $management = $this->app->make(OrganizationManagement::class);
         $company = $management->create(new OrganizationData('Grupa Medyczna'));
@@ -183,9 +185,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertStringContainsString('<div class="ss-onboarding-organizations__tree" data-ss-tree>', $html);
         $this->assertMatchesRegularExpression('~data-ss-tree-item="' . $company->token . '"\s+draggable="true".*?<ul class="ss-onboarding-organizations ss-onboarding-organizations--children">.*?data-ss-tree-item="' . $branch->token . '"\s+draggable="true".*?data-ss-tree-item="' . $department->token . '"\s+data-ss-tree-locked~s', $html);
         $this->assertDoesNotMatchRegularExpression('~data-ss-tree-item="' . $operator->token . '"\\s+draggable~', $html);
-        $this->assertStringContainsString('action="' . route('admiro.organizations.move', ['organization' => $branch->token]) . '" data-ss-autosubmit data-ss-tree-move>', $html);
-        $this->assertStringContainsString('<option value="' . $company->token . '" selected>', $html);
-        $this->assertStringNotContainsString('<option value="' . $department->token . '"', $html);
+        $this->assertStringContainsString('action="' . route('admiro.organizations.move', ['organization' => $branch->token]) . '" hidden data-ss-tree-move>', $html);
+        $this->assertStringNotContainsString('<select class="ss-input" id="move-', $html);
+        $this->assertStringNotContainsString('action="' . route('admiro.organizations.move', ['organization' => $department->token]) . '"', $html);
         $this->assertStringContainsString('data-ss-tree-root', $html);
     }
 
@@ -259,6 +261,30 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertLessThan(strpos($html, 'ss-onboarding-picker__enabled'), strpos($html, text('admiro::dashboard.onboarding_organizations_none', ['term' => 'xyz'])));
     }
 
+    public function test_disabled_organization_is_blocked_and_stays_in_the_tree_with_owner_avatars_and_package_badges(): void
+    {
+        $this->app->make(ZoneOwnerProvisioners::class)->addDefault('alpha');
+        $this->app->make(PermissionFiles::class)->add(__DIR__ . '/../../Fixtures/Permissions');
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha'])->assertSuccessful();
+        $clinic = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Przychodnia Zdrowie'));
+        $this->app->make(ZoneOwnerProvisioners::class)->for('alpha')->provisionOwner(new OwnerData('Jan Kowalski', 'jan@example.com'), $clinic);
+        $this->app->make(OrganizationBadges::class)->add(static fn(array $ids): array => in_array($clinic->id, $ids, true) ? [$clinic->id => [['label' => 'Partner', 'tone' => 'info']]] : []);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->from('/admiro/onboarding/organizations')->post('/admiro/organizations/' . $clinic->token . '/toggle')->assertRedirect('/admiro/onboarding/organizations');
+
+        $clinic->refresh();
+        $this->assertFalse($clinic->is_active);
+        $this->assertSame(RecordStatus::Blocked, $clinic->status);
+        $html = (string) $this->get('/admiro/onboarding/organizations')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~ss-onboarding-organizations__row--inactive" data-ss-tree-row>.*?Przychodnia Zdrowie.*?<span class="ss-badge ss-badge--outline ss-badge--warning">' . preg_quote(RecordStatus::Blocked->label(), '~') . '</span>\s*<span class="ss-badge ss-badge--outline ss-badge--info">Partner</span>~s', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-avatars">\s*<span class="ss-avatar ss-avatar--sm[^"]*" title="Jan Kowalski"\s+role="img" aria-label="Jan Kowalski"~', $html);
+
+        $this->post('/admiro/organizations/' . $clinic->token . '/toggle');
+        $this->assertSame(RecordStatus::Active, $clinic->fresh()?->status);
+        $this->assertTrue($clinic->fresh()?->is_active);
+    }
+
     public function test_confirming_languages_closes_the_step_and_moves_on(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
@@ -270,8 +296,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_open', ['name' => text('admiro::dashboard.onboarding_settings_title')]))
             ->assertSee(route('admiro.onboarding.show', ['step' => 'languages']), false);
         $this->get('/admiro/onboarding/languages')
-            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . '</span>', false)
-            ->assertSee(text('admiro::dashboard.onboarding_completed_at', ['date' => local_date(now(), 'D MMM YYYY')]));
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . ' <time class="ss-onboarding-wizard__completed"', false)
+            ->assertSee(local_date(now(), 'D MMM YYYY'));
         $this->post('/admiro/onboarding/settings/confirm')->assertNotFound();
     }
 
@@ -281,7 +307,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->get('/admiro/onboarding/audit')->assertSee(text('admiro::dashboard.onboarding_states.not_started'));
         $this->get('/admiro/audit')->assertOk();
-        $this->get('/admiro/onboarding/audit')->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . '</span>', false);
+        $this->get('/admiro/onboarding/audit')->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . ' <time class="ss-onboarding-wizard__completed"', false);
     }
 
     public function test_steps_outside_the_permissions_are_not_found(): void
