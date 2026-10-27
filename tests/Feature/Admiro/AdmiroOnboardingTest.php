@@ -17,9 +17,11 @@ use Illuminate\Support\Facades\Http;
 use Simplysmart\Admiro\Models\Dictionaries\Country;
 use Simplysmart\Admiro\Models\Dictionaries\CountryLanguage;
 use Simplysmart\Admiro\Models\Dictionaries\Currency;
+use Simplysmart\Admiro\Models\Dictionaries\ExchangeRate;
 use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Simplysmart\Admiro\Models\AdmiroAccount;
 use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Enums\Continent;
 use Simplysmart\Admiro\Enums\RecordStatus;
 use Simplysmart\Admiro\Organizations\OrganizationBadges;
 use Simplysmart\Admiro\Organizations\OrganizationData;
@@ -112,6 +114,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertTrue($zloty->fresh()?->is_default);
         $this->assertTrue($this->stepDone(OnboardingStep::Settings));
         $this->assertTrue($this->stepDone(OnboardingStep::Languages));
+        $this->assertTrue($this->stepDone(OnboardingStep::Countries));
         $this->get('/admiro/onboarding/languages')
             ->assertOk()
             ->assertDontSee('action="' . route('admiro.onboarding.regional') . '"', false)
@@ -435,6 +438,54 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->assertTrue($this->stepDone(OnboardingStep::Calendar));
         $this->get('/admiro/onboarding/calendar')->assertOk()->assertSee('Boże Narodzenie');
+    }
+
+    public function test_wizard_searches_offer_add_actions_matching_the_task(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . route('admiro.dictionaries.index', ['dictionary' => 'languages']) . '"', false)->assertSee(text('admiro::search.actions.language'));
+        $this->get('/admiro/onboarding/countries')->assertOk()->assertSee(text('admiro::search.actions.country'))->assertSee(text('admiro::search.actions.regional'));
+        $this->get('/admiro/onboarding/currencies')->assertOk()->assertSee(text('admiro::search.actions.exchange_rate'))->assertSee(text('admiro::search.actions.currency'));
+        $this->get('/admiro/onboarding/calendar')->assertOk()->assertSee('href="' . route('admiro.holidays.index') . '"', false);
+        $this->get('/admiro/onboarding/taxes')->assertOk()->assertSee('href="' . route('admiro.tax-rates.index', ['country' => 'PL']) . '"', false);
+        $this->get('/admiro/onboarding/administrators')->assertOk()->assertSee(text('admiro::search.actions.owner'));
+    }
+
+    public function test_language_row_downloads_a_translation_template_as_json(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . route('admiro.onboarding.translations', ['code' => 'en']) . '" download', false)->assertSee(text('admiro::dashboard.onboarding_languages_title'));
+
+        $response = $this->get('/admiro/onboarding/languages/en/translations')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations-en.json"');
+        $json = $response->json();
+        $this->assertSame('en', $json['language']);
+        $this->assertSame('pl', $json['source']);
+        $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => text('layout.home', locale: 'en')], $json['texts']['admiro::layout.home']);
+        $this->get('/admiro/onboarding/languages/de/translations')->assertNotFound();
+    }
+
+    public function test_countries_show_continent_region_eu_and_schengen_and_currencies_their_rate_and_sync(): void
+    {
+        Country::query()->where('alpha_code_2', 'PL')->update(['is_eu' => true, 'continent' => 'europe', 'region_code' => '151', 'population' => 36600000]);
+        $euro = Currency::query()->where('alpha_code_3', 'EUR')->sole();
+        (new ExchangeRate())->forceFill(['name' => 'EUR', 'currency_id' => $euro->id, 'rate_date' => now()->subDay()->toDateString(), 'rate' => '4.2731', 'source' => 'nbp', 'table_number' => '208/A/NBP/2026', 'is_active' => true])->save();
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/onboarding/countries')
+            ->assertOk()
+            ->assertSeeInOrder(['id="country-PL"', text('admiro::dashboard.onboarding_country_continent'), Continent::Europe->label(), text('admiro::dashboard.onboarding_country_population', ['count' => local_number(36600000)]), '<span class="ss-onboarding-dictionary__yes"', text('admiro::dashboard.onboarding_country_schengen'), 'id="country-DE"', '<span class="ss-onboarding-dictionary__no"', text('admiro::dashboard.onboarding_country_schengen')], false);
+
+        $this->get('/admiro/onboarding/currencies')
+            ->assertOk()
+            ->assertSee(text('admiro::dashboard.onboarding_currency_rate_value', ['code' => 'EUR', 'rate' => local_number(4.2731, 4), 'base' => 'PLN']))
+            ->assertSee(text('admiro::dashboard.onboarding_currency_table_number', ['table' => '208/A/NBP/2026']))
+            ->assertSeeInOrder(['id="currency-EUR"', text('admiro::dashboard.onboarding_currency_sync_column'), 'action="' . route('admiro.exchange-rates.sync') . '"'], false)
+            ->assertDontSee('ss-onboarding-dictionary__missing"', false);
+
+        Currency::query()->update(['is_default' => false]);
+        $this->get('/admiro/onboarding/currencies')->assertSee('<a class="ss-onboarding-dictionary__missing" href="' . route('admiro.onboarding.show', ['step' => 'languages']) . '">', false)->assertSee(text('admiro::dashboard.onboarding_currencies_default_missing'));
     }
 
     public function test_confirming_languages_closes_the_step_and_moves_on(): void
