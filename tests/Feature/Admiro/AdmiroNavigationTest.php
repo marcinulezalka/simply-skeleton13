@@ -25,7 +25,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
 
         $this->assertStringNotContainsString('<aside class="ss-sidebar"', $html);
         $this->assertStringNotContainsString('<header class="ss-topbar">', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-backdrop" aria-hidden="true">\s*<span class="ss-logo ss-backdrop__logo">~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-backdrop" aria-hidden="true">\s*<svg class="ss-backdrop__defs".*?<filter id="ss-backdrop-deboss".*?</svg>\s*<span class="ss-logo ss-backdrop__logo">~s', $html);
         $this->assertStringNotContainsString('aria-controls="ss-sidebar"', $html);
         $this->assertStringNotContainsString('data-ss-sitemap-toggle', $html);
         $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/onboarding') . '"', $html);
