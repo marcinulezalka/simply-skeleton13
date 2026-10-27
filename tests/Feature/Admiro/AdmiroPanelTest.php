@@ -35,9 +35,9 @@ class AdmiroPanelTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
             ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card" href="' . url('/admiro/onboarding') . '">', false)
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']))
-            ->assertSee('<span class="ss-onboarding-card__percent">13%</span>', false)
-            ->assertSee('<progress class="ss-progress" value="1" max="8"', false)
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '12']))
+            ->assertSee('<span class="ss-onboarding-card__percent">8%</span>', false)
+            ->assertSee('<progress class="ss-progress" value="1" max="12"', false)
             ->assertSee(text('admiro::dashboard.onboarding_card_next', ['name' => text('admiro::dashboard.onboarding_languages_title')]))
             ->assertDontSee('class="ss-card ss-card--link"', false);
 
@@ -51,9 +51,13 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
             ->assertSeeInOrder([
                 text('admiro::dashboard.onboarding_title'),
-                text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']),
+                text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '12']),
                 text('admiro::dashboard.onboarding_installation_title'),
                 text('admiro::dashboard.onboarding_languages_title'),
+                text('admiro::dashboard.onboarding_countries_title'),
+                text('admiro::dashboard.onboarding_currencies_title'),
+                text('admiro::dashboard.onboarding_calendar_title'),
+                text('admiro::dashboard.onboarding_taxes_title'),
                 text('admiro::dashboard.onboarding_settings_title'),
                 text('admiro::dashboard.onboarding_organizations_title'),
                 text('admiro::dashboard.onboarding_administrators_title'),
@@ -63,7 +67,7 @@ class AdmiroPanelTest extends AdmiroTestCase
             ])
             ->assertSee('<span class="ss-onboarding__number" aria-hidden="true">08</span>', false)
             ->assertSee('<div class="ss-context__actions ss-context__actions--progress" role="group"', false)
-            ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="1" max="8" aria-labelledby="ss-onboarding-progress-label">', false)
+            ->assertSee('<progress class="ss-progress" id="ss-onboarding-progress" value="1" max="12" aria-labelledby="ss-onboarding-progress-label">', false)
             ->assertSee('<details class="ss-onboarding__progress-menu" data-ss-dropdown>', false)
             ->assertSee('<span class="ss-onboarding__progress-button" aria-hidden="true">', false)
             ->assertSee('class="ss-icon-button" type="button" title="' . text('layout.close') . '" data-ss-dropdown-close>', false)
@@ -94,7 +98,7 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect('/admiro/administrators');
 
         $this->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '3', 'total' => '8']))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '3', 'total' => '12']))
             ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/settings') . '">', false)
             ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/organizations') . '">', false)
             ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/administrators') . '">', false);
@@ -116,15 +120,15 @@ class AdmiroPanelTest extends AdmiroTestCase
         }
 
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_step', ['number' => '8']) . ' · ' . text('admiro::dashboard.onboarding_states.in_progress'))
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '7', 'total' => '8']));
+            ->assertSee(text('admiro::dashboard.onboarding_step', ['number' => '12']) . ' · ' . text('admiro::dashboard.onboarding_states.in_progress'))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '11', 'total' => '12']));
 
         $lastLegal = end($legal);
         $this->assertIsString($lastLegal);
         $progress->mark($lastLegal);
 
         $this->get('/admiro/onboarding')
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '8', 'total' => '8']))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '12', 'total' => '12']))
             ->assertSee(text('admiro::dashboard.onboarding_complete'));
 
         $this->get('/admiro')

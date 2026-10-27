@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
+use Illuminate\Support\Facades\Http;
 use Simplysmart\Admiro\Models\Dictionaries\Country;
 use Simplysmart\Admiro\Models\Dictionaries\CountryLanguage;
 use Simplysmart\Admiro\Models\Dictionaries\Currency;
@@ -52,7 +53,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro/onboarding')
             ->assertOk()
-            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']))
+            ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '12']))
             ->assertSee('href="' . url('/admiro/onboarding/languages') . '"', false);
 
         $this->get('/admiro/onboarding/installation')
@@ -99,7 +100,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/onboarding/languages')
             ->assertOk()
             ->assertSee('<dl class="ss-onboarding-languages__regional ss-onboarding-languages__regional--proposed"', false)
-            ->assertSeeInOrder(['id="enabled-language-pl-row"', 'ss-badge--default"', 'title="' . text('admiro::dashboard.onboarding_language_locked') . '"', 'ss-badge__icon', 'PLN · ', text('admiro::dashboard.onboarding_regional_proposed'), text('admiro::dashboard.onboarding_regional_save')], false)
+            ->assertSeeInOrder(['id="enabled-language-pl-row"', 'PLN · ', text('admiro::dashboard.onboarding_regional_proposed'), text('admiro::dashboard.onboarding_regional_save'), '<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_language_default') . ': ' . text('admiro::dashboard.onboarding_language_locked') . '"'], false)
             ->assertSee('action="' . route('admiro.onboarding.regional') . '"', false);
 
         $this->post('/admiro/onboarding/languages/regional', ['language' => 'pl'])
@@ -128,8 +129,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee(url('/admiro/onboarding/languages') . '?q=niem#language-de', false);
         $this->get('/admiro/search/suggest?q=pl&in[]=languages')
             ->assertOk()
-            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info"><span class="ss-icon ss-badge__icon">', false)
-            ->assertSee(text('admiro::dashboard.onboarding_language_default') . '</span>', false);
+            ->assertSee('<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_language_default') . '" title="' . text('admiro::dashboard.onboarding_language_default') . '"><span class="ss-icon ss-default-mark__icon">', false);
 
         $this->post('/admiro/dictionaries/languages/de/toggle')->assertRedirect();
 
@@ -174,7 +174,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee('<p class="ss-muted ss-onboarding-wizard__lead">', false)
             ->assertSee('<input type="hidden" name="in[]" value="directory">', false)
             ->assertDontSee('role="switch" id="enabled-organization-' . $operator->token . '"', false)
-            ->assertSeeInOrder(['ss-badge--default"', 'title="' . text('admiro::dashboard.onboarding_organization_locked') . '"', '<span class="ss-icon ss-badge__icon">'], false)
+            ->assertSee('<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_organization_default') . ': ' . text('admiro::dashboard.onboarding_organization_locked') . '"', false)
             ->assertSeeInOrder(['<div class="ss-onboarding-organizations__row ss-onboarding-organizations__row--inactive" data-ss-tree-row>', 'Wyłączona Firma', text('admiro::admin.state_inactive')], false)
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'organizations']), false);
         $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search ss-onboarding-wizard__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
@@ -238,8 +238,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/search/suggest?q=' . urlencode($operator->name) . '&in[]=directory')
             ->assertOk()
             ->assertDontSee('data-ss-post-toggle="' . route('admiro.organizations.toggle', ['organization' => $operator->token]) . '"', false)
-            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--info"><span class="ss-icon ss-badge__icon">', false)
-            ->assertSee(text('admiro::dashboard.onboarding_organization_default') . '</span>', false);
+            ->assertSee('<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_organization_default') . '" title="' . text('admiro::dashboard.onboarding_organization_default') . '"><span class="ss-icon ss-default-mark__icon">', false);
 
         $this->from($wizard)->post('/admiro/organizations/' . $company->token . '/toggle', [], ['X-Requested-With' => 'XMLHttpRequest'])->assertRedirect($wizard);
         $this->assertTrue($company->fresh()?->is_active);
@@ -388,12 +387,62 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/search/suggest?q=support&in[]=directory')->assertOk()->assertSee(e(route('admiro.onboarding.show', ['step' => 'administrators', 'q' => 'support'])) . '#administrator-' . $support->getRouteKey(), false);
     }
 
+    public function test_dictionary_steps_list_enabled_entries_with_their_facts_and_switch_them_at_once(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/onboarding/countries')
+            ->assertOk()
+            ->assertSeeInOrder(['<div class="ss-onboarding-wizard__header">', 'id="ss-countries-search"', text('admiro::dashboard.onboarding_countries_panel'), 'id="country-PL"'], false)
+            ->assertSee('<input type="hidden" name="in[]" value="dictionaries">', false)
+            ->assertSee('<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_dictionary_default') . ': ' . text('admiro::dashboard.onboarding_dictionary_default_hint') . '"', false)
+            ->assertSee('id="country-DE"', false)
+            ->assertSee('action="' . route('admiro.dictionaries.toggle', ['dictionary' => 'countries', 'code' => 'DE']) . '" data-ss-autosubmit>', false)
+            ->assertDontSee('action="' . route('admiro.dictionaries.toggle', ['dictionary' => 'countries', 'code' => 'PL']) . '"', false);
+
+        $this->post('/admiro/dictionaries/countries/DE/toggle')->assertRedirect();
+        $this->assertTrue($this->stepDone(OnboardingStep::Countries));
+        $this->get('/admiro/onboarding/countries')->assertDontSee('id="country-DE"', false);
+        $this->get('/admiro/onboarding/countries?q=DE')->assertOk()->assertSee('id="ss-dictionary-results-title"', false)->assertSee('id="country-DE"', false);
+
+        $this->get('/admiro/onboarding/currencies')
+            ->assertOk()
+            ->assertSee('id="currency-PLN"', false)
+            ->assertSee(text('admiro::dashboard.onboarding_currency_base'))
+            ->assertSee('action="' . route('admiro.exchange-rates.sync') . '"', false)
+            ->assertSee('<input type="hidden" name="onboarding" value="currencies">', false);
+        $this->post('/admiro/dictionaries/currencies/EUR/toggle');
+        $this->assertTrue($this->stepDone(OnboardingStep::Currencies));
+
+        $this->get('/admiro/onboarding/taxes')->assertOk()->assertSee('id="country-PL"', false)->assertSee(route('admiro.tax-rates.index', ['country' => 'PL']), false);
+        $this->post('/admiro/tax-rates/PL', ['type' => 'standard', 'rate' => '23', 'valid_from' => '2011-01-01']);
+        $this->assertTrue($this->stepDone(OnboardingStep::Taxes));
+        $this->get('/admiro/onboarding/taxes')->assertSee(text('admiro::dashboard.onboarding_taxes_standard'))->assertSee('23%');
+    }
+
+    public function test_calendar_step_fetches_holidays_and_returns_to_the_wizard(): void
+    {
+        $year = (int) now()->year;
+        Http::fake(['date.nager.at/*' => Http::response([['date' => $year . '-12-25', 'localName' => 'Boże Narodzenie', 'name' => 'Christmas Day', 'global' => true, 'types' => ['Public']]])]);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get('/admiro/onboarding/calendar')
+            ->assertOk()
+            ->assertSee('id="country-PL"', false)
+            ->assertSee(text('admiro::dashboard.onboarding_calendar_sync', ['year' => $year]));
+
+        $this->post('/admiro/holidays/sync', ['country' => 'PL', 'year' => $year, 'onboarding' => 'calendar'])->assertRedirect('/admiro/onboarding/calendar');
+
+        $this->assertTrue($this->stepDone(OnboardingStep::Calendar));
+        $this->get('/admiro/onboarding/calendar')->assertOk()->assertSee('Boże Narodzenie');
+    }
+
     public function test_confirming_languages_closes_the_step_and_moves_on(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
 
-        $this->post('/admiro/onboarding/languages/confirm')->assertRedirect('/admiro/onboarding/settings');
-        $this->get('/admiro/onboarding')->assertOk()->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '2', 'total' => '8']));
+        $this->post('/admiro/onboarding/languages/confirm')->assertRedirect('/admiro/onboarding/countries');
+        $this->get('/admiro/onboarding')->assertOk()->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '2', 'total' => '12']));
         $this->get('/admiro/onboarding/settings')
             ->assertOk()
             ->assertSee(text('admiro::dashboard.onboarding_open', ['name' => text('admiro::dashboard.onboarding_settings_title')]))
