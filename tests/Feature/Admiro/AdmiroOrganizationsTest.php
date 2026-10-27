@@ -21,7 +21,7 @@ use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
  * Organizacje w panelu administratora: lista i członkowie we wszystkich strefach (`organizations.view`),
- * zakładanie, drzewo bez cykli, chroniona organizacja operatora, wyłączanie i usuwanie członków
+ * zakładanie, drzewo bez cykli (także przenoszenie jednostek, bez departamentów), chroniona organizacja operatora, wyłączanie i usuwanie członków
  * (`organizations.manage`) z ochroną innych administratorów.
  */
 class AdmiroOrganizationsTest extends AdmiroTestCase
@@ -92,6 +92,36 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertNull($company->fresh()?->parent_id);
         $this->assertTrue($operator->fresh()?->is_active);
         $this->assertSessionError('organization', text('admiro::admin.organization_rejected'));
+    }
+
+    public function test_unit_is_moved_in_the_tree_while_cycles_the_operator_and_departments_stay(): void
+    {
+        $management = $this->app->make(OrganizationManagement::class);
+        $company = $management->create(new OrganizationData('Firma'));
+        $branch = $management->create(new OrganizationData('Oddział'));
+        $department = $management->createDepartment(new OrganizationData('Poradnia'), $branch);
+        $operator = Organization::query()->findOrFail(Organization::OPERATOR_ID);
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+
+        $this->from('/admiro/onboarding/organizations')->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => $company->token])
+            ->assertRedirect('/admiro/onboarding/organizations')
+            ->assertSessionHas('status', text('admiro::admin.organization_moved', ['name' => 'Oddział']));
+        $this->assertSame($company->id, $branch->fresh()?->parent_id);
+
+        $this->put('/admiro/organizations/' . $company->token . '/parent', ['parent' => $branch->token]);
+        $this->assertSessionError('organization', text('admiro::admin.organization_rejected'));
+        $this->put('/admiro/organizations/' . $operator->token . '/parent', ['parent' => $company->token]);
+        $this->put('/admiro/organizations/' . $department->token . '/parent', ['parent' => $company->token]);
+        $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => $department->token]);
+        $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => 'unknown'])->assertNotFound();
+
+        $this->assertNull($company->fresh()?->parent_id);
+        $this->assertNull($operator->fresh()?->parent_id);
+        $this->assertSame($branch->id, $department->fresh()?->parent_id);
+        $this->assertSame($company->id, $branch->fresh()?->parent_id);
+
+        $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => ''])->assertRedirect();
+        $this->assertNull($branch->fresh()?->parent_id);
     }
 
     public function test_disabled_organization_is_not_a_parent_choice_and_can_be_enabled_again(): void

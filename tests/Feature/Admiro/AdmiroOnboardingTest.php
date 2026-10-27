@@ -15,6 +15,8 @@ namespace Tests\Feature\Admiro;
 
 use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Simplysmart\Admiro\Models\Organization;
+use Simplysmart\Admiro\Organizations\OrganizationData;
+use Simplysmart\Admiro\Organizations\OrganizationManagement;
 use Simplysmart\Admiro\Panel\Onboarding\OnboardingProgress;
 use Simplysmart\Admiro\Panel\Enums\OnboardingStep;
 use Simplysmart\Admiro\Permissions\OwnerData;
@@ -23,7 +25,7 @@ use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 
 /**
  * Kreator onboardingu: wejście do pierwszego niezrobionego kroku, krok „Języki” (włączone osobno nad listą,
- * przełączniki, flagi krajów w kolumnie kodu, filtr z wyszukiwarki), krok „Organizacje” (wiersze ze strefami i właścicielem), zatwierdzenie zamyka krok i prowadzi dalej,
+ * przełączniki, flagi krajów w kolumnie kodu, filtr z wyszukiwarki), krok „Organizacje” (drzewo z przeciąganiem i listą „Przenieś pod”, wiersze ze strefami i właścicielem), zatwierdzenie zamyka krok i prowadzi dalej,
  * kroki spoza uprawnień to 404.
  */
 class AdmiroOnboardingTest extends AdmiroTestCase
@@ -164,6 +166,26 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get(route('admiro.owners.create', ['organization' => $empty->token]))
             ->assertOk()
             ->assertSee('<option value="' . $empty->token . '" selected>', false);
+    }
+
+    public function test_organizations_are_a_draggable_tree_with_a_move_list(): void
+    {
+        $management = $this->app->make(OrganizationManagement::class);
+        $company = $management->create(new OrganizationData('Grupa Medyczna'));
+        $branch = $management->create(new OrganizationData('Oddział Północ'), $company);
+        $department = $management->createDepartment(new OrganizationData('Poradnia K'), $branch);
+        $operator = Organization::query()->findOrFail(Organization::OPERATOR_ID);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $html = (string) $this->get('/admiro/onboarding/organizations')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<div class="ss-onboarding-organizations__tree" data-ss-tree>', $html);
+        $this->assertMatchesRegularExpression('~data-ss-tree-item="' . $company->token . '"\s+draggable="true".*?<ul class="ss-onboarding-organizations ss-onboarding-organizations--children">.*?data-ss-tree-item="' . $branch->token . '"\s+draggable="true".*?data-ss-tree-item="' . $department->token . '"\s+data-ss-tree-locked~s', $html);
+        $this->assertDoesNotMatchRegularExpression('~data-ss-tree-item="' . $operator->token . '"\\s+draggable~', $html);
+        $this->assertStringContainsString('action="' . route('admiro.organizations.move', ['organization' => $branch->token]) . '" data-ss-autosubmit data-ss-tree-move>', $html);
+        $this->assertStringContainsString('<option value="' . $company->token . '" selected>', $html);
+        $this->assertStringNotContainsString('<option value="' . $department->token . '"', $html);
+        $this->assertStringContainsString('data-ss-tree-root', $html);
     }
 
     public function test_organization_found_in_the_wizard_is_switched_on_at_once_and_the_wizard_stays_open(): void
