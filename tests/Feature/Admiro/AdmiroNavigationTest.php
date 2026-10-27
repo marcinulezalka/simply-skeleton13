@@ -39,7 +39,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/dictionaries/countries') . '"', $html);
         $this->assertStringNotContainsString('<a class="ss-icon-button ss-sidebar__settings-toggle"', $html);
         $this->assertStringNotContainsString(text('roles.admiro.owner'), $html);
-        $this->assertStringContainsString('class="ss-card ss-onboarding-card"', $html);
+        $this->assertStringContainsString('class="ss-card ss-card--feature ss-onboarding-card"', $html);
     }
 
     public function test_workspace_footer_has_the_account_menu_tools_and_the_search(): void

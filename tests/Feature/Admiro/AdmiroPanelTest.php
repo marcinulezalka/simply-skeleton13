@@ -34,7 +34,7 @@ class AdmiroPanelTest extends AdmiroTestCase
     public function test_dashboard_shows_one_onboarding_card_with_the_progress_of_the_permitted_tasks(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
-            ->assertSee('<a class="ss-card ss-onboarding-card" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card" href="' . url('/admiro/onboarding') . '">', false)
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '8']))
             ->assertSee('<span class="ss-onboarding-card__percent">13%</span>', false)
             ->assertSee('<progress class="ss-progress" value="1" max="8"', false)
@@ -43,7 +43,7 @@ class AdmiroPanelTest extends AdmiroTestCase
 
         $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro')
             ->assertSee(text('admiro::admin.no_sections'))
-            ->assertDontSee('<a class="ss-card ss-onboarding-card', false);
+            ->assertDontSee('<a class="ss-card ss-card--feature ss-onboarding-card', false);
     }
 
     public function test_onboarding_page_lists_the_steps_in_order_for_the_permitted_ones(): void
@@ -128,7 +128,7 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_complete'));
 
         $this->get('/admiro')
-            ->assertSee('<a class="ss-card ss-onboarding-card ss-onboarding-card--complete" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card ss-onboarding-card--complete" href="' . url('/admiro/onboarding') . '">', false)
             ->assertSee(text('admiro::dashboard.onboarding_card_complete_title'))
             ->assertSee(text('admiro::dashboard.onboarding_review'))
             ->assertDontSee(text('admiro::dashboard.onboarding_card_next', ['name' => '']));
