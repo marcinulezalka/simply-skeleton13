@@ -17,10 +17,13 @@ use Simplysmart\Admiro\Models\Dictionaries\Language;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Panel\Onboarding\OnboardingProgress;
 use Simplysmart\Admiro\Panel\Enums\OnboardingStep;
+use Simplysmart\Admiro\Permissions\OwnerData;
+use Simplysmart\Admiro\Permissions\PermissionFiles;
+use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 
 /**
  * Kreator onboardingu: wejście do pierwszego niezrobionego kroku, krok „Języki” (włączone osobno nad listą,
- * przełączniki, flagi krajów w kolumnie kodu, filtr z wyszukiwarki), zatwierdzenie zamyka krok i prowadzi dalej,
+ * przełączniki, flagi krajów w kolumnie kodu, filtr z wyszukiwarki), krok „Organizacje” (wiersze ze strefami i właścicielem), zatwierdzenie zamyka krok i prowadzi dalej,
  * kroki spoza uprawnień to 404.
  */
 class AdmiroOnboardingTest extends AdmiroTestCase
@@ -139,6 +142,28 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee('Wyłączona Firma')
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'organizations']), false);
         $this->assertMatchesRegularExpression('~<form class="ss-search ss-onboarding-picker__search".*?<p class="ss-search__menu-title">' . preg_quote(text('layout.search_actions'), '~') . '</p>\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/admiro/organizations/create'), '~') . '">~s', (string) $response->getContent());
+    }
+
+    public function test_organization_rows_show_member_zones_and_the_owner_or_a_link_to_add_one(): void
+    {
+        $this->app->make(ZoneOwnerProvisioners::class)->addDefault('alpha');
+        $this->app->make(PermissionFiles::class)->add(__DIR__ . '/../../Fixtures/Permissions');
+        $this->command('admiro:permissions:sync', ['--zone' => 'alpha'])->assertSuccessful();
+        $clinic = new Organization();
+        $clinic->forceFill(['name' => 'Przychodnia Zdrowie', 'is_active' => true])->save();
+        $empty = new Organization();
+        $empty->forceFill(['name' => 'Firma Bez Strefy', 'is_active' => true])->save();
+        $this->app->make(ZoneOwnerProvisioners::class)->for('alpha')->provisionOwner(new OwnerData('Jan Kowalski', 'jan@example.com'), $clinic);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $response = $this->get('/admiro/onboarding/organizations')->assertOk();
+        $html = (string) $response->getContent();
+
+        $this->assertMatchesRegularExpression('~Przychodnia Zdrowie.*?<span class="ss-badge ss-badge--outline" title="/alpha">alpha</span>.*?Jan Kowalski.*?</li>~s', $html);
+        $this->assertMatchesRegularExpression('~Firma Bez Strefy.*?' . preg_quote(text('admiro::dashboard.onboarding_organization_no_zone'), '~') . '.*?href="' . preg_quote(route('admiro.owners.create', ['organization' => $empty->token]), '~') . '">' . preg_quote(text('admiro::dashboard.onboarding_organization_add_owner'), '~') . '</a>~s', $html);
+        $this->get(route('admiro.owners.create', ['organization' => $empty->token]))
+            ->assertOk()
+            ->assertSee('<option value="' . $empty->token . '" selected>', false);
     }
 
     public function test_organization_found_in_the_wizard_is_switched_on_at_once_and_the_wizard_stays_open(): void
