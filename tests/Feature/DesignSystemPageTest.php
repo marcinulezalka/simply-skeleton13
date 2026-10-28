@@ -161,7 +161,7 @@ class DesignSystemPageTest extends TestCase
 
     public function test_variants_show_the_open_keypad_and_the_forgot_pin_recovery_states(): void
     {
-        $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPin))->assertOk()->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" hidden>', false);
+        $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPin))->assertOk()->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" hidden>', false)->assertSee(text('sign_in.pin_submit'));
         $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPinKeypad))
             ->assertOk()
             ->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" data-ss-keypad-show>', false)
