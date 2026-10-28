@@ -24,6 +24,7 @@ use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
+use Tests\Fixtures\Zones\WorkspaceShopNavigation;
 
 /**
  * Layout strefy na layoucie aplikacji: menu, ustawienia i wyszukiwarka z ZoneNavigation zarejestrowanego dla strefy
@@ -102,6 +103,18 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace.');
         $factory->make(['name' => 'shop', 'app_layout' => 'grid'], 'shop', __DIR__);
+    }
+
+    public function test_zone_navigation_can_choose_the_workspace_layout_for_the_request(): void
+    {
+        $this->assertSame(AppLayout::Sidebar, $this->app->make(\Simplysmart\Admiro\Contracts\ZoneRegistry::class)->get('alpha')->appLayout);
+        $this->app->make(ZoneNavigations::class)->add('alpha', WorkspaceShopNavigation::class);
+
+        $html = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/page')->assertOk()->getContent();
+
+        $this->assertStringContainsString('ss-shell--workspace', $html);
+        $this->assertStringContainsString('<a class="ss-icon-button ss-workspace-footer__tool" href="/zamowienia" title="Zamówienia"', $html);
+        $this->assertStringNotContainsString('<a class="ss-sidebar__link"', $html);
     }
 
     public function test_social_links_skip_empty_addresses_and_reject_unknown_networks(): void
