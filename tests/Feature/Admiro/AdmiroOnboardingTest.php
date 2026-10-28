@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Simplysmart\Admiro\Models\Dictionaries\Country;
 use Simplysmart\Admiro\Models\Dictionaries\CountryLanguage;
@@ -32,6 +34,7 @@ use Simplysmart\Admiro\Permissions\OwnerData;
 use Simplysmart\Admiro\Permissions\PermissionFiles;
 use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
 use Simplysmart\Admiro\Queries\Permissions\ZoneRoleNames;
+use Simplysmart\Admiro\Translation\TranslationTemplate;
 use Simplysmart\Admiro\Wiki\Wiki;
 use Simplysmart\Admiro\Wiki\WikiEntry;
 
@@ -102,7 +105,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/onboarding/languages')
             ->assertOk()
             ->assertSee('<dl class="ss-onboarding-languages__regional ss-onboarding-languages__regional--proposed"', false)
-            ->assertSeeInOrder(['id="enabled-language-pl-row"', 'PLN · ', text('admiro::dashboard.onboarding_regional_proposed'), text('admiro::dashboard.onboarding_regional_save'), '<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_language_default') . ': ' . text('admiro::dashboard.onboarding_language_locked') . '"'], false)
+            ->assertSeeInOrder(['id="enabled-language-pl-row"', text('admiro::dashboard.onboarding_translations_keywords'), text('admiro::dashboard.onboarding_regional_proposed'), text('admiro::dashboard.onboarding_regional_save'), '<span class="ss-default-mark" role="img" aria-label="' . text('admiro::dashboard.onboarding_language_default') . ': ' . text('admiro::dashboard.onboarding_language_locked') . '"'], false)
             ->assertSee('action="' . route('admiro.onboarding.regional') . '"', false);
 
         $this->post('/admiro/onboarding/languages/regional', ['language' => 'pl'])
@@ -444,7 +447,11 @@ class AdmiroOnboardingTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
 
-        $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . route('admiro.dictionaries.index', ['dictionary' => 'languages']) . '"', false)->assertSee(text('admiro::search.actions.language'));
+        $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . route('admiro.dictionaries.index', ['dictionary' => 'languages']) . '"', false)->assertSee(text('admiro::search.actions.language'))
+            ->assertSee('<a class="ss-search__menu-toggle" href="#' . OnboardingStep::TRANSLATIONS_ANCHOR . '" title="' . text('admiro::dashboard.onboarding_translations_import') . '">', false)
+            ->assertSee('<a class="ss-search__menu-toggle" href="' . route('admiro.onboarding.translations.export') . '" download', false)
+            ->assertSee('<section class="ss-card ss-card--muted ss-onboarding-translations" id="' . OnboardingStep::TRANSLATIONS_ANCHOR . '"', false)
+            ->assertSee('enctype="multipart/form-data" data-ss-file-drop>', false);
         $this->get('/admiro/onboarding/countries')->assertOk()->assertSee(text('admiro::search.actions.country'))->assertSee(text('admiro::search.actions.regional'));
         $this->get('/admiro/onboarding/currencies')->assertOk()->assertSee(text('admiro::search.actions.exchange_rate'))->assertSee(text('admiro::search.actions.currency'));
         $this->get('/admiro/onboarding/calendar')->assertOk()->assertSee('href="' . route('admiro.holidays.index') . '"', false);
@@ -464,6 +471,52 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertSame('pl', $json['source']);
         $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => text('layout.home', locale: 'en')], $json['texts']['admiro::layout.home']);
         $this->get('/admiro/onboarding/languages/de/translations')->assertNotFound();
+    }
+
+    public function test_language_rows_count_keywords_instead_of_currency_taxes_and_holidays_and_export_bundles_all_languages(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $counts = app(TranslationTemplate::class)->counts('en', 'pl');
+
+        $this->assertGreaterThan(0, $counts['translated']);
+        $this->assertSame($counts['all'], app(TranslationTemplate::class)->counts('pl', 'pl')['translated']);
+        $this->get('/admiro/onboarding/languages')->assertOk()
+            ->assertSeeInOrder(['id="enabled-language-en-row"', text('admiro::dashboard.onboarding_translations_keywords'), '<span class="ss-badge">' . local_number($counts['translated']) . '/' . local_number($counts['all']) . '</span>'], false)
+            ->assertDontSee(text('admiro::dashboard.onboarding_regional_currency'))
+            ->assertDontSee(text('admiro::dashboard.onboarding_regional_taxes'));
+
+        $json = $this->get('/admiro/onboarding/languages/translations/export')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations.json"')->json();
+        $this->assertSame('pl', $json['source']);
+        $this->assertSame(['en', 'pl'], array_column($json['languages'], 'language'));
+    }
+
+    public function test_translation_files_are_imported_into_the_application_language_overrides(): void
+    {
+        $langPath = sys_get_temp_dir() . '/admiro-lang-' . bin2hex(random_bytes(4));
+        $this->app->useLangPath($langPath);
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+        $document = ['language' => 'en', 'source' => 'pl', 'texts' => [
+            'admiro::layout.home' => ['source' => 'Strona główna', 'translation' => 'Start page'],
+            'admiro::layout.unknown_key' => ['source' => '', 'translation' => 'Ignored'],
+            'admiro::layout.search_actions' => ['source' => 'Dodaj', 'translation' => ''],
+        ]];
+        $file = UploadedFile::fake()->createWithContent('translations-en.json', (string) json_encode($document));
+        $back = route('admiro.onboarding.show', ['step' => 'languages']) . '#' . OnboardingStep::TRANSLATIONS_ANCHOR;
+
+        $this->post('/admiro/onboarding/languages/translations', ['files' => [$file]])->assertRedirect($back)->assertSessionHas('status', text('admiro::dashboard.onboarding_translations_imported', ['count' => '1']));
+
+        $this->assertSame(['home' => 'Start page'], require $langPath . '/vendor/admiro/en/layout.php');
+        $this->assertDatabaseHas('audit_events', ['event' => 'translations imported']);
+
+        $bundle = ['source' => 'pl', 'languages' => [['language' => 'en', 'texts' => ['admiro::layout.search_actions' => ['translation' => 'Add']]]]];
+        $this->post('/admiro/onboarding/languages/translations', ['files' => [UploadedFile::fake()->createWithContent('translations.json', (string) json_encode($bundle))]])->assertRedirect($back);
+        $this->assertSame(['home' => 'Start page', 'search_actions' => 'Add'], require $langPath . '/vendor/admiro/en/layout.php');
+
+        $invalid = UploadedFile::fake()->createWithContent('translations-de.json', (string) json_encode(['language' => 'de', 'texts' => []]));
+        $this->post('/admiro/onboarding/languages/translations', ['files' => [$invalid]])->assertRedirect($back)->assertSessionHasErrors('translations');
+        $this->post('/admiro/onboarding/languages/translations', ['files' => [UploadedFile::fake()->create('notes.txt', 1)]])->assertSessionHasErrors('files.0');
+
+        (new Filesystem())->deleteDirectory($langPath);
     }
 
     public function test_countries_show_continent_region_eu_schengen_and_local_time_and_currencies_their_rate_and_sync(): void
