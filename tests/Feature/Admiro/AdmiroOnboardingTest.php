@@ -80,8 +80,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee('<title>' . text('admiro::dashboard.onboarding_title'), false)
             ->assertSeeInOrder(['<div class="ss-onboarding-wizard__header">', 'id="ss-languages-search"', text('admiro::dashboard.onboarding_languages_enabled'), 'id="enabled-language-pl-row"', 'id="enabled-language-en-row"'], false)
             ->assertSee('<input type="hidden" name="in[]" value="languages">', false)
-            ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages']) . '" title="' . text('admiro::dashboard.onboarding_languages_view_active') . '" aria-current="true" data-ss-view>', false)
-            ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages', 'view' => 'hidden']) . '" title="' . text('admiro::dashboard.onboarding_languages_view_hidden') . '" aria-current="false" data-ss-view>', false)
+            ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages']) . '" aria-current="true" data-ss-view>', false)
+            ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages', 'view' => 'hidden']) . '" aria-current="false" data-ss-view>', false)
             ->assertDontSee('<form class="ss-search ss-onboarding-picker__search" role="search" method="GET" action="' . url('/admiro/onboarding/languages') . '" data-ss-live-search', false)
             ->assertDontSee('id="ss-languages-all-title"', false)
             ->assertDontSee('id="language-de"', false)
@@ -100,8 +100,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . $hidden . '"', false);
         $this->get($hidden)->assertOk()
-            ->assertSee('title="' . text('admiro::dashboard.onboarding_languages_view_hidden') . '" aria-current="true" data-ss-view>', false)
-            ->assertSeeInOrder(['<section class="ss-onboarding-languages ss-folder"', '<header class="ss-folder__tab">', '<div class="ss-folder__body">', 'data-ss-view-switch="ss-languages-workspace"', '<div class="ss-onboarding-languages__workspace" id="ss-languages-workspace">', '<ul class="ss-onboarding-languages__grid">', 'id="hidden-language-de"', 'id="flag-icons-de"', '<span class="ss-table__sub">de</span>', 'action="' . route('admiro.dictionaries.toggle', ['dictionary' => 'languages', 'code' => 'de']) . '"', '<span class="ss-switch__power" aria-hidden="true">'], false)
+            ->assertSee('aria-current="true" data-ss-view>', false)->assertSee(text('admiro::dashboard.onboarding_languages_view_hidden') . '</a>', false)
+            ->assertSeeInOrder(['<section class="ss-onboarding-languages ss-folder"', '<header class="ss-folder__tab">', '<div class="ss-folder__back">', '<div class="ss-folder__toolbar">', 'data-ss-view-switch="ss-languages-workspace"', '<div class="ss-folder__body">', '<div class="ss-onboarding-languages__workspace" id="ss-languages-workspace">', '<ul class="ss-onboarding-languages__grid">', 'id="hidden-language-de"', 'id="flag-icons-de"', '<span class="ss-table__sub">de</span>', 'action="' . route('admiro.dictionaries.toggle', ['dictionary' => 'languages', 'code' => 'de']) . '"', '<span class="ss-switch__power" aria-hidden="true">'], false)
             ->assertDontSee('id="enabled-language-pl-row"', false);
 
         $this->from($hidden)->post(route('admiro.dictionaries.toggle', ['dictionary' => 'languages', 'code' => 'de']))->assertRedirect($hidden);
