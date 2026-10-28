@@ -23,13 +23,18 @@ use Simplysmart\Admiro\View\Navigation\SearchBox;
 
 /**
  * Menu strefy testowej (sklep), które w bieżącym żądaniu wybiera layout Workspace (Contracts\ZoneAppLayout) zamiast
- * `app_layout` strefy, ze skrótem w stopce.
+ * `app_layout` strefy, ze skrótem w stopce i stronami ustawień jako jednym obszarem z kategoriami po lewej.
  */
 final class WorkspaceShopNavigation implements ZoneNavigation, ZoneAppLayout, ZoneShortcuts
 {
     public function appLayout(): AppLayout
     {
         return AppLayout::Workspace;
+    }
+
+    public function settingsArea(): bool
+    {
+        return true;
     }
 
     public function shortcuts(): array
@@ -44,7 +49,7 @@ final class WorkspaceShopNavigation implements ZoneNavigation, ZoneAppLayout, Zo
 
     public function settings(): array
     {
-        return [];
+        return [new NavigationGroup('Sklep', [new NavigationItem('Ustawienia sklepu', '/ustawienia', 'settings')])];
     }
 
     public function search(): SearchBox

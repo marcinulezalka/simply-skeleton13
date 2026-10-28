@@ -15,6 +15,7 @@ namespace Tests\Feature\Zones;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
+use Simplysmart\Admiro\Enums\AppBackdrop;
 use Simplysmart\Admiro\Enums\AppLayout;
 use Simplysmart\Admiro\Enums\FaviconType;
 use Simplysmart\Admiro\Enums\Palette;
@@ -115,6 +116,71 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('ss-shell--workspace', $html);
         $this->assertStringContainsString('<a class="ss-icon-button ss-workspace-footer__tool" href="/zamowienia" title="Zamówienia"', $html);
         $this->assertStringNotContainsString('<a class="ss-sidebar__link"', $html);
+    }
+
+    public function test_backdrop_is_the_brand_by_default_and_the_zone_logo_needs_a_logo(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $logo = dirname(__DIR__, 3) . '/packages/simplysmart/admiro/public/assets/img/brand/logo.svg';
+
+        $this->assertSame(AppBackdrop::Brand, $factory->make(['name' => 'shop'], 'shop', __DIR__)->backdrop);
+        $this->assertSame(AppBackdrop::ZoneLogo, $factory->make(['name' => 'shop', 'logo' => $logo, 'backdrop' => 'zone-logo'], 'shop', __DIR__)->backdrop);
+
+        foreach ([['backdrop' => 'photo'], ['backdrop' => 'zone-logo']] as $config) {
+            try {
+                $factory->make(['name' => 'shop', ...$config], 'shop', __DIR__);
+                $this->fail('Invalid backdrop accepted.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertStringStartsWith('Zone [shop] backdrop', $exception->getMessage());
+            }
+        }
+    }
+
+    public function test_backdrop_shows_the_zone_logo_at_the_bottom_instead_of_the_brand(): void
+    {
+        $zoneLogo = Blade::render('<x-admiro::app.backdrop :logo="$logo" />', ['logo' => '<svg viewBox="0 0 10 2"><path fill="currentColor" d="M0 0h10v2H0z"/></svg>']);
+        $brand = Blade::render('<x-admiro::app.backdrop />');
+
+        $this->assertStringContainsString('<div class="ss-backdrop ss-backdrop--bottom" aria-hidden="true">', $zoneLogo);
+        $this->assertStringContainsString('<span class="ss-backdrop__logo"><svg viewBox="0 0 10 2">', $zoneLogo);
+        $this->assertStringContainsString('<div class="ss-backdrop" aria-hidden="true">', $brand);
+        $this->assertStringContainsString('<span class="ss-logo ss-backdrop__logo">', $brand);
+    }
+
+    public function test_settings_pages_in_the_workspace_form_one_area_with_categories_on_the_left(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', WorkspaceShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $settings = (string) $this->get('/alpha/account/profile')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<div class="ss-settings-area">', $settings);
+        $this->assertStringContainsString('<p class="ss-settings-area__group-title">Sklep</p>', $settings);
+        $this->assertStringContainsString('<a class="ss-settings-area__link" href="/ustawienia" >', $settings);
+        $this->assertMatchesRegularExpression('~<a class="ss-settings-area__link" href="' . preg_quote(url('/alpha/account/profile'), '~') . '"\s+aria-current="page"\s*>~', $settings);
+        $this->assertStringNotContainsString('<div class="ss-settings-area">', (string) $this->get('/alpha/page')->getContent());
+    }
+
+    public function test_page_header_link_can_carry_its_own_label_and_icon(): void
+    {
+        $html = Blade::render('<x-admiro::app.context title="Dashboard" back="#ss-context-switch" back-label="Przełącz kontekst" back-icon="switch" />');
+
+        $this->assertMatchesRegularExpression('~<a class="ss-context__back ss-link" href="#ss-context-switch">.*?</span>\s*Przełącz kontekst</a>~s', $html);
+        $this->assertStringContainsString(text_action('back'), Blade::render('<x-admiro::app.context title="Strona" back="/" />'));
+    }
+
+    public function test_organization_business_card_shows_the_details_and_links_when_given_an_address(): void
+    {
+        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122', 'phone' => '+48 22 100 20 30', 'email' => 'kontakt@example.com', 'street' => 'ul. Zdrowa 5', 'postal_code' => '00-950', 'city' => 'Warszawa']);
+
+        $html = Blade::render('<x-admiro::organization.card :organization="$organization" href="/ustawienia" kicker="Placówka" />', ['organization' => $organization]);
+
+        $this->assertMatchesRegularExpression('~<a class="ss-business-card ss-business-card--link"\s+href="/ustawienia"\s*>~', $html);
+        $this->assertStringContainsString('<span class="ss-business-card__name">Przychodnia Zdrowie</span>', $html);
+        $this->assertStringContainsString('<span class="ss-business-card__kicker">Placówka</span>', $html);
+        $this->assertStringContainsString('ul. Zdrowa 5, 00-950 Warszawa', $html);
+        $this->assertStringContainsString('NIP 5250001122', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-business-card"\s*>~', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => $organization]));
     }
 
     public function test_social_links_skip_empty_addresses_and_reject_unknown_networks(): void
