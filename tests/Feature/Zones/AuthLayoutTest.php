@@ -232,6 +232,20 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringNotContainsString('aria-invalid', $plain);
     }
 
+    public function test_pin_field_can_place_the_keypad_inside_the_form_instead_of_a_modal(): void
+    {
+        $html = Blade::render('<x-admiro::pin-field id="pin" name="pin" label="PIN" autocomplete="current-password" :min="4" :max="8" :keypad-inline="true" />');
+
+        $this->assertStringContainsString('type="button" aria-expanded="false" aria-controls="pin-keypad"', $html);
+        $this->assertStringNotContainsString('aria-haspopup', $html);
+        $this->assertStringContainsString('<div class="ss-keypad ss-keypad--inline" id="pin-keypad" role="group" aria-label="PIN" data-ss-keypad data-ss-keypad-inline data-ss-keypad-for="pin" hidden>', $html);
+        $this->assertStringNotContainsString('<dialog', $html);
+        $this->assertSame(10, substr_count($html, 'data-ss-keypad-digit='));
+        $this->assertStringContainsString('data-ss-keypad-too-short=', $html);
+        $this->assertStringNotContainsString('data-ss-keypad-display', $html);
+        $this->assertStringNotContainsString('data-ss-keypad-done', $html);
+    }
+
     public function test_pin_steps_offer_the_keypad_and_load_its_script(): void
     {
         $html = Blade::render('<x-admiro::auth.layout title="PIN">x</x-admiro::auth.layout>');
