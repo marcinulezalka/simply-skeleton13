@@ -14,23 +14,25 @@ declare(strict_types=1);
 namespace Tests\Feature\Legal;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
-use Simplysmart\Admiro\Cookies\CookiePolicies;
+use Simplysmart\Admiro\Database\History;
 use Simplysmart\Admiro\Enums\LegalDocumentType;
 use Simplysmart\Admiro\Legal\LegalDocumentRejected;
 use Simplysmart\Admiro\Legal\LegalDocuments;
-use Simplysmart\Admiro\Models\CookiePolicy;
 use Simplysmart\Admiro\Models\LegalDocument;
 use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\TestCase;
 
 /**
- * Dokumenty prawne Core (polityka prywatności, klauzula RODO): wersje każdego dokumentu osobno, publiczne strony
- * z „Wstecz” i „Zobacz także”, seeder pierwszych wersji wszystkich polityk i `legal_documents` w configu strefy.
+ * Dokumenty prawne Core (polityka cookies, polityka prywatności, klauzula RODO): wersje każdego dokumentu osobno,
+ * publiczne strony z „Wstecz” i „Zobacz także”, seeder pierwszych wersji wszystkich polityk i `legal_documents`
+ * w configu strefy (bez polityki cookies).
  */
 class LegalDocumentsTest extends TestCase
 {
@@ -93,19 +95,18 @@ class LegalDocumentsTest extends TestCase
         $this->assertStringContainsString('Jan Kowalski, e-mail: dane@example.com', $privacy['body']);
         $this->assertStringNotContainsString(':name', $privacy['body']);
         $this->assertSame(1, LegalDocument::query()->where('document', LegalDocumentType::Gdpr->value)->count());
-        $this->assertSame(1, CookiePolicy::query()->whereNotNull('version')->count());
+        $this->assertSame(1, LegalDocument::query()->where('document', LegalDocumentType::Cookies->value)->whereNotNull('version')->count());
     }
 
     public function test_seeder_leaves_documents_that_already_have_a_version(): void
     {
-        $policies = $this->app->make(CookiePolicies::class);
-        $policies->saveDraft(['pl' => ['title' => 'Własna polityka cookies', 'body' => 'Treść']]);
-        $policies->publish('pl');
+        $this->publish(LegalDocumentType::Cookies, 'Własna polityka cookies', 'Treść');
 
         $this->command('admiro:legal:seed')->assertSuccessful();
 
-        $this->assertSame(['Własna polityka cookies'], CookiePolicy::query()->get()->map(static fn(CookiePolicy $policy): string => $policy->content('pl')['title'])->all());
-        $this->assertSame(2, LegalDocument::query()->count());
+        $cookies = LegalDocument::query()->where('document', LegalDocumentType::Cookies->value)->get();
+        $this->assertSame(['Własna polityka cookies'], $cookies->map(static fn(LegalDocument $policy): string => $policy->content('pl')['title'])->all());
+        $this->assertSame(3, LegalDocument::query()->count());
     }
 
     public function test_zone_legal_documents_must_be_unique_known_documents(): void
@@ -115,8 +116,13 @@ class LegalDocumentsTest extends TestCase
 
         $this->assertSame([LegalDocumentType::Gdpr, LegalDocumentType::Privacy], $zone->legalDocuments);
 
-        $this->expectException(InvalidArgumentException::class);
-        $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_documents' => ['privacy', 'terms']], 'shop', __DIR__);
+        foreach ([['privacy', 'terms'], ['privacy', 'privacy'], ['cookies']] as $documents) {
+            try {
+                $factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'legal_documents' => $documents], 'shop', __DIR__);
+                $this->fail('Zone legal_documents [' . implode(', ', $documents) . '] must be rejected.');
+            } catch (InvalidArgumentException) {
+            }
+        }
     }
 
     public function test_seeder_reports_every_policy_published_from_the_template(): void
@@ -131,6 +137,31 @@ class LegalDocumentsTest extends TestCase
             ->expectsOutputToContain('Opublikowano szablon dokumentu „Polityka prywatności” z administratorem danych Jan Kowalski (dane@example.com).')
             ->assertSuccessful();
         $this->command('admiro:legal:seed')->doesntExpectOutputToContain('Opublikowano szablon')->assertSuccessful();
+    }
+
+    public function test_cookie_policies_move_to_legal_documents_with_their_versions_and_history(): void
+    {
+        $this->publish(LegalDocumentType::Cookies, 'Polityka cookies', 'Pierwsza');
+        $this->publish(LegalDocumentType::Privacy, 'Polityka prywatności', 'Treść');
+        $token = LegalDocument::query()->where('document', LegalDocumentType::Cookies->value)->sole()->token;
+        $migration = ['--path' => $this->packagePath('simplysmart/admiro', 'database/migrations/2026_10_28_000001_move_cookie_policies_to_legal_documents.php'), '--realpath' => true];
+
+        $this->command('migrate:rollback', $migration)->assertSuccessful();
+
+        $this->assertSame(1, DB::table('cookie_policies')->where('token', $token)->where('version', 1)->count());
+        $this->assertSame([LegalDocumentType::Privacy], LegalDocument::query()->get()->map(static fn(LegalDocument $document): LegalDocumentType => $document->document)->all());
+        $oldId = DB::table('cookie_policies')->value('id');
+        DB::table(History::tableFor('cookie_policies'))->insert(['row_id' => $oldId, 'action' => 'update', 'old_values' => '{}', 'new_values' => '{}', 'created_at' => now()]);
+
+        $this->command('migrate', $migration)->assertSuccessful();
+
+        $this->assertFalse(Schema::hasTable('cookie_policies'));
+        $this->assertFalse(Schema::hasTable(History::tableFor('cookie_policies')));
+        $policy = LegalDocument::query()->where('document', LegalDocumentType::Cookies->value)->sole();
+        $this->assertSame([$token, 1], [$policy->token, $policy->version]);
+        $this->assertSame($policy->computeChecksum(), $policy->checksum);
+        $this->assertSame(1, DB::table(History::tableFor(LegalDocument::TABLE))->where('row_id', $policy->getKey())->where('action', 'update')->count());
+        $this->get('/cookies')->assertOk()->assertSee('Pierwsza');
     }
 
     private function publish(LegalDocumentType $type, string $title, string $body): void

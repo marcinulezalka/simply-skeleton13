@@ -297,8 +297,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->from($wizard)->put('/admiro/organizations/' . $company->token . '/parent', ['parent' => $parent->token, 'activate' => '1'])->assertRedirect($wizard);
 
-        $this->assertTrue($company->fresh()?->is_active);
-        $this->assertSame($parent->id, $company->fresh()?->parent_id);
+        $company->refresh();
+        $this->assertTrue($company->is_active);
+        $this->assertSame($parent->id, $company->parent_id);
     }
 
     public function test_organization_found_in_the_wizard_is_switched_on_at_once_and_the_wizard_stays_open(): void
@@ -351,8 +352,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<label class="ss-switch ss-switch--knob" for="[^"]+">.*?<span class="ss-switch__power" aria-hidden="true"><span class="ss-icon ss-switch__power-icon"><svg[^>]*>\s*<path d="M12 2v10~s', $html);
 
         $this->post('/admiro/organizations/' . $clinic->token . '/toggle');
-        $this->assertSame(RecordStatus::Active, $clinic->fresh()?->status);
-        $this->assertTrue($clinic->fresh()?->is_active);
+        $clinic->refresh();
+        $this->assertSame(RecordStatus::Active, $clinic->status);
+        $this->assertTrue($clinic->is_active);
     }
 
     public function test_organizations_step_explains_the_term_with_a_wiki_tip_and_shows_zone_favicons(): void
@@ -372,13 +374,17 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $keys = array_map(static fn(WikiEntry $entry): string => $entry->key, $wiki->all());
         $this->assertSame(['organizacja', 'organizacja-operatora', 'departament', 'strefa', 'wlasciciel'], array_slice($keys, 0, 5));
-        $this->assertSame('cennik', $keys[array_key_last($keys)]);
-        $this->assertSame(text('wiki.departament.question'), $wiki->entry('departament')?->question);
+        $this->assertSame('cennik', end($keys));
+        $department = $wiki->entry('departament');
+        $this->assertNotNull($department);
+        $this->assertSame(text('wiki.departament.question'), $department->question);
         $this->assertSame(['departament'], array_map(static fn(WikiEntry $entry): string => $entry->key, $wiki->search('RÓŻNI SIĘ OD')));
-        $this->assertSame('wiki-departament', $wiki->entry('departament')?->id());
+        $this->assertSame('wiki-departament', $department->id());
         $this->assertNull($wiki->entry('nieznane'));
-        $this->assertSame('shop::wiki.cennik.term', $wiki->entry('cennik')?->term);
-        $this->assertNull($wiki->entry('cennik')?->example);
+        $priceList = $wiki->entry('cennik');
+        $this->assertNotNull($priceList);
+        $this->assertSame('shop::wiki.cennik.term', $priceList->term);
+        $this->assertNull($priceList->example);
     }
 
     public function test_wiki_page_lists_tips_and_questions_with_search_and_steps_explain_their_term(): void
@@ -409,7 +415,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<div class="ss-onboarding-wizard__header">.*?id="ss-admins-search"~s', $html);
         $this->assertStringContainsString(text('admiro::dashboard.onboarding_admins_profiles'), $html);
         $this->assertStringContainsString(e(text('roles.admiro.owner')), $html);
-        $this->assertStringContainsString('id="administrator-' . $support->getRouteKey() . '"', $html);
+        $this->assertStringContainsString('id="administrator-' . $support->token . '"', $html);
         $this->assertStringContainsString('action="' . route('admiro.administrators.roles.toggle', ['account' => $support->getRouteKey(), 'role' => 'owner']) . '" data-ss-autosubmit>', $html);
         $this->assertStringNotContainsString(route('admiro.administrators.roles.toggle', ['account' => $hero->getRouteKey(), 'role' => 'owner']), $html);
         $this->assertStringContainsString(text('admiro::dashboard.onboarding_admins_self'), $html);
@@ -421,8 +427,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertNotContains('owner', $this->rolesOf($support));
         $this->assertTrue($this->stepDone(OnboardingStep::Administrators));
 
-        $this->get($wizard . '?q=support')->assertOk()->assertSee('id="ss-admins-all-title"', false)->assertSee('id="administrator-' . $support->getRouteKey() . '"', false);
-        $this->get('/admiro/search/suggest?q=support&in[]=directory')->assertOk()->assertSee(e(route('admiro.onboarding.show', ['step' => 'administrators', 'q' => 'support'])) . '#administrator-' . $support->getRouteKey(), false);
+        $this->get($wizard . '?q=support')->assertOk()->assertSee('id="ss-admins-all-title"', false)->assertSee('id="administrator-' . $support->token . '"', false);
+        $this->get('/admiro/search/suggest?q=support&in[]=directory')->assertOk()->assertSee(e(route('admiro.onboarding.show', ['step' => 'administrators', 'q' => 'support'])) . '#administrator-' . $support->token, false);
     }
 
     public function test_dictionary_steps_list_enabled_entries_with_their_facts_and_switch_them_at_once(): void
@@ -499,10 +505,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->get('/admiro/onboarding/languages')->assertOk()->assertSee('href="' . route('admiro.onboarding.translations', ['code' => 'en']) . '" download', false)->assertSee(text('admiro::dashboard.onboarding_languages_title'));
 
         $response = $this->get('/admiro/onboarding/languages/en/translations')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations-en.json"');
-        $json = $response->json();
-        $this->assertSame('en', $json['language']);
-        $this->assertSame('pl', $json['source']);
-        $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => text('layout.home', locale: 'en')], $json['texts']['admiro::layout.home']);
+        $response->assertJson(['language' => 'en', 'source' => 'pl', 'texts' => ['admiro::layout.home' => ['source' => text('layout.home', locale: 'pl'), 'translation' => text('layout.home', locale: 'en')]]], true);
         $this->get('/admiro/onboarding/languages/de/translations')->assertNotFound();
     }
 
@@ -510,11 +513,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
 
-        $json = $this->get('/admiro/onboarding/languages/translations/template')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations-template.json"')->json();
-
-        $this->assertSame('', $json['language']);
-        $this->assertSame('pl', $json['source']);
-        $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => ''], $json['texts']['admiro::layout.home']);
+        $this->get('/admiro/onboarding/languages/translations/template')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations-template.json"')
+            ->assertJson(['language' => '', 'source' => 'pl', 'texts' => ['admiro::layout.home' => ['source' => text('layout.home', locale: 'pl'), 'translation' => '']]], true);
     }
 
     public function test_language_rows_count_keywords_instead_of_currency_taxes_and_holidays_and_export_bundles_all_languages(): void
@@ -530,9 +530,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee(text('admiro::dashboard.onboarding_regional_currency'))
             ->assertDontSee(text('admiro::dashboard.onboarding_regional_taxes'));
 
-        $json = $this->get('/admiro/onboarding/languages/translations/export')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations.json"')->json();
-        $this->assertSame('pl', $json['source']);
-        $this->assertSame(['en', 'pl'], array_column($json['languages'], 'language'));
+        $this->get('/admiro/onboarding/languages/translations/export')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations.json"')
+            ->assertJsonPath('source', 'pl')
+            ->assertJsonPath('languages.*.language', ['en', 'pl']);
     }
 
     public function test_translation_files_are_imported_into_the_application_language_overrides(): void

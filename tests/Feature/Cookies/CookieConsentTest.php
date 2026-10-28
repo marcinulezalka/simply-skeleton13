@@ -19,16 +19,18 @@ use Illuminate\Support\Str;
 use Simplysmart\Admiro\Contracts\ConsentScripts;
 use Simplysmart\Admiro\Cookies\ConsentScript;
 use Illuminate\Support\Facades\Blade;
-use Simplysmart\Admiro\Cookies\CookiePolicies;
-use Simplysmart\Admiro\Cookies\CookiePolicyRejected;
 use Simplysmart\Admiro\Enums\ConsentDecision;
 use Simplysmart\Admiro\Enums\CookieCategory;
+use Simplysmart\Admiro\Enums\LegalDocumentType;
+use Simplysmart\Admiro\Legal\LegalDocumentRejected;
+use Simplysmart\Admiro\Legal\LegalDocuments;
 use Simplysmart\Admiro\Models\CookieConsent;
+use Simplysmart\Admiro\Models\LegalDocument;
 use Tests\TestCase;
 
 /**
- * Zgoda na cookies: baner tylko z opublikowaną polityką albo skryptem opcjonalnym, wersje polityki (szkic,
- * publikacja z treścią w języku domyślnym), strona polityki z Markdown bez HTML-a i listą cookies, rejestr zgód bez IP
+ * Zgoda na cookies: baner tylko z opublikowaną polityką albo skryptem opcjonalnym, wersje polityki (dokument prawny
+ * LegalDocumentType::Cookies: szkic, publikacja z treścią w języku domyślnym), strona polityki z Markdown bez HTML-a i listą cookies, rejestr zgód bez IP
  * (bieżąca wersja, identyfikator UUID, limit żądań), skrypty opcjonalne nieaktywne do zgody i czyszczenie rejestru.
  */
 class CookieConsentTest extends TestCase
@@ -96,13 +98,13 @@ class CookieConsentTest extends TestCase
 
     public function test_publishing_needs_default_language_content_and_numbers_versions(): void
     {
-        $policies = $this->app->make(CookiePolicies::class);
-        $policies->saveDraft(['en' => ['title' => 'Cookies', 'body' => 'Text']]);
+        $documents = $this->app->make(LegalDocuments::class);
+        $documents->saveDraft(LegalDocumentType::Cookies, ['en' => ['title' => 'Cookies', 'body' => 'Text']]);
 
         try {
-            $policies->publish('pl');
+            $documents->publish(LegalDocumentType::Cookies, 'pl');
             $this->fail('A draft without Polish content must not be published.');
-        } catch (CookiePolicyRejected) {
+        } catch (LegalDocumentRejected) {
             $this->addToAssertionCount(1);
         }
 
@@ -177,11 +179,11 @@ class CookieConsentTest extends TestCase
         $this->assertSame(0, CookieConsent::query()->count());
     }
 
-    private function publish(string $title, string $body): \Simplysmart\Admiro\Models\CookiePolicy
+    private function publish(string $title, string $body): LegalDocument
     {
-        $policies = $this->app->make(CookiePolicies::class);
-        $policies->saveDraft(['pl' => ['title' => $title, 'body' => $body]]);
+        $documents = $this->app->make(LegalDocuments::class);
+        $documents->saveDraft(LegalDocumentType::Cookies, ['pl' => ['title' => $title, 'body' => $body]]);
 
-        return $policies->publish('pl');
+        return $documents->publish(LegalDocumentType::Cookies, 'pl');
     }
 }

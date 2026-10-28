@@ -115,13 +115,14 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => $department->token]);
         $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => 'unknown'])->assertNotFound();
 
-        $this->assertNull($company->fresh()?->parent_id);
-        $this->assertNull($operator->fresh()?->parent_id);
-        $this->assertSame($branch->id, $department->fresh()?->parent_id);
-        $this->assertSame($company->id, $branch->fresh()?->parent_id);
+        $this->assertNull($company->refresh()->parent_id);
+        $this->assertNull($operator->refresh()->parent_id);
+        $this->assertSame($branch->id, $department->refresh()->parent_id);
+        $this->assertSame($company->id, $branch->refresh()->parent_id);
 
         $this->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => ''])->assertRedirect();
-        $this->assertNull($branch->fresh()?->parent_id);
+        $branch->refresh();
+        $this->assertNull($branch->parent_id);
     }
 
     public function test_disabled_organization_is_not_a_parent_choice_and_can_be_enabled_again(): void

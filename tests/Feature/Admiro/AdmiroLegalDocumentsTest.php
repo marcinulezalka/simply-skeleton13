@@ -44,7 +44,7 @@ class AdmiroLegalDocumentsTest extends AdmiroTestCase
         $this->assertSame(1, LegalDocument::query()->where('document', 'privacy')->whereNotNull('version')->count());
         $this->assertSame(0, LegalDocument::query()->where('document', 'gdpr')->count());
         $this->get('/polityka-prywatnosci')->assertOk()->assertSee('<h2 id="administrator">Administrator</h2>', false);
-        $html = (string) $this->get('/admiro/legal-documents/privacy')->assertOk()->assertSee(text('admiro::admin.cookie_policy_new_draft'))->getContent();
+        $html = (string) $this->get('/admiro/legal-documents/privacy')->assertOk()->assertSee(text('admiro::admin.legal_document_new_draft'))->getContent();
         $link = static fn(string $document): string => '~href="' . preg_quote(route('admiro.legal-documents.index', ['document' => $document]), '~') . '"[^>]*aria-current="page"~';
         $this->assertMatchesRegularExpression($link('privacy'), $html);
         $this->assertDoesNotMatchRegularExpression($link('gdpr'), $html);
@@ -55,7 +55,7 @@ class AdmiroLegalDocumentsTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro');
 
-        $this->get('/admiro/legal-documents/gdpr')->assertOk()->assertDontSee(text('admiro::admin.cookie_policy_save'));
+        $this->get('/admiro/legal-documents/gdpr')->assertOk()->assertDontSee(text('admiro::admin.legal_document_save'));
         $this->put('/admiro/legal-documents/gdpr', ['title' => ['pl' => 'X'], 'body' => ['pl' => 'Y']])->assertForbidden();
         $this->post('/admiro/legal-documents/gdpr/publish')->assertForbidden();
         $this->get('/admiro/legal-documents/terms')->assertNotFound();

@@ -283,4 +283,11 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('<form class="ss-sidebar__sign-out" method="POST" action="' . url('/alpha/signin/out') . '">', $html);
         $this->assertStringContainsString(text('sign_in.signed_in_as', ['name' => 'Anna Nowak']), $html);
     }
+
+    public function test_page_meta_is_shown_under_the_title(): void
+    {
+        $html = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/page')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<h1 class="ss-context__title">Zamówienia</h1>\s*<p class="ss-context__meta">12 zamówień</p>~', $html);
+    }
 }
