@@ -14,6 +14,10 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 - **BREAKING** Rdzeń aplikacji pochodzi z jednej paczki `simplysmart/admiro` (dawne `simplysmart/mainboard` scalone ze strefą administratorów): `simplysmart/mainboard` usunięty z `require`, repozytorium Composera `packages/*/*` nazywa się `simplysmart-local`. W `.env` (lokalnie i na serwerze) zmień `MAINBOARD_*` na `ADMIRO_*` (np. `ADMIRO_ORGANIZATION_BRAND_DISK`); komendy to `admiro:*` (np. `php artisan admiro:localization:seed`), nadpisania widoków i tekstów rdzenia w `resources/views/vendor/admiro/` i `lang/vendor/admiro/`.
 
+### Security
+
+- `symfony/mime` 8.1.10: poprawka CVE-2026-45070 (wstrzyknięcie nagłówka e-maila przez znaki spoza tokenu w nazwach parametrów MIME).
+
 ## [0.3.0] - 2026-10-25
 
 ### Added
