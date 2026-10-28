@@ -30,6 +30,7 @@ use Simplysmart\Admiro\Organizations\OrganizationData;
 use Simplysmart\Admiro\Organizations\OrganizationManagement;
 use Simplysmart\Admiro\Panel\Onboarding\OnboardingProgress;
 use Simplysmart\Admiro\Panel\Enums\OnboardingStep;
+use Simplysmart\Admiro\Panel\Http\Controllers\OnboardingController;
 use Simplysmart\Admiro\Permissions\OwnerData;
 use Simplysmart\Admiro\Permissions\PermissionFiles;
 use Simplysmart\Admiro\Permissions\ZoneOwnerProvisioners;
@@ -86,7 +87,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee('id="ss-languages-all-title"', false)
             ->assertDontSee('id="language-de"', false)
             ->assertDontSee('id="hidden-language-de"', false)
-            ->assertSee('<div class="ss-folder__toolbar-end ss-onboarding-languages__layout">', false)->assertSee('<nav class="ss-tabs ss-tabs--slider ss-onboarding-languages__views ss-onboarding-languages__views--icons" id="ss-languages-layouts" aria-labelledby="ss-languages-layouts-label"', false)
+            ->assertSee('<nav class="ss-tabs ss-tabs--slider ss-onboarding-languages__views ss-onboarding-languages__views--icons ss-folder__toolbar-end" id="ss-languages-layouts" aria-label="' . text('admiro::dashboard.onboarding_languages_layouts') . '"', false)
             ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages', 'layout' => 'grid']) . '" title="' . text('admiro::dashboard.onboarding_languages_layout_grid') . '" aria-current="false" data-ss-view>', false)
             ->assertSee('<ul class="ss-onboarding-languages__rows">', false)
             ->assertSee('<label class="ss-switch ss-switch--knob" for="enabled-language-en">', false)
@@ -482,7 +483,7 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSeeInOrder(['<details class="ss-search__menu ss-search__actions ss-search__quick" data-ss-dropdown>', 'title="' . text('admiro::dashboard.onboarding_translations_quick') . '"', 'href="#' . OnboardingStep::TRANSLATIONS_ANCHOR . '" data-ss-dropdown-close>', text('admiro::dashboard.onboarding_translations_import'), 'href="' . route('admiro.onboarding.translations.export') . '" download data-ss-dropdown-close>', text('admiro::dashboard.onboarding_translations_export')], false)
             ->assertSee('<section class="ss-folder ss-onboarding-translations" id="' . OnboardingStep::TRANSLATIONS_ANCHOR . '" role="tabpanel" aria-labelledby="ss-translations-title" data-ss-tab-panel>', false)
             ->assertSeeInOrder(['<footer class="ss-folder__footer">', text('admiro::dashboard.onboarding_languages_view_active') . ' <span class="ss-badge">2</span>', text('admiro::dashboard.onboarding_languages_view_hidden') . ' <span class="ss-badge">1</span>'], false)
-            ->assertSee('enctype="multipart/form-data" data-ss-file-drop data-ss-file-drop-max="10"', false)
+            ->assertSee('enctype="multipart/form-data" data-ss-keep-scroll data-ss-file-drop data-ss-file-drop-max="10"', false)
             ->assertSeeInOrder(['<div class="ss-folder__toolbar">', 'href="' . route('admiro.onboarding.translations.template') . '" download', 'href="' . route('admiro.onboarding.translations', ['code' => 'pl']) . '" download', text('admiro::dashboard.onboarding_translations_export_default'), text('admiro::dashboard.onboarding_translations_export'), 'type="submit" form="ss-translations-form" hidden data-ss-file-drop-submit>', '<div class="ss-folder__body">', 'id="ss-translations-form"'], false);
         $this->get('/admiro/onboarding/countries')->assertOk()->assertSee(text('admiro::search.actions.country'))->assertSee(text('admiro::search.actions.regional'));
         $this->get('/admiro/onboarding/currencies')->assertOk()->assertSee(text('admiro::search.actions.exchange_rate'))->assertSee(text('admiro::search.actions.currency'));
@@ -522,9 +523,10 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $counts = app(TranslationTemplate::class)->counts('en', 'pl');
 
         $this->assertGreaterThan(0, $counts['translated']);
+        $this->assertSame(floor($counts['translated'] * 1000 / $counts['all']) / 10, $counts['percent']);
         $this->assertSame($counts['all'], app(TranslationTemplate::class)->counts('pl', 'pl')['translated']);
         $this->get('/admiro/onboarding/languages')->assertOk()
-            ->assertSeeInOrder(['id="enabled-language-en-row"', text('admiro::dashboard.onboarding_translations_keywords'), local_number($counts['translated']) . '</dd>', text('admiro::dashboard.onboarding_translations_download') . ' <span class="ss-badge" title="' . text('admiro::dashboard.onboarding_translations_percent_hint') . '">' . $counts['percent'] . '%</span></a>'], false)
+            ->assertSeeInOrder(['id="enabled-language-en-row"', text('admiro::dashboard.onboarding_translations_keywords'), local_number($counts['translated']) . '</dd>', text('admiro::dashboard.onboarding_translations_download') . ' <span class="ss-badge" title="' . text('admiro::dashboard.onboarding_translations_percent_hint') . '">' . local_number($counts['percent'], floor($counts['percent']) === $counts['percent'] ? 0 : 1) . '%</span></a>'], false)
             ->assertDontSee(text('admiro::dashboard.onboarding_regional_currency'))
             ->assertDontSee(text('admiro::dashboard.onboarding_regional_taxes'));
 
@@ -544,9 +546,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             'admiro::layout.search_actions' => ['source' => 'Dodaj', 'translation' => ''],
         ]];
         $file = UploadedFile::fake()->createWithContent('translations-en.json', (string) json_encode($document));
-        $back = route('admiro.onboarding.show', ['step' => 'languages']) . '#' . OnboardingStep::TRANSLATIONS_ANCHOR;
+        $back = route('admiro.onboarding.show', ['step' => 'languages']);
 
-        $this->post('/admiro/onboarding/languages/translations', ['files' => [$file]])->assertRedirect($back)->assertSessionHas('status', text('admiro::dashboard.onboarding_translations_imported', ['count' => '1']));
+        $this->post('/admiro/onboarding/languages/translations', ['files' => [$file]])->assertRedirect($back)->assertSessionHas('status', text('admiro::dashboard.onboarding_translations_imported', ['count' => '1']))->assertSessionHas(OnboardingController::FOLDER, OnboardingController::TRANSLATIONS_FOLDER);
 
         $this->assertSame(['home' => 'Start page'], require $langPath . '/vendor/admiro/en/layout.php');
         $this->assertDatabaseHas('audit_events', ['event' => 'translations imported']);
