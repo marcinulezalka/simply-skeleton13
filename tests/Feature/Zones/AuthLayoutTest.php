@@ -239,6 +239,7 @@ class AuthLayoutTest extends SignInTestCase
         $this->assertStringContainsString('type="button" aria-expanded="false" aria-controls="pin-keypad"', $html);
         $this->assertStringNotContainsString('aria-haspopup', $html);
         $this->assertStringContainsString('<div class="ss-keypad ss-keypad--inline" id="pin-keypad" role="group" aria-label="PIN" data-ss-keypad data-ss-keypad-inline data-ss-keypad-for="pin" hidden>', $html);
+        $this->assertMatchesRegularExpression('~data-ss-keypad-for="pin" hidden>\s*<div class="ss-keypad__drawer">\s*<div class="ss-keypad__card">\s*<p class="ss-keypad__error"~', $html);
         $this->assertStringNotContainsString('<dialog', $html);
         $this->assertSame(10, substr_count($html, 'data-ss-keypad-digit='));
         $this->assertStringContainsString('data-ss-keypad-too-short=', $html);

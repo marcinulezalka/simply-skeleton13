@@ -164,7 +164,7 @@ class DesignSystemPageTest extends TestCase
         $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPin))->assertOk()->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" hidden>', false)->assertSee(text('sign_in.pin_submit'));
         $this->get(route('simplysmart.design-system.view', DesignSystemView::SignInPinKeypad))
             ->assertOk()
-            ->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" data-ss-keypad-show>', false)
+            ->assertSee('data-ss-keypad-inline data-ss-keypad-for="pin" data-ss-keypad-show data-ss-keypad-expanded>', false)
             ->assertSee("dialog.hasAttribute('data-ss-keypad-show')", false);
 
         $this->get(route('simplysmart.design-system.view', DesignSystemView::ForgotPin))->assertOk()->assertSee('<details class="ss-forgot__recovery" >', false);
