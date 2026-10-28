@@ -86,6 +86,9 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertDontSee('id="ss-languages-all-title"', false)
             ->assertDontSee('id="language-de"', false)
             ->assertDontSee('id="hidden-language-de"', false)
+            ->assertSee('<nav class="ss-tabs ss-tabs--slider ss-onboarding-languages__views ss-folder__toolbar-end" id="ss-languages-layouts"', false)
+            ->assertSee('<a class="ss-tabs__link" href="' . route('admiro.onboarding.show', ['step' => 'languages', 'layout' => 'grid']) . '" aria-current="false" data-ss-view>', false)
+            ->assertSee('<ul class="ss-onboarding-languages__rows">', false)
             ->assertSee('<label class="ss-switch ss-switch--knob" for="enabled-language-en">', false)
             ->assertDontSee(route('admiro.onboarding.confirm', ['step' => 'languages']), false)
             ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro/onboarding') . '">', false)
@@ -106,6 +109,17 @@ class AdmiroOnboardingTest extends AdmiroTestCase
 
         $this->from($hidden)->post(route('admiro.dictionaries.toggle', ['dictionary' => 'languages', 'code' => 'de']))->assertRedirect($hidden);
         $this->assertTrue(Language::query()->where('code', 'de')->sole()->is_active);
+    }
+
+    public function test_layout_switch_shows_active_languages_as_a_grid_and_unavailable_ones_as_a_list(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $this->get(route('admiro.onboarding.show', ['step' => 'languages', 'layout' => 'grid']))->assertOk()
+            ->assertSee('<ul class="ss-onboarding-languages__rows ss-onboarding-languages__rows--grid">', false)
+            ->assertSee('href="' . route('admiro.onboarding.show', ['step' => 'languages', 'view' => 'hidden']) . '" aria-current="false" data-ss-view>', false);
+        $this->get(route('admiro.onboarding.show', ['step' => 'languages', 'view' => 'hidden', 'layout' => 'list']))->assertOk()
+            ->assertSee('<ul class="ss-onboarding-languages__grid ss-onboarding-languages__grid--list">', false);
     }
 
     public function test_default_language_proposes_regional_settings_and_saves_them_as_default_at_once(): void
@@ -468,7 +482,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSeeInOrder(['<details class="ss-search__menu ss-search__actions ss-search__quick" data-ss-dropdown>', 'title="' . text('admiro::dashboard.onboarding_translations_quick') . '"', 'href="#' . OnboardingStep::TRANSLATIONS_ANCHOR . '" data-ss-dropdown-close>', text('admiro::dashboard.onboarding_translations_import'), 'href="' . route('admiro.onboarding.translations.export') . '" download data-ss-dropdown-close>', text('admiro::dashboard.onboarding_translations_export')], false)
             ->assertSee('<section class="ss-folder ss-onboarding-translations" id="' . OnboardingStep::TRANSLATIONS_ANCHOR . '" role="tabpanel" aria-labelledby="ss-translations-title" data-ss-tab-panel>', false)
             ->assertSeeInOrder(['<footer class="ss-folder__footer">', text('admiro::dashboard.onboarding_languages_view_active') . ' <span class="ss-badge">2</span>', text('admiro::dashboard.onboarding_languages_view_hidden') . ' <span class="ss-badge">1</span>'], false)
-            ->assertSee('enctype="multipart/form-data" data-ss-file-drop>', false);
+            ->assertSee('enctype="multipart/form-data" data-ss-file-drop data-ss-file-drop-max="10"', false)
+            ->assertSeeInOrder(['<div class="ss-folder__toolbar">', 'href="' . route('admiro.onboarding.translations.template') . '" download', 'href="' . route('admiro.onboarding.translations', ['code' => 'pl']) . '" download', text('admiro::dashboard.onboarding_translations_export_default'), text('admiro::dashboard.onboarding_translations_export'), 'type="submit" form="ss-translations-form" hidden data-ss-file-drop-submit>', '<div class="ss-folder__body">', 'id="ss-translations-form"'], false);
         $this->get('/admiro/onboarding/countries')->assertOk()->assertSee(text('admiro::search.actions.country'))->assertSee(text('admiro::search.actions.regional'));
         $this->get('/admiro/onboarding/currencies')->assertOk()->assertSee(text('admiro::search.actions.exchange_rate'))->assertSee(text('admiro::search.actions.currency'));
         $this->get('/admiro/onboarding/calendar')->assertOk()->assertSee('href="' . route('admiro.holidays.index') . '"', false);
@@ -488,6 +503,17 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertSame('pl', $json['source']);
         $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => text('layout.home', locale: 'en')], $json['texts']['admiro::layout.home']);
         $this->get('/admiro/onboarding/languages/de/translations')->assertNotFound();
+    }
+
+    public function test_blank_translation_template_has_source_texts_and_empty_translations(): void
+    {
+        $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro');
+
+        $json = $this->get('/admiro/onboarding/languages/translations/template')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="translations-template.json"')->json();
+
+        $this->assertSame('', $json['language']);
+        $this->assertSame('pl', $json['source']);
+        $this->assertSame(['source' => text('layout.home', locale: 'pl'), 'translation' => ''], $json['texts']['admiro::layout.home']);
     }
 
     public function test_language_rows_count_keywords_instead_of_currency_taxes_and_holidays_and_export_bundles_all_languages(): void
@@ -571,8 +597,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_open', ['name' => text('admiro::dashboard.onboarding_settings_title')]))
             ->assertSee(route('admiro.onboarding.show', ['step' => 'languages']), false);
         $this->get('/admiro/onboarding/languages')
-            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_last_update') . ' <time class="ss-onboarding-wizard__completed"', false)
-            ->assertSee(local_date(now(), 'D MMM YYYY'));
+            ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . '</span>', false)
+            ->assertSeeInOrder(['<footer class="ss-folder__footer">', '<span class="ss-folder__count ss-folder__updated">', text('admiro::dashboard.onboarding_last_update'), local_date(now(), 'D MMM YYYY') . '</time>'], false);
         $this->post('/admiro/onboarding/settings/confirm')->assertNotFound();
     }
 
