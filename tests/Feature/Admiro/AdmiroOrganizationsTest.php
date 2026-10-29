@@ -78,6 +78,39 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertFalse(Organization::query()->where('name', 'Zły NIP')->exists());
     }
 
+    public function test_phones_are_saved_with_the_country_prefix_and_a_new_organization_starts_in_the_default_country(): void
+    {
+        $this->seedDictionaries();
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+
+        $this->get('/admiro/organizations/create')->assertOk()
+            ->assertSee('<option value="PL" selected>', false)
+            ->assertSee(text_data(Organization::class, Organization::PHONE))
+            ->assertSee(text_data(Organization::class, Organization::MOBILE_PHONE));
+
+        $this->post('/admiro/organizations', [
+            'name' => 'Firma',
+            'phone_country' => 'PL',
+            'phone' => '22 100 20 30',
+            'mobile_phone_country' => 'DE',
+            'mobile_phone' => '151 2345 6789',
+            'country_code' => 'PL',
+        ])->assertRedirect('/admiro/organizations');
+        $organization = Organization::query()->where('name', 'Firma')->sole();
+        $this->assertSame('+48 22 100 20 30', $organization->phone);
+        $this->assertSame('+49 151 2345 6789', $organization->mobile_phone);
+        $this->assertSame('PL', $organization->country_code);
+
+        $html = (string) $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~name="mobile_phone_country"[^>]*>.*?<option value="DE" selected>~s', $html);
+        $this->assertStringContainsString('value="151 2345 6789"', $html);
+
+        $this->post('/admiro/organizations', ['name' => 'Zły kraj', 'country_code' => 'XX', 'phone' => 'abc']);
+        $this->assertNotSame('', $this->sessionError('country_code'));
+        $this->assertNotSame('', $this->sessionError('phone'));
+        $this->assertFalse(Organization::query()->where('name', 'Zły kraj')->exists());
+    }
+
     public function test_tree_cycle_and_operator_changes_are_rejected(): void
     {
         $management = $this->app->make(OrganizationManagement::class);

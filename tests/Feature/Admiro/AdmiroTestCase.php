@@ -25,7 +25,7 @@ use Tests\Feature\Zones\ZoneTestCase;
 
 /**
  * Baza testów panelu administratora: organizacja operatora, role strefy admiro z pliku Core, administratorzy
- * z rolami i małe słowniki lokalizacji (PL/DE, PLN/EUR, pl/en w APP_LOCALES).
+ * z rolami i małe słowniki lokalizacji (PL/DE z prefiksami telefonów, PLN/EUR, pl/en w APP_LOCALES).
  */
 abstract class AdmiroTestCase extends ZoneTestCase
 {
@@ -52,8 +52,8 @@ abstract class AdmiroTestCase extends ZoneTestCase
     {
         config(['admiro.locale.enabled' => ['pl', 'en']]);
 
-        foreach (['PL' => ['POL', '616'], 'DE' => ['DEU', '276']] as $alpha2 => [$alpha3, $numeric]) {
-            (new Country())->forceFill(['name' => $alpha2, 'alpha_code_2' => $alpha2, 'alpha_code_3' => $alpha3, 'numeric_code' => $numeric, 'is_active' => true, 'is_default' => $alpha2 === 'PL'])->save();
+        foreach (['PL' => ['POL', '616', '+48'], 'DE' => ['DEU', '276', '+49']] as $alpha2 => [$alpha3, $numeric, $dial]) {
+            (new Country())->forceFill(['name' => $alpha2, 'alpha_code_2' => $alpha2, 'alpha_code_3' => $alpha3, 'numeric_code' => $numeric, 'dial_code' => $dial, 'is_active' => true, 'is_default' => $alpha2 === 'PL'])->save();
         }
 
         foreach (['PLN' => '985', 'EUR' => '978'] as $alpha3 => $numeric) {

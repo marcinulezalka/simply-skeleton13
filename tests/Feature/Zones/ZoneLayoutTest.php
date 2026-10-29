@@ -23,6 +23,7 @@ use Simplysmart\Admiro\Enums\Palette;
 use Simplysmart\Admiro\Enums\SocialNetwork;
 use Simplysmart\Admiro\Queries\InstalledPackages;
 use Simplysmart\Admiro\View\AppearanceChoices;
+use Simplysmart\Admiro\View\CoreAssets;
 use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Simplysmart\Admiro\Zones\ZoneFontStyle;
 use Simplysmart\Admiro\Zones\ZoneNavigations;
@@ -208,19 +209,20 @@ class ZoneLayoutTest extends ZoneTestCase
 
     public function test_organization_business_card_shows_the_registry_numbers_and_details_and_links_when_given_an_address(): void
     {
-        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122', 'regon' => '012345678', 'phone' => '+48 22 100 20 30', 'email' => 'kontakt@example.com', 'billing_email' => 'faktury@example.com', 'street' => 'ul. Zdrowa 5', 'postal_code' => '00-950', 'city' => 'Warszawa']);
+        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122', 'regon' => '012345678', 'phone' => '+48 22 100 20 30', 'mobile_phone' => '+48 600 100 200', 'email' => 'kontakt@example.com', 'billing_email' => 'faktury@example.com', 'street' => 'ul. Zdrowa 5', 'postal_code' => '00-950', 'city' => 'Warszawa']);
 
         $html = Blade::render('<x-admiro::organization.card :organization="$organization" href="/ustawienia" kicker="Placówka" />', ['organization' => $organization]);
 
         $this->assertMatchesRegularExpression('~<a class="ss-business-card ss-business-card--link"\s+href="/ustawienia"\s*>~', $html);
-        $this->assertStringContainsString('<span class="ss-business-card__name">Przychodnia Zdrowie</span>', $html);
-        $this->assertStringContainsString('<span class="ss-business-card__kicker">Placówka</span>', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-business-card__name">Zdrowie</span>\s*<span class="ss-business-card__kicker">Placówka</span>~', $html);
         $this->assertStringContainsString('ul. Zdrowa 5, 00-950 Warszawa', $html);
         $this->assertStringContainsString('<span class="ss-business-card__registry">NIP 5250001122 · REGON 012345678</span>', $html);
         $this->assertStringContainsString('+48 22 100 20 30', $html);
-        $this->assertStringContainsString('faktury@example.com<span class="ss-business-card__detail-label">' . text_data($organization, 'billing_email') . '</span>', $html);
+        $this->assertStringContainsString('+48 600 100 200', $html);
+        $this->assertMatchesRegularExpression('~title="' . preg_quote(text_data($organization, 'billing_email'), '~') . '"\s*><span class="ss-icon ss-business-card__detail-icon">' . preg_quote(trim(CoreAssets::contents('img/icons/receipt.svg')), '~') . '\s*</span>\s*faktury@example.com</span>~', $html);
         $this->assertStringNotContainsString('ss-business-card__monogram', $html);
-        $this->assertStringNotContainsString('>Zdrowie</span>', $html);
+        $this->assertStringNotContainsString('Przychodnia Zdrowie', $html);
+        $this->assertStringContainsString('<span class="ss-business-card__registry">NIP —</span>', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Bez danych'])]));
         $this->assertMatchesRegularExpression('~<div class="ss-business-card"\s*>~', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => $organization]));
     }
 
