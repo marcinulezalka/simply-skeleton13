@@ -114,7 +114,8 @@ class AdmiroNavigationTest extends AdmiroTestCase
     {
         $html = (string) $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro/favorites')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools" role="group" aria-label="' . preg_quote(text('layout.appearance_tools'), '~') . '">.*?data-ss-theme-flip>.*?data-ss-theme="contrast">.*?data-ss-theme="contrast-yellow">.*?data-ss-preference-value="normal">A<.*?data-ss-preference-value="large">AA<.*?data-ss-preference-value="larger">.*?<a class="ss-icon-button ss-side-panel__tool ss-side-panel__settings" href="' . preg_quote(url('/admiro/account/profile'), '~') . '"~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools" role="group" aria-label="' . preg_quote(text('layout.appearance_tools'), '~') . '">.*?' . preg_quote(text('layout.settings'), '~') . '.*?<a class="ss-icon-button ss-side-panel__tool ss-side-panel__settings" href="' . preg_quote(url('/admiro/account/profile'), '~') . '".*?' . preg_quote(text('layout.color_modes'), '~') . '.*?data-ss-theme-flip>.*?data-ss-theme="contrast">.*?data-ss-theme="contrast-yellow">.*?' . preg_quote(text('layout.resize_zoom'), '~') . '.*?data-ss-preference-value="normal">A<.*?data-ss-preference-value="large">AA<.*?data-ss-preference-step="-1">.*?data-ss-preference-step="1">~s', $html);
+        $this->assertStringContainsString('class="ss-side-panel__columns ss-side-panel__columns--two"', $html);
         $this->assertStringNotContainsString('class="ss-account-menu ss-quick-settings"', $html);
         $this->assertStringContainsString(text('admiro::admin.favorites_empty'), $html);
         $this->get('/admiro/board')->assertOk()->assertSee(text('admiro::admin.board_empty'));
