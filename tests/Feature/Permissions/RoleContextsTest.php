@@ -71,7 +71,7 @@ class RoleContextsTest extends ZoneRolesTestCase
         $this->member($account, $organization, 'guest');
         $html = (string) $this->get('/alpha/account/profile')->assertOk()->getContent();
 
-        $this->assertStringContainsString('<p class="ss-context-switch__group">' . text('account.context_kinds.organization') . ' · ' . $organization->name . '</p>', $html);
+        $this->assertMatchesRegularExpression('~<p class="ss-context-switch__group"><span class="ss-context-switch__kind"\s*title="' . preg_quote(text('account.context_kinds.organization'), '~') . '"\s*>.*?</span>' . preg_quote($organization->name, '~') . '</p>~s', $html);
         $this->assertStringContainsString('<input type="hidden" name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($organization, 'guest') . '">', $html);
         $this->assertMatchesRegularExpression('~name="' . ZoneContexts::FIELD . '" value="' . preg_quote(ZoneContexts::value($organization, 'analyst'), '~') . '">\s*<button class="ss-account-menu__link" type="submit"\s+aria-current="true"\s*>~', $html);
     }
