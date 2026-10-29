@@ -16,12 +16,15 @@ namespace Tests\Feature\Zones;
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
 use Simplysmart\Admiro\Enums\AppBackdrop;
+use Simplysmart\Admiro\Enums\AppearancePreference;
 use Simplysmart\Admiro\Enums\AppLayout;
 use Simplysmart\Admiro\Enums\FaviconType;
 use Simplysmart\Admiro\Enums\Palette;
 use Simplysmart\Admiro\Enums\SocialNetwork;
 use Simplysmart\Admiro\Queries\InstalledPackages;
+use Simplysmart\Admiro\View\AppearanceChoices;
 use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
+use Simplysmart\Admiro\Zones\ZoneFontStyle;
 use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
@@ -134,6 +137,40 @@ class ZoneLayoutTest extends ZoneTestCase
                 $this->assertStringStartsWith('Zone [shop] backdrop', $exception->getMessage());
             }
         }
+    }
+
+    public function test_font_styles_keep_the_config_order_and_reject_invalid_keys_or_labels(): void
+    {
+        $factory = $this->app->make(ZoneDefinitionFactory::class);
+        $styles = $factory->make(['name' => 'shop', 'font_styles' => ['serif' => 'shop::fonts.serif', 'narrow-2' => 'shop::fonts.narrow']], 'shop', __DIR__)->fontStyles;
+
+        $this->assertSame(['serif', 'narrow-2'], array_map(static fn(ZoneFontStyle $style): string => $style->key, $styles));
+        $this->assertSame('shop::fonts.narrow', $styles[1]->labelKey);
+        $this->assertSame([], $factory->make(['name' => 'shop'], 'shop', __DIR__)->fontStyles);
+
+        foreach ([['Serif' => 'shop::fonts.serif'], ['serif' => ''], ['serif'], ['serif' => ['label']]] as $fontStyles) {
+            try {
+                $factory->make(['name' => 'shop', 'font_styles' => $fontStyles], 'shop', __DIR__);
+                $this->fail('Invalid font style accepted.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertStringStartsWith('Zone [shop] font_styles', $exception->getMessage());
+            }
+        }
+    }
+
+    public function test_appearance_settings_offer_the_zone_fonts_with_the_base_font_first(): void
+    {
+        $zone = $this->app->make(ZoneDefinitionFactory::class)->make(['name' => 'shop', 'font_styles' => ['serif' => 'layout.palette']], 'shop', __DIR__);
+        $html = Blade::render('<x-admiro::preference-toggle :preference="$preference" :options="$options" labels />', [
+            'preference' => AppearancePreference::FontStyle,
+            'options' => $this->app->make(AppearanceChoices::class)->fontStyles($zone),
+        ]);
+
+        $this->assertStringContainsString('data-ss-preference="font" hidden>', $html);
+        $this->assertLessThan(strpos($html, 'data-ss-preference-value="serif"'), strpos($html, 'data-ss-preference-value=""'));
+        $this->assertStringContainsString('data-ss-font-sample="serif">Aa</span>', $html);
+        $this->assertStringContainsString('<span>' . text('layout.palette') . '</span>', $html);
+        $this->assertSame([], $this->app->make(AppearanceChoices::class)->fontStyles($this->app->make(ZoneDefinitionFactory::class)->make(['name' => 'shop'], 'shop', __DIR__)));
     }
 
     public function test_backdrop_shows_the_zone_logo_at_the_bottom_instead_of_the_brand(): void

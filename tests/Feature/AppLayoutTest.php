@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
+use Simplysmart\Admiro\Enums\AppearancePreference;
 use Simplysmart\Admiro\Enums\InputMask;
+use Simplysmart\Admiro\Enums\LayoutWidth;
 use Simplysmart\Admiro\Enums\Palette;
+use Simplysmart\Admiro\Enums\TextSize;
 use Simplysmart\Admiro\Enums\Theme;
 use Simplysmart\Admiro\Enums\ToastType;
 use Simplysmart\Admiro\View\Navigation\NavigationGroup;
@@ -27,6 +30,7 @@ use Simplysmart\Admiro\View\Notifications\NotificationPanel;
 use Simplysmart\Admiro\View\CoreAssets;
 use Simplysmart\Admiro\View\Initials;
 use Simplysmart\Admiro\View\Toast;
+use Simplysmart\Admiro\Zones\ZoneFontStyle;
 use Tests\TestCase;
 
 /**
@@ -312,6 +316,27 @@ class AppLayoutTest extends TestCase
         $this->assertStringContainsString('<span>' . Palette::Blue->label() . '</span>', $html);
         $this->assertStringNotContainsString('data-ss-palette="' . Palette::Violet->value . '"', $html);
         $this->assertStringContainsString(text('layout.palettes.default'), $html);
+    }
+
+    public function test_layout_applies_the_zone_font_styles_before_the_page_is_drawn(): void
+    {
+        $html = Blade::render('<x-admiro::app.layout title="Pulpit" :font-styles="$styles" palette-scope="shop">x</x-admiro::app.layout>', ['styles' => [new ZoneFontStyle('serif', 'shop::fonts.serif'), new ZoneFontStyle('narrow', 'shop::fonts.narrow')]]);
+        $head = substr($html, 0, (int) strpos($html, '</head>'));
+
+        $this->assertStringContainsString('<meta name="ss-fonts" content="serif narrow" data-scope="shop">', $head);
+        $this->assertLessThan(strpos($head, "const STORAGE_KEY = 'ss-theme';"), strpos($head, '<meta name="ss-fonts"'));
+        $this->assertStringNotContainsString('<meta name="ss-fonts"', Blade::render('<x-admiro::app.layout title="Pulpit">x</x-admiro::app.layout>'));
+    }
+
+    public function test_appearance_preferences_in_the_script_accept_exactly_the_enum_values(): void
+    {
+        $script = CoreAssets::contents('js/theme.js');
+
+        foreach ([AppearancePreference::TextSize->value => TextSize::cases(), AppearancePreference::LayoutWidth->value => LayoutWidth::cases()] as $name => $cases) {
+            $this->assertStringContainsString("'{$name}': { key: 'ss-{$name}', fallback: '{$cases[0]->value}', values: ['" . implode("', '", array_column($cases, 'value')) . "'] },", $script);
+        }
+
+        $this->assertStringContainsString('`ss-font:${fontMeta.dataset.scope', $script);
     }
 
     public function test_page_without_palettes_has_no_palette_meta(): void
