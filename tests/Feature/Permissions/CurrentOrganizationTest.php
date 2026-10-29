@@ -58,11 +58,15 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
         $this->get('/alpha/organization')->assertSee('organization:' . $second->id);
     }
 
-    public function test_layout_offers_the_switch_only_with_several_organizations(): void
+    public function test_layout_offers_the_switch_from_the_first_organization_on(): void
     {
         $account = $this->account(AlphaAccount::class);
-        $this->member($account, $this->organization('Pierwsza'));
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
+
+        $this->member($account, $this->organization('Pierwsza'));
+        $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()
+            ->assertSee('class="ss-account-menu ss-context-switch"', false)
+            ->assertSee('Pierwsza');
 
         $this->member($account, $this->organization('Druga'));
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')

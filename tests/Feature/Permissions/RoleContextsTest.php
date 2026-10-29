@@ -60,12 +60,13 @@ class RoleContextsTest extends ZoneRolesTestCase
         $this->get('/alpha/reports')->assertOk();
     }
 
-    public function test_layout_offers_the_role_switch_only_with_several_roles(): void
+    public function test_layout_offers_every_role_including_a_single_current_one(): void
     {
         $organization = $this->organization();
         $account = $this->member($this->account(AlphaAccount::class), $organization, 'analyst');
 
-        $this->signedIn($account, 'alpha')->get('/alpha/account/profile')->assertOk()->assertDontSee('name="' . ZoneContexts::FIELD . '"', false);
+        $this->signedIn($account, 'alpha')->get('/alpha/account/profile')->assertOk()
+            ->assertSee('name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($organization, 'analyst') . '"', false);
 
         $this->member($account, $organization, 'guest');
         $html = (string) $this->get('/alpha/account/profile')->assertOk()->getContent();
