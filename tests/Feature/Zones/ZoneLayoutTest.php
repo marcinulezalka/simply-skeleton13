@@ -199,6 +199,15 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('<div class="ss-settings-area">', (string) $this->get('/alpha/page')->getContent());
     }
 
+    public function test_page_header_can_have_an_eyebrow_and_the_context_switch_a_title(): void
+    {
+        $this->assertMatchesRegularExpression('~<p class="ss-context__eyebrow">Twój dzień</p>\s*<h1 class="ss-context__title">Czwartek</h1>~', Blade::render('<x-admiro::app.context title="Czwartek" eyebrow="Twój dzień" />'));
+
+        $html = Blade::render('<x-admiro::app.context-switch :contexts="$contexts" />', ['contexts' => [new \Simplysmart\Admiro\View\Navigation\NavigationGroup('Organizacja · Firma', [new \Simplysmart\Admiro\View\Navigation\NavigationForm('Właściciel', '/c', 'context', 'a:owner', 'user', true)])]]);
+        $this->assertSame(2, substr_count($html, '<rect x="3" y="3" width="11" height="11" rx="2.5" stroke-dasharray="2.5 2.5"/>'), 'The context icon is on the toggle and in the title.');
+        $this->assertMatchesRegularExpression('~<p class="ss-context-switch__title">.*?</span>\s*' . preg_quote(text('layout.switch_context'), '~') . '</p>~s', $html);
+    }
+
     public function test_page_header_link_can_carry_its_own_label_and_icon(): void
     {
         $html = Blade::render('<x-admiro::app.context title="Dashboard" back="#ss-context-switch" back-label="Przełącz kontekst" back-icon="switch" />');
