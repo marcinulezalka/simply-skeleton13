@@ -19,6 +19,7 @@ use Simplysmart\Admiro\Permissions\RoleSelector;
 use Simplysmart\Admiro\Zones\ZoneDefinitionFactory;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\BetaAccount;
+use Simplysmart\Admiro\Zones\ZoneContexts;
 
 /**
  * Role jako konteksty (`role_contexts`, strefa testowa alpha): konto z kilkoma rolami w organizacji działa w jednej
@@ -64,14 +65,14 @@ class RoleContextsTest extends ZoneRolesTestCase
         $organization = $this->organization();
         $account = $this->member($this->account(AlphaAccount::class), $organization, 'analyst');
 
-        $this->signedIn($account, 'alpha')->get('/alpha/account/profile')->assertOk()->assertDontSee('name="role"', false);
+        $this->signedIn($account, 'alpha')->get('/alpha/account/profile')->assertOk()->assertDontSee('name="' . ZoneContexts::FIELD . '"', false);
 
         $this->member($account, $organization, 'guest');
         $html = (string) $this->get('/alpha/account/profile')->assertOk()->getContent();
 
-        $this->assertStringContainsString('<p class="ss-context-switch__group">' . text('account.role') . '</p>', $html);
-        $this->assertStringContainsString('<input type="hidden" name="role" value="guest">', $html);
-        $this->assertMatchesRegularExpression('~name="role" value="analyst">\s*<button class="ss-account-menu__link" type="submit"\s+aria-current="true"\s*>~', $html);
+        $this->assertStringContainsString('<p class="ss-context-switch__group">' . text('account.context_kinds.organization') . ' · ' . $organization->name . '</p>', $html);
+        $this->assertStringContainsString('<input type="hidden" name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($organization, 'guest') . '">', $html);
+        $this->assertMatchesRegularExpression('~name="' . ZoneContexts::FIELD . '" value="' . preg_quote(ZoneContexts::value($organization, 'analyst'), '~') . '">\s*<button class="ss-account-menu__link" type="submit"\s+aria-current="true"\s*>~', $html);
     }
 
     public function test_active_role_applies_only_to_its_account_and_organization(): void

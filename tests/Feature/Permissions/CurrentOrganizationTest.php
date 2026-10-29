@@ -28,6 +28,7 @@ use Simplysmart\Admiro\Permissions\PermissionTables;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\AlphaNote;
 use Tests\Fixtures\Zones\BetaAccount;
+use Simplysmart\Admiro\Zones\ZoneContexts;
 
 /**
  * Organizacja żądania: strefa bez zespołów działa w organizacji operatora, strefa z zespołami w organizacji
@@ -66,8 +67,8 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
         $this->member($account, $this->organization('Druga'));
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')
             ->assertSee('class="ss-account-menu ss-context-switch"', false)
-            ->assertSee('<form method="POST" action="' . url('/alpha/account/organization') . '">', false)
-            ->assertSee('name="organization"', false)
+            ->assertSee('<form method="POST" action="' . url('/alpha/account/context') . '">', false)
+            ->assertSee('name="' . ZoneContexts::FIELD . '"', false)
             ->assertSee('Druga');
     }
 
