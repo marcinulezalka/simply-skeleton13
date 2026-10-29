@@ -221,6 +221,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('+48 600 100 200', $html);
         $this->assertMatchesRegularExpression('~title="' . preg_quote(text_data($organization, 'billing_email'), '~') . '"\s*><span class="ss-icon ss-business-card__detail-icon">' . preg_quote(trim(CoreAssets::contents('img/icons/receipt.svg')), '~') . '\s*</span>\s*faktury@example.com</span>~', $html);
         $this->assertStringNotContainsString('ss-business-card__monogram', $html);
+        $this->assertStringContainsString('<span class="ss-icon ss-business-card__arrow">' . CoreAssets::contents('img/icons/link.svg'), $html);
         $this->assertStringNotContainsString('Przychodnia Zdrowie', $html);
         $this->assertStringContainsString('<span class="ss-business-card__registry">NIP —</span>', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Bez danych'])]));
         $this->assertMatchesRegularExpression('~<div class="ss-business-card"\s*>~', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => $organization]));
