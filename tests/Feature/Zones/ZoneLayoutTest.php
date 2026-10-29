@@ -118,7 +118,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $html = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/page')->assertOk()->getContent();
 
         $this->assertStringContainsString('ss-shell--workspace', $html);
-        $this->assertStringContainsString('<a class="ss-icon-button ss-workspace-footer__tool" href="/zamowienia" title="Zamówienia"', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-quick-settings__tile" href="/zamowienia"\s*>.*?<span class="ss-quick-settings__label">Zamówienia</span>~s', $html);
         $this->assertStringNotContainsString('<a class="ss-sidebar__link"', $html);
     }
 
