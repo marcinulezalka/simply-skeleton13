@@ -206,9 +206,9 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString(text_action('back'), Blade::render('<x-admiro::app.context title="Strona" back="/" />'));
     }
 
-    public function test_organization_business_card_shows_the_details_and_links_when_given_an_address(): void
+    public function test_organization_business_card_shows_the_registry_numbers_and_details_and_links_when_given_an_address(): void
     {
-        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122', 'phone' => '+48 22 100 20 30', 'email' => 'kontakt@example.com', 'street' => 'ul. Zdrowa 5', 'postal_code' => '00-950', 'city' => 'Warszawa']);
+        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122', 'regon' => '012345678', 'phone' => '+48 22 100 20 30', 'email' => 'kontakt@example.com', 'billing_email' => 'faktury@example.com', 'street' => 'ul. Zdrowa 5', 'postal_code' => '00-950', 'city' => 'Warszawa']);
 
         $html = Blade::render('<x-admiro::organization.card :organization="$organization" href="/ustawienia" kicker="Placówka" />', ['organization' => $organization]);
 
@@ -216,7 +216,11 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('<span class="ss-business-card__name">Przychodnia Zdrowie</span>', $html);
         $this->assertStringContainsString('<span class="ss-business-card__kicker">Placówka</span>', $html);
         $this->assertStringContainsString('ul. Zdrowa 5, 00-950 Warszawa', $html);
-        $this->assertStringContainsString('NIP 5250001122', $html);
+        $this->assertStringContainsString('<span class="ss-business-card__registry">NIP 5250001122 · REGON 012345678</span>', $html);
+        $this->assertStringContainsString('+48 22 100 20 30', $html);
+        $this->assertStringContainsString('faktury@example.com<span class="ss-business-card__detail-label">' . text_data($organization, 'billing_email') . '</span>', $html);
+        $this->assertStringNotContainsString('ss-business-card__monogram', $html);
+        $this->assertStringNotContainsString('>Zdrowie</span>', $html);
         $this->assertMatchesRegularExpression('~<div class="ss-business-card"\s*>~', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => $organization]));
     }
 
