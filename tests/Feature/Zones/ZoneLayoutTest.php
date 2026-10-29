@@ -199,6 +199,17 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('<div class="ss-settings-area">', (string) $this->get('/alpha/page')->getContent());
     }
 
+    public function test_compose_search_with_quick_actions_shows_the_plus_instead_of_the_magnifier(): void
+    {
+        $plain = new \Simplysmart\Admiro\View\Navigation\SearchBox('/szukaj', 'Szukaj');
+        $withActions = new \Simplysmart\Admiro\View\Navigation\SearchBox('/szukaj', 'Szukaj', actions: [new \Simplysmart\Admiro\View\Navigation\NavigationItem('Dodaj', '/dodaj', 'plus')]);
+
+        $this->assertStringContainsString('ss-search__icon', Blade::render('<x-admiro::app.search :search="$s" compose />', ['s' => $plain]));
+        $html = Blade::render('<x-admiro::app.search :search="$s" compose />', ['s' => $withActions]);
+        $this->assertStringNotContainsString('ss-search__icon', $html);
+        $this->assertStringContainsString('<details class="ss-search__menu ss-search__actions" data-ss-dropdown>', $html);
+    }
+
     public function test_page_header_can_have_an_eyebrow_and_the_context_switch_a_title(): void
     {
         $this->assertMatchesRegularExpression('~<p class="ss-context__eyebrow">Twój dzień</p>\s*<h1 class="ss-context__title">Czwartek</h1>~', Blade::render('<x-admiro::app.context title="Czwartek" eyebrow="Twój dzień" />'));
