@@ -35,6 +35,14 @@ class PageLayoutTest extends TestCase
         $this->assertStringNotContainsString('name="robots"', $html);
     }
 
+    public function test_every_page_asks_to_confirm_deletions_and_acceptances(): void
+    {
+        $html = Blade::render('<x-admiro::page title="Strona">treść</x-admiro::page>');
+
+        $this->assertStringContainsString('<body data-ss-confirm-delete="' . text('layout.confirm_delete') . '" data-ss-confirm-accept="' . text('layout.confirm_accept') . '">', $html);
+        $this->assertStringContainsString('const DELAY = 4000;', $html);
+    }
+
     public function test_skips_empty_meta(): void
     {
         $html = Blade::render('<x-admiro::page title="Start">x</x-admiro::page>');
