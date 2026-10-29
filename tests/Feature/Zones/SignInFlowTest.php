@@ -199,13 +199,16 @@ class SignInFlowTest extends SignInTestCase
             ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
     }
 
-    public function test_pin_step_links_to_the_forgot_pin_page(): void
+    public function test_pin_step_links_to_the_forgot_pin_page_right_under_the_submit_button(): void
     {
         $this->account(AlphaAccount::class, pin: self::PIN);
         $this->requestCode();
         $this->submitCode($this->sentCode());
 
-        $this->get('/alpha/signin/pin')->assertOk()->assertSee('href="' . url('/alpha/signin/forgot-pin') . '"', false);
+        $html = (string) $this->get('/alpha/signin/pin')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<div class="ss-auth__submit">\s*<button class="ss-button ss-button--primary ss-button--block" type="submit">.*?</button>\s*<a class="ss-link" href="' . preg_quote(url('/alpha/signin/forgot-pin'), '~') . '">~s', $html);
+        $this->assertStringNotContainsString('class="ss-auth__actions"', $html);
     }
 
     public function test_expired_form_sends_back_to_the_zone_sign_in(): void
