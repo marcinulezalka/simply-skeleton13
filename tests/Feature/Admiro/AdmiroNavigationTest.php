@@ -51,7 +51,8 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertStringNotContainsString('<div class="ss-workspace-notch"', $html);
         $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__bar">\s*<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>\s*<summary class="ss-workspace-footer__account-toggle">.*?<span class="ss-workspace-footer__account-name">owner@example.com</span>~s', $html);
         $this->assertStringNotContainsString('<aside class="ss-sidebar"', (string) $this->get('/admiro/settings')->getContent());
-        $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__tools">\s*<details class="ss-account-menu ss-quick-settings" data-ss-dropdown>.*?</details>\s*<details class="ss-account-menu ss-notifications ss-notifications--right" data-ss-dropdown>\s*<summary class="ss-icon-button ss-workspace-footer__tool ss-notifications__toggle"\s*title="' . preg_quote(text('layout.notifications'), '~') . '"\s*>.*?</details>\s*<details class="ss-calendar-panel"~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__tools">\s*<details class="ss-calendar-panel" data-ss-dropdown>.*?<details class="ss-side-panel__section" open>.*?' . preg_quote(text('layout.notifications'), '~') . '.*?<details class="ss-side-panel__section" open>~s', $html);
+        $this->assertStringNotContainsString('ss-notifications__toggle" ', $html);
         $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote(url('/admiro/account/security'), '~') . '.*?' . preg_quote(url('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
         $this->assertStringContainsString('<details class="ss-calendar-panel" data-ss-dropdown>', $html);
         $this->assertStringContainsString('<summary class="ss-calendar-panel__toggle" data-ss-clock>', $html);
@@ -109,18 +110,12 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->from('/admiro/audit')->get('/admiro')->assertOk()->assertDontSee('ss-context__back ss-link', false);
     }
 
-    public function test_quick_settings_tiles_hold_the_dashboard_favorites_board_sitemap_and_dark_mode(): void
+    public function test_side_panel_ends_with_the_appearance_tools_and_a_gear_to_the_settings(): void
     {
         $html = (string) $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro/favorites')->assertOk()->getContent();
-        $tile = static fn(string $href, string $label, string $current = ''): string => '~<a class="ss-account-menu__link" href="' . preg_quote($href, '~') . '"\s*' . $current . '>(?:(?!</a>).)*?</span>\s*' . preg_quote($label, '~') . '</a>~s';
 
-        $this->assertMatchesRegularExpression('~<summary class="ss-icon-button ss-workspace-footer__tool ss-quick-settings__toggle" title="' . preg_quote(text('layout.quick_settings'), '~') . '">~', $html);
-        $this->assertMatchesRegularExpression($tile(url('/admiro'), text('admiro::navigation.status')), $html);
-        $this->assertMatchesRegularExpression($tile(url('/admiro/favorites'), text('admiro::navigation.favorites'), 'aria-current="page"\s*'), $html);
-        $this->assertMatchesRegularExpression($tile('#ss-sitemap', text('layout.sitemap_open')), $html);
-        $this->assertSame(1, substr_count(explode('ss-quick-settings__panel', $html, 2)[1] ?? '', 'class="ss-account-menu__link" href="' . url('/admiro') . '"'), 'The dashboard shortcut replaces the default dashboard tile.');
-        $this->assertStringContainsString('<div class="ss-quick-settings__theme" data-ss-theme-flip-control hidden>', $html);
-        $this->assertStringContainsString('<button class="ss-account-menu__link ss-quick-settings__flip" type="button" aria-pressed="false" data-ss-theme-flip>', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools" role="group" aria-label="' . preg_quote(text('layout.appearance_tools'), '~') . '">.*?data-ss-theme-flip>.*?data-ss-theme="contrast">.*?data-ss-theme="contrast-yellow">.*?data-ss-preference-value="normal">A<.*?data-ss-preference-value="large">AA<.*?data-ss-preference-value="larger">.*?<a class="ss-icon-button ss-side-panel__tool ss-side-panel__settings" href="' . preg_quote(url('/admiro/account/profile'), '~') . '"~s', $html);
+        $this->assertStringNotContainsString('class="ss-account-menu ss-quick-settings"', $html);
         $this->assertStringContainsString(text('admiro::admin.favorites_empty'), $html);
         $this->get('/admiro/board')->assertOk()->assertSee(text('admiro::admin.board_empty'));
     }
@@ -130,7 +125,8 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/organizations')->assertOk()->getContent();
 
         $this->assertStringContainsString('<div class="ss-tabs ss-tabs--slider ss-notifications__tabs" role="tablist" aria-label="' . text('layout.notifications') . '" hidden data-ss-tabs-list>', $html);
-        $this->assertSame(3, substr_count($html, 'data-ss-tab>'));
+        $this->assertSame(4, substr_count($html, 'data-ss-tab>'), 'Notifications, system messages, mailbox and audit log.');
+        $this->assertStringContainsString('id="ss-notifications-system" role="tabpanel"', $html);
         $this->assertStringContainsString('id="ss-notifications-mailbox" role="tabpanel"', $html);
         $this->assertMatchesRegularExpression('~id="ss-notifications-audit" role="tabpanel".*?<a class="ss-notifications__all ss-link" href="' . preg_quote(url('/admiro/audit'), '~') . '">~s', $html);
 
