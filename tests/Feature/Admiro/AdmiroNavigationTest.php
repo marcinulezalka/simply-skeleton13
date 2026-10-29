@@ -112,15 +112,15 @@ class AdmiroNavigationTest extends AdmiroTestCase
     public function test_quick_settings_tiles_hold_the_dashboard_favorites_board_sitemap_and_dark_mode(): void
     {
         $html = (string) $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro/favorites')->assertOk()->getContent();
-        $tile = static fn(string $href, string $label, string $current = ''): string => '~<a class="ss-quick-settings__tile" href="' . preg_quote($href, '~') . '"\s*' . $current . '>.*?<span class="ss-quick-settings__label">' . preg_quote($label, '~') . '</span>~s';
+        $tile = static fn(string $href, string $label, string $current = ''): string => '~<a class="ss-account-menu__link" href="' . preg_quote($href, '~') . '"\s*' . $current . '>(?:(?!</a>).)*?</span>\s*' . preg_quote($label, '~') . '</a>~s';
 
         $this->assertMatchesRegularExpression('~<summary class="ss-icon-button ss-workspace-footer__tool ss-quick-settings__toggle" title="' . preg_quote(text('layout.quick_settings'), '~') . '">~', $html);
         $this->assertMatchesRegularExpression($tile(url('/admiro'), text('admiro::navigation.status')), $html);
         $this->assertMatchesRegularExpression($tile(url('/admiro/favorites'), text('admiro::navigation.favorites'), 'aria-current="page"\s*'), $html);
         $this->assertMatchesRegularExpression($tile('#ss-sitemap', text('layout.sitemap_open')), $html);
-        $this->assertSame(1, substr_count($html, 'class="ss-quick-settings__tile" href="' . url('/admiro') . '"'), 'The dashboard shortcut replaces the default dashboard tile.');
-        $this->assertStringContainsString('<li data-ss-theme-flip-control hidden>', $html);
-        $this->assertStringContainsString('<button class="ss-quick-settings__tile" type="button" aria-pressed="false" data-ss-theme-flip>', $html);
+        $this->assertSame(1, substr_count(explode('ss-quick-settings__panel', $html, 2)[1] ?? '', 'class="ss-account-menu__link" href="' . url('/admiro') . '"'), 'The dashboard shortcut replaces the default dashboard tile.');
+        $this->assertStringContainsString('<div class="ss-quick-settings__theme" data-ss-theme-flip-control hidden>', $html);
+        $this->assertStringContainsString('<button class="ss-account-menu__link ss-quick-settings__flip" type="button" aria-pressed="false" data-ss-theme-flip>', $html);
         $this->assertStringContainsString(text('admiro::admin.favorites_empty'), $html);
         $this->get('/admiro/board')->assertOk()->assertSee(text('admiro::admin.board_empty'));
     }
