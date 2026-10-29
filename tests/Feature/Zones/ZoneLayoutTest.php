@@ -214,7 +214,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $html = Blade::render('<x-admiro::organization.card :organization="$organization" href="/ustawienia" kicker="Placówka" />', ['organization' => $organization]);
 
         $this->assertMatchesRegularExpression('~<a class="ss-business-card ss-business-card--link"\s+href="/ustawienia"\s*>~', $html);
-        $this->assertMatchesRegularExpression('~<span class="ss-business-card__name">Zdrowie</span>\s*<span class="ss-business-card__kicker">Placówka</span>~', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-business-card__top">\s*<span class="ss-business-card__kicker">Placówka</span>.*?</span>\s*<span class="ss-business-card__name">Zdrowie</span>\s*<span class="ss-business-card__registry">~s', $html);
         $this->assertStringContainsString('ul. Zdrowa 5, 00-950 Warszawa', $html);
         $this->assertStringContainsString('<span class="ss-business-card__registry">NIP 5250001122 · REGON 012345678</span>', $html);
         $this->assertStringContainsString('+48 22 100 20 30', $html);
