@@ -140,6 +140,18 @@ class ZoneLayoutTest extends ZoneTestCase
             ->assertDontSee('<a class="ss-context__back ss-link"', false);
     }
 
+    public function test_organization_item_shows_the_kind_icon_name_and_nip_and_marks_the_current_unit(): void
+    {
+        $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122']);
+
+        $html = Blade::render('<x-admiro::organization.item :organization="$organization" kind="Placówka" icon="building" current />', ['organization' => $organization]);
+
+        $this->assertMatchesRegularExpression('~<div class="ss-org-item ss-org-item--current"\s*aria-current="true"\s*>\s*<span class="ss-org-item__tile"><span class="ss-icon ss-org-item__icon">~', $html);
+        $this->assertStringContainsString('<span class="ss-org-item__name">Zdrowie</span>', $html);
+        $this->assertStringContainsString('<span class="ss-org-item__sub">Placówka · ' . text_data($organization, 'nip') . ' 5250001122</span>', $html);
+        $this->assertStringNotContainsString('ul.', $html);
+    }
+
     public function test_zone_navigation_can_choose_the_workspace_layout_for_the_request(): void
     {
         $this->assertSame(AppLayout::Sidebar, $this->app->make(\Simplysmart\Admiro\Contracts\ZoneRegistry::class)->get('alpha')->appLayout);
