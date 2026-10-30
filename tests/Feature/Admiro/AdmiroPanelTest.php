@@ -34,7 +34,7 @@ class AdmiroPanelTest extends AdmiroTestCase
     public function test_dashboard_shows_one_onboarding_card_with_the_progress_of_the_permitted_tasks(): void
     {
         $this->signedIn($this->admin('hero@example.com', 'hero'), 'admiro')->get('/admiro')
-            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card" href="' . $this->zoneUrl('/admiro/onboarding') . '">', false)
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '1', 'total' => '12']))
             ->assertSee('<span class="ss-onboarding-card__percent">8%</span>', false)
             ->assertSee('<progress class="ss-progress" value="1" max="12"', false)
@@ -77,14 +77,14 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee('<li class="ss-onboarding__step" value="1" data-ss-done>', false)
             ->assertSee('<li class="ss-onboarding__step" value="2">', false)
             ->assertSee('<span class="ss-badge ss-badge--outline ss-badge--success">' . text('admiro::dashboard.onboarding_states.done') . '</span>', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/installation') . '">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/languages') . '">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . $this->zoneUrl('/admiro/onboarding/installation') . '">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . $this->zoneUrl('/admiro/onboarding/languages') . '">', false)
             ->assertDontSee('<section class="ss-card ss-onboarding"', false);
 
         $this->signedIn($this->admin('support@example.com', 'support'), 'admiro')->get('/admiro/onboarding')
             ->assertOk()
-            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/audit') . '">', false)
-            ->assertDontSee(url('/admiro/onboarding/installation'), false)
+            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . $this->zoneUrl('/admiro/onboarding/audit') . '">', false)
+            ->assertDontSee($this->zoneUrl('/admiro/onboarding/installation'), false)
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '1']));
         $this->get('/admiro')->assertOk()->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '0', 'total' => '1']))->assertDontSee('<ol class="ss-onboarding__steps', false);
     }
@@ -94,14 +94,14 @@ class AdmiroPanelTest extends AdmiroTestCase
         $hero = $this->admin('hero@example.com', 'hero');
         $newcomer = $this->admin('new@example.com');
 
-        $this->signedIn($hero, 'admiro')->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect('/admiro/organizations');
-        $this->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect('/admiro/administrators');
+        $this->signedIn($hero, 'admiro')->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect($this->zoneUrl('/admiro/organizations'));
+        $this->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect($this->zoneUrl('/admiro/administrators'));
 
         $this->get('/admiro/onboarding')
             ->assertSee(text('admiro::dashboard.onboarding_progress', ['done' => '3', 'total' => '12']))
-            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . url('/admiro/onboarding/settings') . '">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/organizations') . '">', false)
-            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . url('/admiro/onboarding/administrators') . '">', false);
+            ->assertSee('<a class="ss-card ss-onboarding__link" href="' . $this->zoneUrl('/admiro/onboarding/settings') . '">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . $this->zoneUrl('/admiro/onboarding/organizations') . '">', false)
+            ->assertSee('<a class="ss-card ss-onboarding__link ss-card--muted" href="' . $this->zoneUrl('/admiro/onboarding/administrators') . '">', false);
     }
 
     public function test_legal_step_needs_every_document_and_the_section_goes_once_everything_is_done(): void
@@ -132,7 +132,7 @@ class AdmiroPanelTest extends AdmiroTestCase
             ->assertSee(text('admiro::dashboard.onboarding_complete'));
 
         $this->get('/admiro')
-            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card ss-onboarding-card--complete" href="' . url('/admiro/onboarding') . '">', false)
+            ->assertSee('<a class="ss-card ss-card--feature ss-onboarding-card ss-onboarding-card--complete" href="' . $this->zoneUrl('/admiro/onboarding') . '">', false)
             ->assertSee(text('admiro::dashboard.onboarding_card_complete_title'))
             ->assertSee(text('admiro::dashboard.onboarding_review'))
             ->assertDontSee(text('admiro::dashboard.onboarding_card_next', ['name' => '']));
@@ -174,7 +174,7 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
         $url = '/admiro/zones/alpha/accounts/' . $this->routeKey($account);
 
-        $this->post($url . '/unlock')->assertRedirect('/admiro/zones/alpha/accounts');
+        $this->post($url . '/unlock')->assertRedirect($this->zoneUrl('/admiro/zones/alpha/accounts'));
         $this->post($url . '/reset-pin');
         $this->post($url . '/deactivate');
 
@@ -226,7 +226,7 @@ class AdmiroPanelTest extends AdmiroTestCase
         $this->assertSessionError('role', text('admiro::admin.role_denied'));
         $this->assertFalse($this->hasRole($newcomer, 'hero'));
 
-        $this->signedIn($hero, 'admiro')->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect('/admiro/administrators');
+        $this->signedIn($hero, 'admiro')->post('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles', ['role' => 'support'])->assertRedirect($this->zoneUrl('/admiro/administrators'));
         $this->assertTrue($this->hasRole($newcomer, 'support'));
 
         $this->delete('/admiro/administrators/' . $this->routeKey($newcomer) . '/roles/support');
@@ -256,7 +256,7 @@ class AdmiroPanelTest extends AdmiroTestCase
 
         $this->get('/admiro/owners/create')->assertOk()->assertSee('beta');
         $this->post('/admiro/owners', ['zone' => 'beta', 'name' => 'Jan Kowalski', 'email' => 'jan@example.com'])
-            ->assertRedirect('/admiro/owners/create');
+            ->assertRedirect($this->zoneUrl('/admiro/owners/create'));
         $this->post('/admiro/owners', ['zone' => 'alpha', 'name' => 'Ewa Nowak', 'email' => 'ewa@example.com']);
 
         $this->assertSame(1, BetaAccount::query()->count());

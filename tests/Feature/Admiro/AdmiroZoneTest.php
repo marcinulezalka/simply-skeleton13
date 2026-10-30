@@ -33,7 +33,7 @@ class AdmiroZoneTest extends ZoneTestCase
 
         $this->assertSame(AdmiroAccount::class, $zone->model);
         $this->assertSame(['driver' => 'session', 'provider' => 'admiro_accounts'], config('auth.guards.admiro'));
-        $this->assertSame(url('/admiro'), route('admiro.dashboard'));
+        $this->assertSame(url('/admiro/0123456789'), route('admiro.dashboard', ['context' => '0123456789']));
         $this->assertSame(url('/admiro/signin'), route('admiro.auth.login'));
     }
 
@@ -47,7 +47,7 @@ class AdmiroZoneTest extends ZoneTestCase
 
     public function test_guest_is_sent_to_the_admiro_sign_in(): void
     {
-        $this->get('/admiro')->assertRedirect(route('admiro.auth.login'));
+        $this->get('/admiro/0000000000')->assertRedirect(route('admiro.auth.login'));
         $this->get('/admiro/signin')->assertOk()->assertSee('name="email"', false);
     }
 
@@ -104,7 +104,7 @@ class AdmiroZoneTest extends ZoneTestCase
     public function test_account_of_another_zone_does_not_open_admiro(): void
     {
         $this->signedIn($this->account(AlphaAccount::class), 'alpha')
-            ->get('/admiro')
+            ->get('/admiro/0000000000')
             ->assertRedirect(route('admiro.auth.login'));
     }
 }

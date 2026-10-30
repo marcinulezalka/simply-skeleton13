@@ -101,12 +101,13 @@ class RoleContextsTest extends ZoneRolesTestCase
         $this->assertNull($role->of($account, $organization->id));
     }
 
-    public function test_role_contexts_need_a_zone_with_teams(): void
+    public function test_role_contexts_need_a_zone_with_accounts_and_teams_are_optional(): void
     {
         $factory = $this->app->make(ZoneDefinitionFactory::class);
 
         $this->assertTrue($factory->make(['name' => 'shop', 'model' => AlphaAccount::class, 'teams' => true, 'role_contexts' => true], 'shop', __DIR__)->roleContexts);
-        $this->assertFalse($factory->make(['name' => 'shop', 'model' => BetaAccount::class, 'role_contexts' => true], 'shop', __DIR__)->roleContexts);
+        $this->assertTrue($factory->make(['name' => 'shop', 'model' => BetaAccount::class, 'role_contexts' => true], 'shop', __DIR__)->roleContexts);
+        $this->assertFalse($factory->make(['name' => 'shop', 'role_contexts' => true], 'shop', __DIR__)->roleContexts);
         $this->assertSame([], $this->app->make(RoleSelector::class)->choices($factory->make(['name' => 'shop', 'model' => BetaAccount::class], 'shop', __DIR__), $this->account(BetaAccount::class), 1));
     }
 }

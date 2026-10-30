@@ -55,7 +55,7 @@ class AdmiroAuditAndSettingsTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')
             ->put('/admiro/settings', $this->settings())
-            ->assertRedirect('/admiro/settings');
+            ->assertRedirect($this->zoneUrl('/admiro/settings'));
 
         $this->assertTrue(Country::query()->where('alpha_code_2', 'DE')->sole()->is_default);
         $this->assertFalse(Country::query()->where('alpha_code_2', 'PL')->sole()->is_default);

@@ -213,7 +213,7 @@ The application is split into zones. Each zone is an isolated sandbox with its o
 - **Zone packages**: A zone package registers its guard, user provider, session middleware and routes in its own Service Provider (see Package Boundaries above), and reads its zone and guard names from its own config, never hard-coded.
 
 ## Routing & URL Conventions
-- **URL shape**: `/{locale}/{zone-slug}/{route}`. Folders, namespaces and classes never depend on URLs or zone slugs.
+- **URL shape**: `/{locale}/{zone-slug}/{route}`; in a zone with `context_in_url` the signed-in pages are `/{locale}/{zone-slug}/{context-key}/{route}` — an opaque HMAC key of the account's organization and role (Core `Zones\ContextKeys`), never organization or role names in URLs; `route()` adds the key itself. Folders, namespaces and classes never depend on URLs or zone slugs.
 - **Locale mode is decided by config at route registration**: with one enabled locale routes have no locale prefix and the locale is `pl`. With several, the `{locale}` prefix is always present (also for `pl`), constrained with `where` to the enabled locales, and `/` redirects to the default locale. Each route is registered exactly once — never both with and without the prefix.
 - **Shared localization middleware** (one for the whole application, not per zone): reads `{locale}`, calls `App::setLocale()` / `Carbon::setLocale()`, sets `URL::defaults(['locale' => ...])`, then `$request->route()->forgetParameter('locale')`. Never rewrite `REQUEST_URI` or the request path.
 - **Clean controllers**: Controllers, actions and Form Requests never accept `$locale` or a zone slug as parameters. Read the language from `App::getLocale()`.

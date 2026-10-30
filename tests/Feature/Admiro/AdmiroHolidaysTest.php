@@ -36,7 +36,7 @@ class AdmiroHolidaysTest extends AdmiroTestCase
         Http::fake(['date.nager.at/*' => Http::response([['date' => '2026-12-25', 'localName' => 'Boże Narodzenie', 'name' => 'Christmas Day', 'global' => true, 'types' => ['Public']]])]);
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/holidays/sync', ['country' => 'PL', 'year' => 2026])->assertRedirect('/admiro/holidays?country=PL&year=2026');
+        $this->post('/admiro/holidays/sync', ['country' => 'PL', 'year' => 2026])->assertRedirect($this->zoneUrl('/admiro/holidays?country=PL&year=2026'));
         $this->post('/admiro/holidays', ['country' => 'PL', 'holiday_date' => '2026-12-24', 'holiday_name' => 'Wigilia (dzień wolny)'])->assertRedirect();
         $this->post('/admiro/holidays', ['country' => 'PL', 'holiday_date' => '2026-12-24', 'holiday_name' => 'Drugi']);
         $this->assertSessionError('holiday', text('admiro::admin.holiday_rejected'));

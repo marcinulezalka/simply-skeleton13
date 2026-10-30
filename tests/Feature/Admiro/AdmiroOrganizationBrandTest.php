@@ -43,12 +43,12 @@ class AdmiroOrganizationBrandTest extends AdmiroTestCase
         $url = '/admiro/organizations/' . $this->company->token . '/brand/logo';
 
         $this->post($url, ['file' => UploadedFile::fake()->image('logo.png', 200, 50)])
-            ->assertRedirect('/admiro/organizations/' . $this->company->token . '/edit')
+            ->assertRedirect($this->zoneUrl('/admiro/organizations/' . $this->company->token . '/edit'))
             ->assertSessionHas('status', text('admiro::admin.organization_brand_saved'));
         $first = $this->storedPath();
         Storage::disk('local')->assertExists($first);
         $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
-        $this->get('/admiro/organizations/' . $this->company->token . '/edit')->assertOk()->assertSee(text('admiro::admin.organization_brand'))->assertSee($url, false);
+        $this->get('/admiro/organizations/' . $this->company->token . '/edit')->assertOk()->assertSee(text('admiro::admin.organization_brand'))->assertSee($this->zoneUrl($url), false);
 
         $this->post($url, ['file' => UploadedFile::fake()->image('logo.jpg', 300, 60)]);
         $second = $this->storedPath();

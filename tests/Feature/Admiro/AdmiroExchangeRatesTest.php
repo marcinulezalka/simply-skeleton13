@@ -36,7 +36,7 @@ class AdmiroExchangeRatesTest extends AdmiroTestCase
         Http::fake(['api.nbp.pl/*' => Http::response([['table' => 'A', 'no' => '206/A/NBP/2026', 'effectiveDate' => '2026-10-23', 'rates' => [['currency' => 'euro', 'code' => 'EUR', 'mid' => 4.2601]]]])]);
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/exchange-rates/sync', ['sync_from' => '2026-10-23', 'sync_to' => '2026-10-23'])->assertRedirect('/admiro/exchange-rates');
+        $this->post('/admiro/exchange-rates/sync', ['sync_from' => '2026-10-23', 'sync_to' => '2026-10-23'])->assertRedirect($this->zoneUrl('/admiro/exchange-rates'));
         $this->post('/admiro/exchange-rates', ['rate_currency' => 'EUR', 'rate_date' => '2026-10-24', 'rate' => '4.3'])->assertRedirect();
         $this->post('/admiro/exchange-rates', ['rate_currency' => 'EUR', 'rate_date' => '2026-10-24', 'rate' => '4.1']);
         $this->assertSessionError('rate', text('admiro::admin.exchange_rate_rejected'));

@@ -39,7 +39,7 @@ class AdmiroCookiePolicyTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->put(self::PAGE, ['title' => ['en' => 'Cookies'], 'body' => ['en' => 'Text']])->assertRedirect(self::PAGE);
+        $this->put(self::PAGE, ['title' => ['en' => 'Cookies'], 'body' => ['en' => 'Text']])->assertRedirect($this->zoneUrl(self::PAGE));
         $this->post(self::PAGE . '/publish');
         $this->assertSessionError('document', text('admiro::admin.legal_document_rejected'));
 

@@ -36,7 +36,7 @@ class AdmiroDictionariesTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/dictionaries/countries/DE/toggle')->assertRedirect('/admiro/dictionaries/countries');
+        $this->post('/admiro/dictionaries/countries/DE/toggle')->assertRedirect($this->zoneUrl('/admiro/dictionaries/countries'));
         $this->assertFalse(Country::query()->where('alpha_code_2', 'DE')->sole()->is_active);
 
         $this->post('/admiro/dictionaries/countries/DE/toggle');
@@ -60,7 +60,7 @@ class AdmiroDictionariesTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/tax-rates/PL', ['type' => 'standard', 'rate' => '23', 'valid_from' => '2011-01-01'])->assertRedirect('/admiro/tax-rates/PL');
+        $this->post('/admiro/tax-rates/PL', ['type' => 'standard', 'rate' => '23', 'valid_from' => '2011-01-01'])->assertRedirect($this->zoneUrl('/admiro/tax-rates/PL'));
         $this->post('/admiro/tax-rates/PL', ['type' => 'standard', 'rate' => '24', 'valid_from' => '2030-01-01']);
 
         [$previous, $current] = TaxRate::query()->orderBy('valid_from')->get()->all();
@@ -110,7 +110,7 @@ class AdmiroDictionariesTest extends AdmiroTestCase
             ->assertSee('role="switch" id="entry-switch-en" checked', false)
             ->assertSee('role="switch" id="entry-switch-pl" disabled', false);
 
-        $this->from('/admiro/onboarding/languages')->post('/admiro/dictionaries/languages/en/toggle')->assertRedirect('/admiro/onboarding/languages');
+        $this->from($this->zoneUrl('/admiro/onboarding/languages'))->post('/admiro/dictionaries/languages/en/toggle')->assertRedirect($this->zoneUrl('/admiro/onboarding/languages'));
         $this->assertFalse(Language::query()->where('code', 'en')->sole()->is_active);
     }
 

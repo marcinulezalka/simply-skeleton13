@@ -30,7 +30,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect('/admiro/organizations');
+        $this->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect($this->zoneUrl('/admiro/organizations'));
         $company = Organization::query()->where('name', 'Firma')->sole();
         $this->post('/admiro/organizations', ['name' => 'Oddział', 'parent' => $company->token]);
 
@@ -42,7 +42,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->post('/admiro/organizations', ['name' => 'Hurtownia Materiałów Budowlanych', 'short_name' => 'HMB'])->assertRedirect('/admiro/organizations');
+        $this->post('/admiro/organizations', ['name' => 'Hurtownia Materiałów Budowlanych', 'short_name' => 'HMB'])->assertRedirect($this->zoneUrl('/admiro/organizations'));
         $organization = Organization::query()->where('name', 'Hurtownia Materiałów Budowlanych')->sole();
         $this->assertSame('HMB', $organization->shortName());
         $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()->assertSee('value="HMB"', false);
@@ -62,7 +62,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
         $details = ['nip' => '123-456-32-18', 'regon' => '123456785', 'krs' => '0000123456', 'phone' => '+48 600 100 200', 'email' => 'biuro@example.com', 'street' => 'ul. Prosta 1', 'postal_code' => '00-001', 'city' => 'Warszawa'];
 
-        $this->post('/admiro/organizations', ['name' => 'Firma', ...$details])->assertRedirect('/admiro/organizations');
+        $this->post('/admiro/organizations', ['name' => 'Firma', ...$details])->assertRedirect($this->zoneUrl('/admiro/organizations'));
         $organization = Organization::query()->where('name', 'Firma')->sole();
         $this->assertSame('1234563218', $organization->nip);
         $this->assertSame('biuro@example.com', $organization->billing_email);
@@ -95,7 +95,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
             'mobile_phone_country' => 'DE',
             'mobile_phone' => '151 2345 6789',
             'country_code' => 'PL',
-        ])->assertRedirect('/admiro/organizations');
+        ])->assertRedirect($this->zoneUrl('/admiro/organizations'));
         $organization = Organization::query()->where('name', 'Firma')->sole();
         $this->assertSame('+48 22 100 20 30', $organization->phone);
         $this->assertSame('+49 151 2345 6789', $organization->mobile_phone);
@@ -136,8 +136,8 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $operator = Organization::query()->findOrFail(Organization::OPERATOR_ID);
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->from('/admiro/onboarding/organizations')->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => $company->token])
-            ->assertRedirect('/admiro/onboarding/organizations')
+        $this->from($this->zoneUrl('/admiro/onboarding/organizations'))->put('/admiro/organizations/' . $branch->token . '/parent', ['parent' => $company->token])
+            ->assertRedirect($this->zoneUrl('/admiro/onboarding/organizations'))
             ->assertSessionHas('status', text('admiro::admin.organization_moved', ['name' => 'Oddział']));
         $this->assertSame($company->id, $branch->fresh()?->parent_id);
 

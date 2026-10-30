@@ -28,17 +28,17 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<div class="ss-backdrop" aria-hidden="true">\s*<svg class="ss-backdrop__defs".*?<filter id="ss-backdrop-deboss".*?</svg>\s*<span class="ss-logo ss-backdrop__logo">~s', $html);
         $this->assertStringNotContainsString('aria-controls="ss-sidebar"', $html);
         $this->assertStringNotContainsString('data-ss-sitemap-toggle', $html);
-        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/onboarding') . '"', $html);
-        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/audit') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . $this->zoneUrl('/admiro/onboarding') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . $this->zoneUrl('/admiro/audit') . '"', $html);
 
         foreach (['zones', 'organizations', 'system', 'application', 'dictionaries'] as $group) {
             $this->assertStringContainsString('<h2 class="ss-workspace-footer__heading">' . text('admiro::navigation.groups.' . $group) . '</h2>', $html);
         }
 
         $this->assertStringContainsString('<h2 class="ss-workspace-footer__heading">' . text('account.settings_group') . '</h2>', $html);
-        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . url('/admiro/dictionaries/countries') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-link ss-workspace-footer__link" href="' . $this->zoneUrl('/admiro/dictionaries/countries') . '"', $html);
         $this->assertStringNotContainsString('<a class="ss-icon-button ss-sidebar__settings-toggle"', $html);
-        $this->assertStringNotContainsString(text('roles.admiro.owner'), $html);
+        $this->assertMatchesRegularExpression('~id="ss-context-switch".*?' . preg_quote(text('roles.admiro.owner'), '~') . '~s', $html);
         $this->assertStringContainsString('class="ss-card ss-card--feature ss-onboarding-card"', $html);
     }
 
@@ -47,13 +47,13 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $html = (string) $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro')->get('/admiro/dictionaries/countries')->assertOk()->getContent();
 
         $this->assertStringContainsString('class="ss-shell ss-footer-stage ss-shell--workspace"', $html);
-        $this->assertMatchesRegularExpression('~<a class="ss-link ss-workspace-footer__link" href="' . preg_quote(url('/admiro/dictionaries/countries'), '~') . '"\s+aria-current="page"~', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-link ss-workspace-footer__link" href="' . preg_quote($this->zoneUrl('/admiro/dictionaries/countries'), '~') . '"\s+aria-current="page"~', $html);
         $this->assertStringNotContainsString('<div class="ss-workspace-notch"', $html);
         $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__bar">\s*<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>\s*<summary class="ss-workspace-footer__account-toggle">.*?<span class="ss-workspace-footer__account-name">owner@example.com</span>~s', $html);
         $this->assertStringNotContainsString('<aside class="ss-sidebar"', (string) $this->get('/admiro/settings')->getContent());
-        $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__tools">\s*<details class="ss-calendar-panel" data-ss-dropdown>.*?<details class="ss-side-panel__section" open>.*?' . preg_quote(text('layout.notifications'), '~') . '.*?<details class="ss-side-panel__section" open>~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-workspace-footer__tools">\s*<details class="ss-account-menu ss-context-switch" id="ss-context-switch" data-ss-dropdown>.*?' . preg_quote(text('roles.admiro.owner'), '~') . '.*?<details class="ss-calendar-panel" data-ss-dropdown>.*?<details class="ss-side-panel__section" open>.*?' . preg_quote(text('layout.notifications'), '~') . '.*?<details class="ss-side-panel__section" open>~s', $html);
         $this->assertStringNotContainsString('ss-notifications__toggle" ', $html);
-        $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote(url('/admiro/account/security'), '~') . '.*?' . preg_quote(url('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
+        $this->assertMatchesRegularExpression('~<details class="ss-account-menu ss-workspace-footer__account" data-ss-dropdown>.*?' . preg_quote($this->zoneUrl('/admiro/account/security'), '~') . '.*?' . preg_quote($this->zoneUrl('/admiro/settings'), '~') . '.*?href="#ss-sitemap">.*?' . preg_quote(text('layout.sitemap_open'), '~') . '.*?<form class="ss-workspace-footer__sign-out"~s', $html);
         $this->assertStringContainsString('<details class="ss-calendar-panel" data-ss-dropdown>', $html);
         $this->assertStringContainsString('<summary class="ss-calendar-panel__toggle" data-ss-clock>', $html);
         $this->assertStringNotContainsString('data-ss-clock-week', $html);
@@ -61,11 +61,11 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertStringContainsString(text('layout.mailbox_connect'), $html);
         $this->assertStringNotContainsString('ss-account-card', $html);
         $this->assertStringNotContainsString('ss-workspace-footer__wordmark', $html);
-        $this->assertStringContainsString('<a class="ss-account-menu__link" href="' . url('/admiro/account/profile') . '"', $html);
+        $this->assertStringContainsString('<a class="ss-account-menu__link" href="' . $this->zoneUrl('/admiro/account/profile') . '"', $html);
         $this->assertStringNotContainsString('data-ss-clock-week', $html);
         $this->assertMatchesRegularExpression('~<button class="ss-search__send" type="submit">\s*<span class="ss-icon ss-search__send-icon">~', $html);
         $this->assertStringContainsString('<form class="ss-search ss-search--compose"', $html);
-        $this->assertStringContainsString('href="' . url('/admiro/organizations/create') . '"><span class="ss-icon ss-account-menu__icon">', $html);
+        $this->assertStringContainsString('href="' . $this->zoneUrl('/admiro/organizations/create') . '"><span class="ss-icon ss-account-menu__icon">', $html);
         $this->assertStringContainsString('<button class="ss-search__send" type="submit">', $html);
         $this->assertStringNotContainsString('<kbd class="ss-search__kbd"', $html);
         $this->assertStringNotContainsString('<form class="ss-sidebar__sign-out"', $html);
@@ -96,25 +96,25 @@ class AdmiroNavigationTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $html = (string) $this->from('/admiro/organizations')->get('/admiro/organizations/create')->assertOk()->getContent();
+        $html = (string) $this->from($this->zoneUrl('/admiro/organizations'))->get('/admiro/organizations/create')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('~<div class="ss-context__text">\s*<a class="ss-context__back ss-link" href="' . preg_quote(url('/admiro/organizations'), '~') . '">.*?</a>\s*<h1 class="ss-context__title">~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-context__text">\s*<a class="ss-context__back ss-link" href="' . preg_quote($this->zoneUrl('/admiro/organizations'), '~') . '">.*?</a>\s*<h1 class="ss-context__title">~s', $html);
         $this->assertStringNotContainsString('<p class="ss-context__meta">', $html);
 
-        $this->from('/admiro/onboarding/languages')->get('/admiro/onboarding')
-            ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro') . '">', false);
-        $this->from('/admiro/audit')->get('/admiro/onboarding/settings')
-            ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro/onboarding') . '">', false);
-        $this->from('/admiro/audit')->get('/admiro/dictionaries/countries')
-            ->assertSee('<a class="ss-context__back ss-link" href="' . url('/admiro') . '">', false);
-        $this->from('/admiro/audit')->get('/admiro')->assertOk()->assertDontSee('ss-context__back ss-link', false);
+        $this->from($this->zoneUrl('/admiro/onboarding/languages'))->get('/admiro/onboarding')
+            ->assertSee('<a class="ss-context__back ss-link" href="' . $this->zoneUrl('/admiro') . '">', false);
+        $this->from($this->zoneUrl('/admiro/audit'))->get('/admiro/onboarding/settings')
+            ->assertSee('<a class="ss-context__back ss-link" href="' . $this->zoneUrl('/admiro/onboarding') . '">', false);
+        $this->from($this->zoneUrl('/admiro/audit'))->get('/admiro/dictionaries/countries')
+            ->assertSee('<a class="ss-context__back ss-link" href="' . $this->zoneUrl('/admiro') . '">', false);
+        $this->from($this->zoneUrl('/admiro/audit'))->get('/admiro')->assertOk()->assertDontSee('ss-context__back ss-link', false);
     }
 
     public function test_side_panel_ends_with_the_appearance_tools_and_a_gear_to_the_settings(): void
     {
         $html = (string) $this->signedIn($this->admin('guest@example.com'), 'admiro')->get('/admiro/favorites')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools" role="group" aria-label="' . preg_quote(text('layout.appearance_tools'), '~') . '">.*?' . preg_quote(text('layout.settings'), '~') . '.*?<a class="ss-icon-button ss-side-panel__tool ss-side-panel__settings" href="' . preg_quote(url('/admiro/account/profile'), '~') . '".*?' . preg_quote(text('layout.color_modes'), '~') . '.*?data-ss-theme-flip>.*?data-ss-theme="contrast">.*?data-ss-theme="contrast-yellow">.*?' . preg_quote(text('layout.resize_zoom'), '~') . '.*?data-ss-preference-value="normal">A<.*?data-ss-preference-value="large">AA<.*?data-ss-preference-step="-1">.*?data-ss-preference-step="1">~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools" role="group" aria-label="' . preg_quote(text('layout.appearance_tools'), '~') . '">.*?' . preg_quote(text('layout.settings'), '~') . '.*?<a class="ss-icon-button ss-side-panel__tool ss-side-panel__settings" href="' . preg_quote($this->zoneUrl('/admiro/account/profile'), '~') . '".*?' . preg_quote(text('layout.color_modes'), '~') . '.*?data-ss-theme-flip>.*?data-ss-theme="contrast">.*?data-ss-theme="contrast-yellow">.*?' . preg_quote(text('layout.resize_zoom'), '~') . '.*?data-ss-preference-value="normal">A<.*?data-ss-preference-value="large">AA<.*?data-ss-preference-step="-1">.*?data-ss-preference-step="1">~s', $html);
         $this->assertStringContainsString('class="ss-side-panel__columns ss-side-panel__columns--two"', $html);
         $this->assertStringNotContainsString('class="ss-account-menu ss-quick-settings"', $html);
         $this->assertStringContainsString(text('admiro::admin.favorites_empty'), $html);
@@ -129,7 +129,7 @@ class AdmiroNavigationTest extends AdmiroTestCase
         $this->assertSame(4, substr_count($html, 'data-ss-tab>'), 'Notifications, system messages, mailbox and audit log.');
         $this->assertStringContainsString('id="ss-notifications-system" role="tabpanel"', $html);
         $this->assertStringContainsString('id="ss-notifications-mailbox" role="tabpanel"', $html);
-        $this->assertMatchesRegularExpression('~id="ss-notifications-audit" role="tabpanel".*?<a class="ss-notifications__all ss-link" href="' . preg_quote(url('/admiro/audit'), '~') . '">~s', $html);
+        $this->assertMatchesRegularExpression('~id="ss-notifications-audit" role="tabpanel".*?<a class="ss-notifications__all ss-link" href="' . preg_quote($this->zoneUrl('/admiro/audit'), '~') . '">~s', $html);
 
         $guest = (string) $this->signedIn($this->admin('guest@example.com', 'guest'), 'admiro')->get('/admiro')->assertOk()->getContent();
 
@@ -140,9 +140,9 @@ class AdmiroNavigationTest extends AdmiroTestCase
     {
         $html = (string) $this->signedIn($this->admin('support@example.com', 'support'), 'admiro')->get('/admiro')->assertOk()->getContent();
 
-        $this->assertStringContainsString('href="' . url('/admiro/zones') . '"', $html);
-        $this->assertStringNotContainsString('href="' . url('/admiro/administrators') . '"', $html);
-        $this->assertStringNotContainsString('href="' . url('/admiro/owners/create') . '"', $html);
+        $this->assertStringContainsString('href="' . $this->zoneUrl('/admiro/zones') . '"', $html);
+        $this->assertStringNotContainsString('href="' . $this->zoneUrl('/admiro/administrators') . '"', $html);
+        $this->assertStringNotContainsString('href="' . $this->zoneUrl('/admiro/owners/create') . '"', $html);
     }
 
     public function test_panel_views_use_design_system_cards_and_tables(): void

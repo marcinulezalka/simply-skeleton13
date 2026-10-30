@@ -34,7 +34,7 @@ class AdmiroLegalDocumentsTest extends AdmiroTestCase
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
 
-        $this->put('/admiro/legal-documents/privacy', ['title' => ['en' => 'Privacy'], 'body' => ['en' => 'Text']])->assertRedirect('/admiro/legal-documents/privacy');
+        $this->put('/admiro/legal-documents/privacy', ['title' => ['en' => 'Privacy'], 'body' => ['en' => 'Text']])->assertRedirect($this->zoneUrl('/admiro/legal-documents/privacy'));
         $this->post('/admiro/legal-documents/privacy/publish');
         $this->assertSessionError('document', text('admiro::admin.legal_document_rejected'));
 
