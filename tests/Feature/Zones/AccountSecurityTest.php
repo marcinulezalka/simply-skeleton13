@@ -92,4 +92,29 @@ class AccountSecurityTest extends SignInTestCase
         $this->submitCode($this->sentCode());
         $this->submitPin(self::PIN)->assertRedirect('/alpha/dashboard');
     }
+
+    public function test_screen_lock_keeps_the_session_and_unlocks_with_the_pin_back_on_the_same_page(): void
+    {
+        $this->signedIn($this->account(AlphaAccount::class, pin: self::PIN), 'alpha');
+
+        $this->from(url('/alpha/account/security'))->post('/alpha/account/lock')->assertRedirect(url('/alpha/account/unlock'));
+        $this->get('/alpha/account/profile')->assertRedirect(url('/alpha/account/unlock'));
+        $this->get('/alpha/account/unlock')->assertOk()->assertSee(text('account.screen_lock.title'))->assertSee('name="pin"', false)->assertDontSee(text('account.profile_title'));
+
+        $this->post('/alpha/account/unlock', ['pin' => '951357'])->assertRedirect();
+        $this->assertSame(text('account.screen_lock.invalid'), $this->sessionError('pin'));
+        $this->get('/alpha/account/profile')->assertRedirect(url('/alpha/account/unlock'));
+
+        $this->post('/alpha/account/unlock', ['pin' => self::PIN])->assertRedirect(url('/alpha/account/profile'));
+        $this->get('/alpha/account/profile')->assertOk();
+    }
+
+    public function test_locked_screen_still_allows_signing_out(): void
+    {
+        $this->signedIn($this->account(AlphaAccount::class, pin: self::PIN), 'alpha');
+
+        $this->post('/alpha/account/lock');
+        $this->post('/alpha/signin/out')->assertRedirect();
+        $this->get('/alpha/account/profile')->assertRedirect(url('/alpha/signin'));
+    }
 }
