@@ -22,7 +22,8 @@ use Tests\Fixtures\Zones\BetaAccount;
 /**
  * Wygląd zapisany w koncie (strefa z `appearance.account`, tu beta z domyślnie wyśrodkowaną treścią): domyślny wygląd
  * aplikacji rysowany na <html>, wybory konta go nadpisują, przywrócenie wraca do domyślnego; strefa bez tej opcji
- * zostawia wybory przeglądarce.
+ * zostawia wybory przeglądarce. Strefa bez ról trzyma jeden wygląd konta (klucz `*`); osobny wygląd każdej roli
+ * sprawdzają testy stref z `role_contexts`.
  */
 class AccountAppearanceTest extends ZoneRolesTestCase
 {
@@ -47,14 +48,14 @@ class AccountAppearanceTest extends ZoneRolesTestCase
         $this->putJson(self::PAGE, ['theme' => 'dark', 'layout-width' => 'full'])->assertNoContent();
         $this->putJson(self::PAGE, ['text-size' => 'large'])->assertNoContent();
 
-        $this->assertSame(['theme' => 'dark', 'layout-width' => 'full', 'text-size' => 'large'], $account->fresh()?->json_attributes['appearance'] ?? null);
+        $this->assertSame(['*' => ['theme' => 'dark', 'layout-width' => 'full', 'text-size' => 'large']], $account->fresh()?->json_attributes['appearance'] ?? null);
         $html = (string) $this->get(self::PAGE)->getContent();
         $this->assertMatchesRegularExpression('~<html lang="[^"]+" data-theme="dark" data-text-size="large">~', $html);
     }
 
     public function test_reset_restores_the_application_default(): void
     {
-        $account = $this->account(BetaAccount::class, ['json_attributes' => ['locale' => 'pl', 'appearance' => ['layout-width' => 'full']]]);
+        $account = $this->account(BetaAccount::class, ['json_attributes' => ['locale' => 'pl', 'appearance' => ['*' => ['layout-width' => 'full']]]]);
         $this->signedIn($account, 'beta');
 
         $this->delete(self::PAGE)->assertRedirect(self::PAGE)->assertSessionHas('status', text('account.appearance_reset_done'));

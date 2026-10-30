@@ -23,7 +23,7 @@ use Simplysmart\Admiro\Zones\ZoneContexts;
 
 /**
  * Role jako konteksty (`role_contexts`, strefa testowa alpha): konto z kilkoma rolami w organizacji działa w jednej
- * aktywnej roli (domyślnie pierwszej, zapamiętanej w sesji), jego uprawnienia są zawężone do niej, przełącza się
+ * aktywnej roli (domyślnie najszerszej — z największą liczbą uprawnień — zapamiętanej w sesji), jego uprawnienia są zawężone do niej, przełącza się
  * formularzem z layoutu (przekierowanie na pulpit), a rola, której nie ma, to 404.
  */
 class RoleContextsTest extends ZoneRolesTestCase
@@ -31,14 +31,20 @@ class RoleContextsTest extends ZoneRolesTestCase
     public function test_active_role_narrows_the_permissions_and_the_switch_redirects_to_the_dashboard(): void
     {
         $account = $this->member($this->account(AlphaAccount::class), $this->organization(), 'guest', 'analyst');
-
-        $this->signedIn($account, 'alpha')->get('/alpha/reports')->assertForbidden();
-
-        $this->post('/alpha/account/role', ['role' => 'analyst'])->assertRedirect('/alpha/dashboard');
-        $this->get('/alpha/reports')->assertOk();
+        $this->signedIn($account, 'alpha');
 
         $this->post('/alpha/account/role', ['role' => 'guest'])->assertRedirect('/alpha/dashboard');
         $this->get('/alpha/reports')->assertForbidden();
+
+        $this->post('/alpha/account/role', ['role' => 'analyst'])->assertRedirect('/alpha/dashboard');
+        $this->get('/alpha/reports')->assertOk();
+    }
+
+    public function test_default_role_is_the_broadest_one_whatever_the_grant_order(): void
+    {
+        $account = $this->member($this->account(AlphaAccount::class), $this->organization(), 'guest', 'analyst');
+
+        $this->signedIn($account, 'alpha')->get('/alpha/reports')->assertOk();
     }
 
     public function test_role_the_account_does_not_have_cannot_be_chosen(): void
@@ -46,6 +52,7 @@ class RoleContextsTest extends ZoneRolesTestCase
         $account = $this->member($this->account(AlphaAccount::class), $this->organization(), 'guest', 'analyst');
 
         $this->signedIn($account, 'alpha')->post('/alpha/account/role', ['role' => 'hero'])->assertNotFound();
+        $this->post('/alpha/account/role', ['role' => 'guest'])->assertRedirect('/alpha/dashboard');
         $this->get('/alpha/reports')->assertForbidden();
     }
 
