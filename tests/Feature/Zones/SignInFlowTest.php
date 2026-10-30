@@ -50,6 +50,28 @@ class SignInFlowTest extends SignInTestCase
         $this->assertTrue($account->fresh()?->hasPin());
     }
 
+    public function test_sign_in_returns_to_the_page_opened_before_it(): void
+    {
+        $this->account(AlphaAccount::class, pin: self::PIN);
+
+        $this->get('/alpha/page')->assertRedirect('/alpha/signin');
+        $this->requestCode();
+        $this->submitCode($this->sentCode());
+        $this->submitPin(self::PIN)->assertRedirect('/alpha/page');
+    }
+
+    public function test_first_sign_in_goes_to_the_dashboard_instead_of_the_page_opened_before_it(): void
+    {
+        $this->account(AlphaAccount::class);
+
+        $this->get('/alpha/page')->assertRedirect('/alpha/signin');
+        $this->requestCode();
+        $this->submitCode($this->sentCode());
+        $this->post('/alpha/signin/pin-setup', ['pin' => self::PIN, 'pin_confirmation' => self::PIN])->assertRedirect('/alpha/dashboard');
+
+        $this->assertNull(session('url.intended'));
+    }
+
     public function test_weak_pin_is_rejected(): void
     {
         $this->account(AlphaAccount::class);
