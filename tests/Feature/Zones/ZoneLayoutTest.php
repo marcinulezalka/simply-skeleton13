@@ -30,6 +30,7 @@ use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
 use Tests\Fixtures\Zones\WorkspaceShopNavigation;
+use Tests\Fixtures\Zones\ZoneShopNavigation;
 
 /**
  * Layout strefy na layoucie aplikacji: menu, ustawienia i wyszukiwarka z ZoneNavigation zarejestrowanego dla strefy
@@ -106,8 +107,35 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertSame(AppLayout::Workspace, $factory->make(['name' => 'shop', 'app_layout' => 'workspace'], 'shop', __DIR__)->appLayout);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace.');
+        $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace, zone.');
         $factory->make(['name' => 'shop', 'app_layout' => 'grid'], 'shop', __DIR__);
+    }
+
+    public function test_zone_layout_keeps_only_profile_and_sign_out_in_the_footer_without_a_sitemap(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+
+        $page = (string) $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/page')->assertOk()->getContent();
+        $html = substr($page, (int) strpos($page, '<div class="ss-footer-host">'), (int) strpos($page, '</footer>') - (int) strpos($page, '<div class="ss-footer-host">'));
+
+        $this->assertStringContainsString('ss-shell--zone', $html);
+        $this->assertStringNotContainsString('data-ss-sitemap', $html);
+        $this->assertStringNotContainsString(text('layout.sitemap_open'), $html);
+        $this->assertStringNotContainsString(text('account.security_title'), $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-account-menu__panel ss-workspace-footer__account-panel">\s*<ul class="ss-account-menu__list">\s*<li><a class="ss-account-menu__link" href="' . preg_quote(url('/alpha/account/profile'), '~') . '"\s*>.*?' . preg_quote(text('account.profile_title'), '~') . '</a></li>\s*</ul>\s*<form class="ss-workspace-footer__sign-out" method="POST" action="' . preg_quote(route('alpha.auth.logout'), '~') . '">~s', $html);
+        $this->assertMatchesRegularExpression('~<details class="ss-search__menu ss-search__actions".*?<details class="ss-search__menu ss-search__find".*?' . preg_quote(text('layout.search_find_empty'), '~') . '.*?<input class="ss-search__input".*?<details class="ss-search__menu ss-search__scopes".*?<button class="ss-search__send"~s', $html);
+        $this->assertMatchesRegularExpression('~<details class="ss-calendar-panel ss-side-panels" data-ss-dropdown data-ss-side-panels>.*?data-ss-side-panel="calendar">.*?ss-side-panel__tools--grid.*?data-ss-side-panel="notifications">~s', $html);
+        $this->assertStringContainsString('<p class="ss-temp-mark" aria-hidden="true">' . text('layout.in_progress') . '</p>', $html);
+        $this->assertMatchesRegularExpression('~<a class="ss-context__back ss-link" href="[^"]*">.*?' . preg_quote(text_action('back'), '~') . '</a>~s', $html);
+    }
+
+    public function test_zone_layout_start_page_signs_out_above_the_title_with_a_single_context(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha')->get('/alpha/start')->assertOk()
+            ->assertSee('<form class="ss-context__back-form" method="POST" action="' . route('alpha.auth.logout') . '">', false)
+            ->assertDontSee('<a class="ss-context__back ss-link"', false);
     }
 
     public function test_zone_navigation_can_choose_the_workspace_layout_for_the_request(): void
