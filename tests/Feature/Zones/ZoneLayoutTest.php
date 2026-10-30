@@ -140,6 +140,14 @@ class ZoneLayoutTest extends ZoneTestCase
             ->assertDontSee('<a class="ss-context__back ss-link"', false);
     }
 
+    public function test_flip_card_has_a_front_a_hidden_back_with_a_return_and_a_corner_toggle_shown_by_the_script(): void
+    {
+        $html = Blade::render('<x-admiro::flip-card label="Odwróć">Przód<x-slot:back>Tył</x-slot:back></x-admiro::flip-card>');
+
+        $this->assertMatchesRegularExpression('~<div class="ss-flip" data-ss-flip>\s*<div class="ss-flip__inner">\s*<div class="ss-flip__face ss-flip__face--front" data-ss-flip-front>Przód</div>\s*<div class="ss-flip__face ss-flip__face--back" data-ss-flip-back inert aria-hidden="true">\s*Tył\s*<button class="ss-flip__return ss-link" type="button" data-ss-flip-toggle>~', $html);
+        $this->assertMatchesRegularExpression('~<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Odwróć" data-ss-flip-toggle hidden>~', $html);
+    }
+
     public function test_organization_item_shows_the_kind_icon_name_and_nip_and_marks_the_current_unit(): void
     {
         $organization = (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Przychodnia Zdrowie', 'short_name' => 'Zdrowie', 'nip' => '5250001122']);
