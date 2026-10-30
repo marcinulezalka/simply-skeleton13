@@ -145,8 +145,17 @@ class ZoneLayoutTest extends ZoneTestCase
     {
         $html = Blade::render('<x-admiro::flip-card label="Odwróć">Przód<x-slot:back>Tył</x-slot:back></x-admiro::flip-card>');
 
-        $this->assertMatchesRegularExpression('~<div class="ss-flip" data-ss-flip>\s*<div class="ss-flip__inner">\s*<div class="ss-flip__face ss-flip__face--front" data-ss-flip-front>Przód</div>\s*<div class="ss-flip__face ss-flip__face--back" data-ss-flip-back inert aria-hidden="true">\s*Tył\s*<button class="ss-flip__return ss-link" type="button" data-ss-flip-toggle>~', $html);
-        $this->assertMatchesRegularExpression('~<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Odwróć" data-ss-flip-toggle hidden><span class="ss-icon ss-icon-button__icon">' . preg_quote(trim(CoreAssets::contents('img/icons/rotate-left.svg')), '~') . '~', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-flip" data-ss-flip>\s*<div class="ss-flip__inner">\s*<div class="ss-flip__face ss-flip__face--front" data-ss-flip-front>Przód</div>\s*<div class="ss-flip__face ss-flip__face--back" data-ss-flip-back inert aria-hidden="true">\s*<div class="ss-flip__side" data-ss-flip-side="back">Tył</div>\s*<button class="ss-flip__return ss-link" type="button" data-ss-flip-return>~', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-flip__toggles">\s*<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Odwróć" data-ss-flip-toggle="back" hidden><span class="ss-icon ss-icon-button__icon">' . preg_quote(trim(CoreAssets::contents('img/icons/rotate-left.svg')), '~') . '~', $html);
+        $this->assertStringNotContainsString('data-ss-flip-side="alternate"', $html);
+    }
+
+    public function test_flip_card_alternate_back_is_hidden_until_its_flag_toggle_beside_the_rotate_toggle(): void
+    {
+        $html = Blade::render('<x-admiro::flip-card label="Odwróć" alternate-label="Kontakt">Przód<x-slot:back>Tył</x-slot:back><x-slot:alternate>Dane</x-slot:alternate></x-admiro::flip-card>');
+
+        $this->assertMatchesRegularExpression('~<div class="ss-flip__side" data-ss-flip-side="back">Tył</div>\s*<div class="ss-flip__side" data-ss-flip-side="alternate" hidden>Dane</div>~', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-flip__toggles">\s*<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Kontakt" data-ss-flip-toggle="alternate" hidden><span class="ss-icon ss-icon-button__icon">' . preg_quote(trim(CoreAssets::contents('img/icons/flag.svg')), '~') . '.*?data-ss-flip-toggle="back"~s', $html);
     }
 
     public function test_organization_item_shows_the_kind_icon_name_and_nip_and_marks_the_current_unit(): void
@@ -297,6 +306,8 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('Przychodnia Zdrowie', $html);
         $this->assertStringContainsString('<span class="ss-business-card__registry"><span class="ss-business-card__number">NIP —</span></span>', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => (new \Simplysmart\Admiro\Models\Organization())->forceFill(['name' => 'Bez danych'])]));
         $this->assertMatchesRegularExpression('~<div class="ss-business-card"\s*>~', Blade::render('<x-admiro::organization.card :organization="$organization" />', ['organization' => $organization]));
+        $this->assertStringNotContainsString('ss-business-card__details', Blade::render('<x-admiro::organization.card :organization="$organization" :contact="false" />', ['organization' => $organization]));
+        $this->assertStringContainsString('<span class="ss-business-card__details extra">', Blade::render('<x-admiro::organization.contact :organization="$organization" class="extra" />', ['organization' => $organization]));
     }
 
     public function test_social_links_skip_empty_addresses_and_reject_unknown_networks(): void
