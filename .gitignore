@@ -26,6 +26,7 @@
 !/infrastructure/README.md
 !/infrastructure/deploy.env.example
 !/infrastructure/deploy.onboarding.env.example
+!/infrastructure/deploy-vendor.env.example
 Homestead.json
 Homestead.yaml
 /docker-compose.override.yml

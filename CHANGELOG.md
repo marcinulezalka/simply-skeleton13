@@ -6,6 +6,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
 ### Added
 
+- Wzór `infrastructure/deploy-vendor.env.example` i katalog `infrastructure/deploy-vendors/` (w `.gitignore`) na konfiguracje wdrażanych projektów: `vendor/bin/simplysmart deploy <projekt>` aktualizuje przed-produkcję, a po potwierdzeniu produkcję (opis w `infrastructure/README.md`).
 - Zmienne `ADMIRO_SOCIAL_LINKEDIN|FACEBOOK|INSTAGRAM|GITHUB|YOUTUBE` w `.env.example` (ikony profili społecznościowych na karcie konta panelu administratorów).
 - Zmienne `WELCOME_WEBSITE` i `ADMIRO_WEBSITE` w `.env.example` (adresy, do których prowadzą logo na stronie startowej).
 - Zmienne `LEGAL_CONTROLLER_NAME` i `LEGAL_CONTROLLER_EMAIL` w `.env.example` (administrator danych w pierwszych wersjach polityki prywatności i klauzuli RODO, `admiro:legal:seed`).

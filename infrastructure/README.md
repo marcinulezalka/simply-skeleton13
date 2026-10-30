@@ -24,34 +24,33 @@ sudo systemctl reload apache2
 echo "127.0.0.1 skeleton13.local" | sudo tee -a /etc/hosts
 ```
 
-## Wdrożenie na serwer (jednym poleceniem)
+## Wdrożenie projektu: przed-produkcja, potem produkcja
 
-Wdrożenie robi polecenie `vendor/bin/simplysmart` z narzędzi deweloperskich pakietu `simplysmart/admiro` (uruchamiane na komputerze
-deweloperskim, nie na serwerze); w repozytorium są tylko wzory konfiguracji (wyjątki w `.gitignore`):
+Wdrożenie robi polecenie `vendor/bin/simplysmart` z narzędzi deweloperskich pakietu `simplysmart/admiro`, uruchamiane
+w tym projekcie bazowym (z paczkami w `packages/`) na komputerze deweloperskim. Każdy wdrażany projekt ma konfigurację
+w `infrastructure/deploy-vendors/` (katalog w `.gitignore`):
 
-- `deploy.env.example` — skopiuj jako `deploy.env` (ignorowany) i uzupełnij `DEPLOY_SSH`, `DEPLOY_PATH`,
-  `DEPLOY_PHP` i jednorazowo `GITHUB_TOKEN` (tylko do odczytu); opcjonalnie `REMOTE_COMPOSER` (np. `composer.phar`
-  w katalogu aplikacji — skrypt serwerowy aktualizuje go do 2.8+, a gdy go nie ma, instaluje) i `LOCAL_COMPOSER`
-  (polecenie Composera na komputerze, np. `php composer.phar`);
-- `deploy.onboarding.env.example` — wartości pierwszej instalacji (konta, np. pierwszy administrator); skopiuj
-  jako `deploy.onboarding.env` (ignorowany) i uzupełnij.
+- `deploy-vendors/<projekt>.env` — przed-produkcja (`PREPRODUCTION_PATH`: katalog projektu na tym komputerze, PHP
+  i Composer) i produkcja (`DEPLOY_SSH`, `DEPLOY_PATH`, `DEPLOY_PHP`, `REMOTE_COMPOSER`, `GITHUB_TOKEN`); wzór
+  `deploy-vendor.env.example`;
+- `deploy-vendors/<projekt>.onboarding.env` — konta pierwszej instalacji (wzór `deploy.onboarding.env.example`).
 
 ```bash
-cp infrastructure/deploy.env.example infrastructure/deploy.env                        # raz, uzupełnij
-cp infrastructure/deploy.onboarding.env.example infrastructure/deploy.onboarding.env  # raz, uzupełnij
-vendor/bin/simplysmart deploy:onboarding --dry-run   # podgląd: konfiguracja, repozytoria, konta
-vendor/bin/simplysmart deploy:onboarding             # pierwsza instalacja: wdrożenie + konta
-vendor/bin/simplysmart deploy                        # każde kolejne wdrożenie
-vendor/bin/simplysmart deploy:fresh --dry-run        # podgląd wdrożenia od zera
-vendor/bin/simplysmart deploy:fresh --confirm=<DEPLOY_SSH>  # od zera: usuwa wszystkie dane na serwerze
+cp infrastructure/deploy-vendor.env.example infrastructure/deploy-vendors/shop.env   # raz, uzupełnij
+vendor/bin/simplysmart deploy shop --dry-run          # podgląd: konfiguracja, repozytoria, plan obu środowisk
+vendor/bin/simplysmart deploy shop                    # przed-produkcja, potem pytanie „Wdrożyć też na produkcję?”
+vendor/bin/simplysmart deploy shop --with-push        # najpierw git push paczek (także prywatnych) i projektu
+vendor/bin/simplysmart deploy shop --no-production    # tylko przed-produkcja
+vendor/bin/simplysmart deploy shop --production       # produkcja bez pytania (np. bez terminala)
+vendor/bin/simplysmart deploy:onboarding shop         # jak deploy + konta z shop.onboarding.env w obu środowiskach
+vendor/bin/simplysmart deploy:fresh shop --confirm=<DEPLOY_SSH>  # od zera: usuwa dane przed-produkcji i produkcji
 ```
 
-`deploy` sprawdza, czy aplikacja i paczki z `packages/*/*` są wypchnięte, tworzy `composer.deploy.json`
-i `composer.deploy.lock`, wysyła je na serwer i uruchamia tam przez SSH skrypt serwerowy z admiro (Composer,
-`.env`, `git pull`, paczki z GitHuba bez narzędzi deweloperskich, `APP_KEY`, migracje, role, słowniki, cache).
-`deploy:onboarding` robi to samo i zakłada konta z `deploy.onboarding.env`; istniejące są pomijane.
-`deploy:fresh` to onboarding na pustej bazie: `migrate:fresh` usuwa wszystkie tabele i dane, dlatego uruchamia się
-tylko z `--confirm=` równym `DEPLOY_SSH`.
+`deploy <projekt>`:
+1. Sprawdza, czy poprawki są wypchnięte w tym repozytorium i w paczkach z `packages/*/*`, także prywatnych. Niewypchnięte commity zatrzymują wdrożenie.
+2. Buduje świeży `composer.deploy.json` / `composer.deploy.lock`, przypięty do commitów z repozytoriów zdalnych.
+3. Aktualizuje przed-produkcję tym samym skryptem serwerowym co produkcję: `git pull`, composer z manifestu bez narzędzi deweloperskich, migracje, role, słowniki, cache. Jej `.env` zostaje bez zmian.
+4. Pyta, czy wdrożyć też produkcję. Bez terminala odpowiedź to „nie”. Po potwierdzeniu wysyła ten sam manifest na serwer i uruchamia tam skrypt przez SSH.
 
-Na serwerze musi istnieć repozytorium aplikacji (`git clone`) z plikiem `.env`. Szczegóły: `docs/narzedzia.md` w `simplysmart/admiro`
-i `docs/wdrozenie.md` w admiro.
+Błąd przed-produkcji zatrzymuje wdrożenie. Na serwerze musi istnieć repozytorium projektu (`git clone`) z `.env.production`
+(kopiowany jako `.env`). Szczegóły: `docs/narzedzia.md` i `docs/wdrozenie.md` w `simplysmart/admiro`.
