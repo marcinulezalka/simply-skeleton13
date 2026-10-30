@@ -30,6 +30,7 @@ use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ShopNavigation;
 use Tests\Fixtures\Zones\WorkspaceShopNavigation;
+use Tests\Fixtures\Zones\ColumnsShopNavigation;
 use Tests\Fixtures\Zones\ZoneShopNavigation;
 
 /**
@@ -107,7 +108,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertSame(AppLayout::Workspace, $factory->make(['name' => 'shop', 'app_layout' => 'workspace'], 'shop', __DIR__)->appLayout);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace, zone.');
+        $this->expectExceptionMessage('Zone [shop] app_layout must be one of: sidebar, workspace, zone, columns.');
         $factory->make(['name' => 'shop', 'app_layout' => 'grid'], 'shop', __DIR__);
     }
 
@@ -258,6 +259,36 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringContainsString('<a class="ss-settings-area__link" href="/ustawienia" >', $settings);
         $this->assertMatchesRegularExpression('~<a class="ss-settings-area__link" href="' . preg_quote(url('/alpha/account/profile'), '~') . '"\s+aria-current="page"\s*>~', $settings);
         $this->assertStringNotContainsString('<div class="ss-settings-area">', (string) $this->get('/alpha/page')->getContent());
+    }
+
+    public function test_columns_layout_puts_the_left_menu_the_content_and_the_wiki_sidebar_between_the_zone_header_and_footer(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ColumnsShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $html = (string) $this->get('/alpha/columns')->assertOk()->getContent();
+
+        $this->assertStringContainsString('ss-shell--zone', $html);
+        $this->assertStringContainsString('<footer class="ss-workspace-footer ss-zone-footer">', $html);
+        $this->assertStringContainsString("'ss-sidebar-wiki-pinned'", $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-columns ss-columns--with-left">\s*<div class="ss-columns__left" role="region" aria-label="' . preg_quote(text('layout.columns_left'), '~') . '" tabindex="0">\s*Menu sal\s*</div>\s*<div class="ss-columns__content">\s*x\s*</div>\s*<aside class="ss-sidebar-wiki" data-ss-sidebar-wiki~', $html);
+        $this->assertMatchesRegularExpression('~data-ss-sidebar-wiki-pin aria-pressed="false" title="' . preg_quote(text('layout.sidebar_wiki_pin'), '~') . '" hidden>.*?<div class="ss-sidebar-wiki__body" tabindex="0">\s*<aside class="ss-wiki-tip" id="wiki-organizacja"~s', $html);
+
+        $page = (string) $this->get('/alpha/page')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<div class="ss-columns">\s*<div class="ss-columns__content">\s*x\s*</div>~', $page);
+        $this->assertStringContainsString('<p class="ss-sidebar-wiki__empty">' . text('layout.sidebar_wiki_empty') . '</p>', $page);
+    }
+
+    public function test_columns_layout_shows_the_settings_categories_in_the_left_menu_on_settings_pages(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ColumnsShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $settings = (string) $this->get('/alpha/account/profile')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<div class="ss-columns__left"[^>]*>\s*<nav class="ss-settings-area__nav".*?<p class="ss-settings-area__group-title">Sklep</p>.*?</nav>\s*</div>\s*<div class="ss-columns__content">~s', $settings);
+        $this->assertStringNotContainsString('<div class="ss-settings-area">', $settings);
     }
 
     public function test_compose_search_with_quick_actions_shows_the_plus_instead_of_the_magnifier(): void
