@@ -58,6 +58,20 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
         $this->get('/alpha/organization')->assertSee('organization:' . $second->id);
     }
 
+    public function test_default_context_is_the_first_membership_with_a_role_and_stays_for_the_session(): void
+    {
+        $withoutRole = $this->organization('Bez roli');
+        $withRole = $this->organization('Z rolą');
+        $account = $this->account(AlphaAccount::class);
+        $this->member($account, $withoutRole);
+        $this->member($account, $withRole, 'owner');
+        $this->signedIn($account, 'alpha');
+
+        $this->get('/alpha/organization')->assertSee('organization:' . $withRole->id);
+        $this->member($account, $withoutRole, 'analyst');
+        $this->get('/alpha/organization')->assertSee('organization:' . $withRole->id);
+    }
+
     public function test_layout_offers_the_switch_from_the_first_organization_on(): void
     {
         $account = $this->account(AlphaAccount::class);
