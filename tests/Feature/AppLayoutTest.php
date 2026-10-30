@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Exceptions;
+use RuntimeException;
 use Simplysmart\Admiro\Enums\AppearancePreference;
 use Simplysmart\Admiro\Enums\InputMask;
 use Simplysmart\Admiro\Enums\LayoutWidth;
@@ -79,6 +81,16 @@ class AppLayoutTest extends TestCase
 
         $this->assertStringNotContainsString('ss-context__icon', $plain);
         $this->assertStringNotContainsString('ss-context__actions', $plain);
+    }
+
+    public function test_missing_icon_is_reported_and_left_empty_instead_of_failing_the_page(): void
+    {
+        Exceptions::fake();
+
+        $html = Blade::render('<x-admiro::icon name="nie-ma-takiej-ikony" />');
+
+        $this->assertSame('<span class="ss-icon"></span>', trim($html));
+        Exceptions::assertReported(static fn(RuntimeException $exception): bool => $exception->getMessage() === 'Core asset [img/icons/nie-ma-takiej-ikony.svg] does not exist.');
     }
 
     public function test_item_with_children_is_an_expandable_branch_with_tree_lines_open_on_a_current_child(): void
