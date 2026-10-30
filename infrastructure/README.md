@@ -1,7 +1,7 @@
 # Infrastruktura lokalna (localhost)
 
 Konfiguracja środowiska lokalnego wygenerowana przez [Smartboard](https://smartboard.local).
-Zawartość katalogu nie trafia do repozytorium (`.gitignore`) — w Git jest tylko ten plik.
+Zawartość katalogu nie trafia do repozytorium (`.gitignore`) — w Git są tylko README (ten i `deploy-vendors/README.md`) oraz wzory `*.example`.
 
 ## Domena
 
@@ -28,7 +28,7 @@ echo "127.0.0.1 skeleton13.local" | sudo tee -a /etc/hosts
 
 Wdrożenie robi polecenie `vendor/bin/simplysmart` z narzędzi deweloperskich pakietu `simplysmart/admiro`, uruchamiane
 w tym projekcie bazowym (z paczkami w `packages/`) na komputerze deweloperskim. Każdy wdrażany projekt ma konfigurację
-w `infrastructure/deploy-vendors/` (katalog w `.gitignore`):
+w `infrastructure/deploy-vendors/` (pliki projektów w `.gitignore`, w repozytorium tylko README katalogu):
 
 - `deploy-vendors/<projekt>.env` — przed-produkcja (`PREPRODUCTION_PATH`: katalog projektu na tym komputerze, PHP
   i Composer) i produkcja (`DEPLOY_SSH`, `DEPLOY_PATH`, `DEPLOY_PHP`, `REMOTE_COMPOSER`, `GITHUB_TOKEN`); wzór
