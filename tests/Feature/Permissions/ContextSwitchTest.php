@@ -35,6 +35,7 @@ class ContextSwitchTest extends ZoneRolesTestCase
         $html = (string) $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('~<p class="ss-context-switch__group"><span class="ss-context-switch__kind"\s*title="' . preg_quote(text('account.context_kinds.organization'), '~') . '"\s*>.*?</span>' . preg_quote('Sklep', '~') . '</p>~s', $html);
+        $this->assertStringContainsString('d="M7.237 3.237A1.75', $html, 'The organization group carries the solid context icon.');
         $this->assertMatchesRegularExpression('~<p class="ss-context-switch__group"><span class="ss-context-switch__kind"\s*title="' . preg_quote(text('account.context_kinds.department'), '~') . '"\s*>.*?</span>' . preg_quote('Sklep · Magazyn', '~') . '</p>~s', $html);
         $this->assertStringContainsString('name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($department, 'analyst') . '"', $html);
         $this->assertSame(3, substr_count($html, 'name="' . ZoneContexts::FIELD . '"'));
