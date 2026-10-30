@@ -145,7 +145,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $html = Blade::render('<x-admiro::flip-card label="Odwróć">Przód<x-slot:back>Tył</x-slot:back></x-admiro::flip-card>');
 
         $this->assertMatchesRegularExpression('~<div class="ss-flip" data-ss-flip>\s*<div class="ss-flip__inner">\s*<div class="ss-flip__face ss-flip__face--front" data-ss-flip-front>Przód</div>\s*<div class="ss-flip__face ss-flip__face--back" data-ss-flip-back inert aria-hidden="true">\s*Tył\s*<button class="ss-flip__return ss-link" type="button" data-ss-flip-toggle>~', $html);
-        $this->assertMatchesRegularExpression('~<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Odwróć" data-ss-flip-toggle hidden>~', $html);
+        $this->assertMatchesRegularExpression('~<button class="ss-icon-button ss-flip__toggle" type="button" aria-expanded="false" title="Odwróć" data-ss-flip-toggle hidden><span class="ss-icon ss-icon-button__icon">' . preg_quote(trim(CoreAssets::contents('img/icons/rotate-left.svg')), '~') . '~', $html);
     }
 
     public function test_organization_item_shows_the_kind_icon_name_and_nip_and_marks_the_current_unit(): void
