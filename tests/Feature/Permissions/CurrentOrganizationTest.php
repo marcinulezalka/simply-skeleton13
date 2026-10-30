@@ -72,17 +72,20 @@ class CurrentOrganizationTest extends ZoneRolesTestCase
         $this->get('/alpha/organization')->assertSee('organization:' . $withRole->id);
     }
 
-    public function test_layout_offers_the_switch_from_the_first_organization_on(): void
+    public function test_layout_offers_the_switch_from_the_first_organization_with_a_role_on(): void
     {
         $account = $this->account(AlphaAccount::class);
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
 
-        $this->member($account, $this->organization('Pierwsza'));
+        $this->member($account, $this->organization('Bez roli'));
+        $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->assertDontSee('class="ss-account-menu ss-context-switch"', false);
+
+        $this->member($account, $this->organization('Pierwsza'), 'guest');
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()
             ->assertSee('class="ss-account-menu ss-context-switch"', false)
             ->assertSee('Pierwsza');
 
-        $this->member($account, $this->organization('Druga'));
+        $this->member($account, $this->organization('Druga'), 'guest');
         $this->signedIn($account, 'alpha')->get('/alpha/account/security')
             ->assertSee('class="ss-account-menu ss-context-switch"', false)
             ->assertSee('<form method="POST" action="' . url('/alpha/account/context') . '">', false)

@@ -19,26 +19,32 @@ use Simplysmart\Admiro\Zones\ZoneContexts;
 use Tests\Fixtures\Zones\AlphaAccount;
 
 /**
- * Przełącznik kontekstu (Zones\ZoneContexts): każda organizacja i departament konta z jego rolami w nich, a jedno
- * kliknięcie (account.context.switch) ustawia organizację i rolę z jej uprawnieniami.
+ * Przełącznik kontekstu (Zones\ZoneContexts): organizacje i departamenty, w których konto ma role (z ikoną budynku,
+ * rola administracyjna z wypełnionym ludzikiem), bez członkostw bez ról, a jedno kliknięcie (account.context.switch)
+ * ustawia organizację i rolę z jej uprawnieniami.
  */
 class ContextSwitchTest extends ZoneRolesTestCase
 {
-    public function test_contexts_list_every_organization_and_department_with_the_roles_of_the_account(): void
+    public function test_contexts_list_only_organizations_and_departments_where_the_account_has_roles(): void
     {
         $management = $this->app->make(OrganizationManagement::class);
         $unit = $management->create(new OrganizationData('Sklep'));
         $department = $management->createDepartment(new OrganizationData('Magazyn'), $unit);
-        $account = $this->member($this->account(AlphaAccount::class), $unit, 'guest', 'analyst');
+        $grouping = $management->createDepartment(new OrganizationData('Zaplecze'), $unit);
+        $account = $this->member($this->account(AlphaAccount::class), $unit, 'guest', 'owner');
         $this->member($account, $department, 'analyst');
+        $this->member($account, $grouping);
 
         $html = (string) $this->signedIn($account, 'alpha')->get('/alpha/account/security')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('~<p class="ss-context-switch__group"><span class="ss-context-switch__kind"\s*title="' . preg_quote(text('account.context_kinds.organization'), '~') . '"\s*>.*?</span>' . preg_quote('Sklep', '~') . '</p>~s', $html);
-        $this->assertStringContainsString('d="M7.237 3.237A1.75', $html, 'The organization group carries the solid context icon.');
+        $this->assertStringContainsString('<path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/>', $html, 'The organization group carries the building icon.');
+        $this->assertSame(1, substr_count($html, '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2z"/>'), 'Only the administrative role (owner) carries the filled user icon.');
+        $this->assertStringNotContainsString('Zaplecze', $html);
         $this->assertMatchesRegularExpression('~<p class="ss-context-switch__group"><span class="ss-context-switch__kind"\s*title="' . preg_quote(text('account.context_kinds.department'), '~') . '"\s*>.*?</span>' . preg_quote('Sklep · Magazyn', '~') . '</p>~s', $html);
         $this->assertStringContainsString('name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($department, 'analyst') . '"', $html);
         $this->assertSame(3, substr_count($html, 'name="' . ZoneContexts::FIELD . '"'));
+        $this->assertStringContainsString('name="' . ZoneContexts::FIELD . '" value="' . ZoneContexts::value($unit, 'owner') . '"', $html);
     }
 
     public function test_one_click_sets_the_organization_and_the_role_with_its_permissions(): void
