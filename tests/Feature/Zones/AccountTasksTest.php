@@ -91,6 +91,18 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertMatchesRegularExpression('~data-ss-side-panel="notifications">.*?<div class="ss-side-panels__split-top">.*?ss-notifications__tabs-wrap.*?<div class="ss-side-panels__split-bottom">\s*<section class="ss-tasks".*?<span class="ss-task__issue">#1</span>\s*<span class="ss-task__name">Przygotować raport</span>~s', $html);
     }
 
+    public function test_command_sent_by_the_script_gets_the_message_and_the_refreshed_task_list_instead_of_a_redirect(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $response = $this->postJson(self::TASKS, ['command' => 'todo', 'text' => 'Wysłać ofertę'])->assertOk()->assertJsonPath('message', text('account.task_added'));
+
+        $this->assertSame('Wysłać ofertę', AccountTask::query()->sole()->name);
+        $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<span class="ss-task__name">Wysłać ofertę</span>.*</section>\s*$~s', (string) $response->json('tasks'));
+        $this->postJson(self::TASKS, ['command' => 'todo', 'text' => ''])->assertUnprocessable();
+    }
+
     public function test_guest_cannot_add_tasks(): void
     {
         $this->post(self::TASKS, ['command' => 'todo', 'text' => 'Zadanie'])->assertRedirect('/alpha/signin');
