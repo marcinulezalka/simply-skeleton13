@@ -33,6 +33,8 @@ class AccountSecurityTest extends SignInTestCase
         $this->assertStringContainsString('id="pin"', $html);
         $this->assertStringContainsString('action="' . url('/alpha/account/pin') . '"', $html);
         $this->assertStringContainsString('id="devices"', $html);
+        $this->assertStringContainsString('<section class="ss-card ss-security-lock" id="devices"', $html);
+        $this->assertStringContainsString('<section class="ss-card ss-card--inverse ss-security-lock" id="lock"', $html);
         $this->assertStringContainsString('action="' . url('/alpha/account/security/sessions') . '"', $html);
         $this->assertStringContainsString(text('audit.events.sign_in'), $html);
         $this->assertStringNotContainsString('127.0.0.1', $html);
