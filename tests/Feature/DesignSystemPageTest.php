@@ -20,12 +20,13 @@ use Simplysmart\Admiro\Enums\Palette;
 use Simplysmart\Admiro\Enums\Theme;
 use Simplysmart\Admiro\View\CoreAssets;
 use Simplysmart\Admiro\View\DesignTokens;
+use Simplysmart\Admiro\View\StatLevel;
 use Tests\TestCase;
 
 /**
  * Strona design systemu Core (`simplysmart.design-system`): tokeny odczytane wprost z tokens.css (jasny i ciemny,
  * z rozwiązanym var()), wszystkie ikony, nawigacja w dwóch grupach (widoki w rozwijanych obszarach DesignSystemArea),
- * gotowe widoki aplikacji z DesignSystemView,
+ * gotowe widoki aplikacji z DesignSystemView, karty statystyk x-admiro::stat-card (miernik, słupki, trend, wypełniona),
  * brak indeksowania; wyłączona strona i nieznany widok odpowiadają 404.
  */
 class DesignSystemPageTest extends TestCase
@@ -58,6 +59,30 @@ class DesignSystemPageTest extends TestCase
             ->assertSee('href="#segmented"', false)
             ->assertSee('ss-button--lg', false)
             ->assertSee('ss-button--sm', false);
+    }
+
+    public function test_stat_cards_show_the_meter_bars_trend_and_filled_variant(): void
+    {
+        $html = (string) $this->get(route('simplysmart.design-system'))
+            ->assertOk()
+            ->assertSee('<section class="ss-card" id="stats" aria-labelledby="stats-title">', false)
+            ->assertSee('href="#stats"', false)
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('~<section class="ss-stat-card ss-stat-card--success">.*?<span class="ss-stat-card__value">40</span>\s*<span class="ss-stat-card__unit">dB</span>.*?<div class="ss-stat-card__meter-track" role="meter" aria-valuemin="0" aria-valuemax="120" aria-valuenow="30"[^>]*data-ss-level="25">~s', $html);
+        $this->assertMatchesRegularExpression('~<span class="ss-stat-card__trend">\+18%</span>.*?<ol class="ss-stat-card__bars" role="img" aria-label="' . preg_quote(text('design_system.sample.stat_week'), '~') . '">.*?<li class="ss-stat-card__bar ss-stat-card__bar--current" data-ss-level="100"~s', $html, 'Bez `current` wyróżniony jest ostatni słupek.');
+        $this->assertStringContainsString('<section class="ss-stat-card ss-stat-card--success ss-stat-card--filled">', $html);
+        $this->assertStringContainsString('<section class="ss-stat-card ss-stat-card--info">', (string) $this->get(route('simplysmart.design-system.view', DesignSystemView::Dashboard))->getContent(), 'Pulpit demo używa kart statystyk.');
+    }
+
+    public function test_stat_level_is_a_share_of_the_maximum_in_steps_of_five(): void
+    {
+        $this->assertSame(0, StatLevel::of(0, 10));
+        $this->assertSame(0, StatLevel::of(5, 0));
+        $this->assertSame(5, StatLevel::of(1, 1000), 'Wartość niezerowa jest widoczna.');
+        $this->assertSame(25, StatLevel::of(30, 120));
+        $this->assertSame(35, StatLevel::of(1, 3));
+        $this->assertSame(100, StatLevel::of(150, 120));
     }
 
     public function test_navigation_card_has_foundations_and_every_view(): void
