@@ -15,6 +15,8 @@ namespace Tests\Feature\Database;
 
 use Illuminate\Support\Facades\Schema;
 use Simplysmart\Admiro\Database\ColumnNames;
+use Simplysmart\Admiro\Enums\TaskStatus;
+use Simplysmart\Admiro\Models\AccountTask;
 use Simplysmart\Admiro\Models\MainModel;
 use Tests\Fixtures\Database\DemoItem;
 
@@ -37,6 +39,14 @@ class DataModelTest extends DatabaseTestCase
     public function test_every_column_has_a_cast(): void
     {
         $this->assertSame([], array_values(array_diff(Schema::getColumnListing(DemoItem::TABLE), array_keys((new DemoItem())->getCasts()))));
+    }
+
+    public function test_model_cast_wins_over_the_standard_cast_in_any_trait_initializer_order(): void
+    {
+        $task = new AccountTask();
+        $task->initializeHasStandardColumns();
+
+        $this->assertSame(TaskStatus::class, $task->getCasts()[ColumnNames::STATUS], 'PHP 8.4 uruchamia inicjalizator HasStandardColumns po HasAttributes.');
     }
 
     public function test_new_record_gets_a_random_token_used_as_the_route_key(): void
