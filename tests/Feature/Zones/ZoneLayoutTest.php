@@ -312,6 +312,10 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('ss-command__add', $plain);
         $this->assertStringNotContainsString('data-ss-command-form', $plain);
         $this->assertMatchesRegularExpression('~data-ss-command>\s*<span class="ss-command__group">\s*<span class="ss-icon ss-command__zap">~', $plain);
+        $this->assertStringNotContainsString('data-ss-folder-layout', $plain, 'Przełącznik układu tylko na życzenie (layouts).');
+
+        $withLayouts = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" layouts><x-slot:add><li>Dodaj salę</li></x-slot:add></x-admiro::folder-search>');
+        $this->assertMatchesRegularExpression('~</details>\s*<button class="ss-command__layout" type="button" aria-pressed="false" title="' . preg_quote(text('layout.folder_layout_grid'), '~') . '" hidden data-ss-folder-layout="sale-list"[^>]*>\s*<span class="ss-icon ss-command__layout-icon ss-command__layout-icon--grid">.*?<span class="ss-icon ss-command__layout-icon ss-command__layout-icon--list">.*?</button>\s*<span class="ss-icon ss-command__zap">~s', $withLayouts, 'Przełącznik lista/siatka stoi w pigułce między „+” a błyskawicą.');
     }
 
     public function test_dialog_and_empty_folder_state(): void

@@ -23,7 +23,7 @@ use Tests\Fixtures\Zones\ZoneShopNavigation;
 /**
  * Zadania TODO konta: komenda `todo:` z pola komend na dole menu błyskawicy zapisuje zadanie z kolejnym numerem
  * zgłoszenia konta, lista pod powiadomieniami w panelu bocznym layoutu stref przełącza wykonanie i ukrywa zrealizowane,
- * rozpoczęte zadanie jest w toku, a zadania innych kont są niedostępne.
+ * rozpoczęte zadanie jest w toku, nazwa zadania otwiera modal jego edycji, a zadania innych kont są niedostępne.
  */
 class AccountTasksTest extends ZoneTestCase
 {
@@ -92,6 +92,32 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertSame(TaskStatus::Open, $task->refresh()->status);
     }
 
+    public function test_task_is_edited_from_its_modal_only_by_its_account(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+        $this->post(self::TASKS, ['command' => 'todo', 'text' => 'Zadzwonić']);
+        $task = AccountTask::query()->sole();
+
+        $html = (string) $this->get('/alpha/page')->getContent();
+        $this->assertMatchesRegularExpression('~<dialog class="ss-dialog" id="ss-task-edit-panel-' . $task->token . '".*?<form class="ss-form" method="POST" action="' . preg_quote(url(self::TASKS . '/' . $task->token), '~') . '">.*?name="_method" value="PUT".*?name="name"[^>]*value="Zadzwonić"~s', $html, 'Nazwa zadania otwiera modal z formularzem edycji.');
+
+        $this->put(self::TASKS . '/' . $task->token, ['name' => ' Zadzwonić do klienta ', 'title' => 'Klient', 'description' => ''])
+            ->assertSessionHas('status', text('account.task_updated'));
+        $task->refresh();
+        $this->assertSame('Zadzwonić do klienta', $task->name);
+        $this->assertSame('Klient', $task->title);
+        $this->assertNull($task->description);
+        $this->assertSame(TaskStatus::Open, $task->status);
+        $this->assertSame(1, $task->issue);
+
+        $this->put(self::TASKS . '/' . $task->token, ['name' => ''])->assertSessionHasErrors('name');
+
+        $this->signedIn($this->account(AlphaAccount::class, ['email' => 'other@example.com']), 'alpha');
+        $this->put(self::TASKS . '/' . $task->token, ['name' => 'Cudze'])->assertNotFound();
+        $this->assertSame('Zadzwonić do klienta', $task->refresh()->name);
+    }
+
     public function test_started_task_is_in_progress_and_stays_on_the_list_until_done(): void
     {
         $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
@@ -100,7 +126,7 @@ class AccountTasksTest extends ZoneTestCase
         $task = $this->app->make(AccountTasks::class)->start(AccountTask::query()->sole());
 
         $this->assertSame(TaskStatus::InProgress, $task->refresh()->status);
-        $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?<span class="ss-task__name">Poprawić listę</span>\s*<span class="ss-badge ss-badge--outline ss-badge--warning ss-task__status">' . preg_quote(TaskStatus::InProgress->label(), '~') . '</span>~s', (string) $this->get('/alpha/page')->getContent());
+        $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?<button class="ss-task__name"[^>]*>Poprawić listę</button>\s*<span class="ss-badge ss-badge--outline ss-badge--warning ss-task__status">' . preg_quote(TaskStatus::InProgress->label(), '~') . '</span>~s', (string) $this->get('/alpha/page')->getContent());
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
@@ -120,7 +146,7 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertSame(['https://github.com/acme/core/commit/0123456789abcdef', 'https://example.org/build/7'], $task->commits());
         $html = (string) $this->get('/alpha/page')->getContent();
         $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?id="ss-tasks-panel-tab-pending"[^>]*>.*?<span class="ss-tasks__tab-count">1</span>.*?id="ss-tasks-panel-tab-delivered"[^>]*>.*?<span class="ss-tasks__tab-count">1</span>~s', $html);
-        $this->assertMatchesRegularExpression('~id="ss-tasks-panel-pending".*?Nowa lista.*?id="ss-tasks-panel-delivered".*?Poprawić teczkę</span>\s*<span class="ss-badge ss-badge--outline ss-badge--muted ss-task__status">' . preg_quote(TaskStatus::Check->label(), '~') . '</span>.*?<a class="ss-task__commit" href="https://github.com/acme/core/commit/0123456789abcdef" target="_blank" rel="noopener noreferrer"[^>]*>.*?core@0123456</a>.*?<a class="ss-task__commit" href="https://example.org/build/7"[^>]*>.*?https://example.org/build/7</a>~s', $html);
+        $this->assertMatchesRegularExpression('~id="ss-tasks-panel-pending".*?Nowa lista.*?id="ss-tasks-panel-delivered".*?Poprawić teczkę</button>\s*<span class="ss-badge ss-badge--outline ss-badge--muted ss-task__status">' . preg_quote(TaskStatus::Check->label(), '~') . '</span>.*?<a class="ss-task__commit" href="https://github.com/acme/core/commit/0123456789abcdef" target="_blank" rel="noopener noreferrer"[^>]*>.*?core@0123456</a>.*?<a class="ss-task__commit" href="https://example.org/build/7"[^>]*>.*?https://example.org/build/7</a>~s', $html);
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
@@ -135,10 +161,10 @@ class AccountTasksTest extends ZoneTestCase
 
         $html = (string) $this->get('/alpha/page')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('~<details class="ss-search__menu ss-search__menu--folder ss-search__find".*?<div class="ss-search__folder-sheet">.*?</div>\s*<div class="ss-search__folder-foot">\s*<div class="ss-command" data-ss-command>.*?<span class="ss-command__slash" aria-hidden="true">/</span>\s*<span class="ss-command__current" data-ss-command-current>todo:</span>.*?<input class="ss-command__radio" type="radio" name="command" value="todo" form="ss-command-form"\s+checked.*?<input class="ss-command__input" id="ss-command-text" name="text" type="text" form="ss-command-form"[^>]*placeholder="' . preg_quote(text('enums.quick_command.todo.placeholder'), '~') . '"~s', $html);
+        $this->assertMatchesRegularExpression('~<details class="ss-search__menu ss-search__menu--folder ss-search__find".*?<div class="ss-search__folder-sheet">.*?</div>\s*<div class="ss-search__folder-foot">\s*<div class="ss-command" data-ss-command>.*?<span class="ss-icon ss-command__zap"><svg[^>]*>.*?</svg>\s*</span>\s*<span class="ss-command__current" data-ss-command-current>todo:</span>.*?<input class="ss-command__radio" type="radio" name="command" value="todo" form="ss-command-form"\s+checked.*?<input class="ss-command__input" id="ss-command-text" name="text" type="text" form="ss-command-form"[^>]*placeholder="' . preg_quote(text('enums.quick_command.todo.placeholder'), '~') . '"~s', $html);
         $this->assertStringContainsString('<form class="ss-command__form" id="ss-command-form" method="POST" action="' . url(self::TASKS) . '" hidden data-ss-command-form>', $html);
         $this->assertSame(1, substr_count($html, 'id="ss-command-text"'), 'Pole komend stoi tylko w menu błyskawicy, nie w menu „+”.');
-        $this->assertMatchesRegularExpression('~data-ss-side-panel="notifications">.*?<div class="ss-side-panels__split-top">.*?ss-notifications__tabs-wrap.*?<div class="ss-side-panels__split-bottom">\s*<section class="ss-tasks".*?<span class="ss-task__issue">#1</span>\s*<span class="ss-task__name">Przygotować raport</span>~s', $html);
+        $this->assertMatchesRegularExpression('~data-ss-side-panel="notifications">.*?<div class="ss-side-panels__split-top">.*?ss-notifications__tabs-wrap.*?<div class="ss-side-panels__split-bottom">\s*<section class="ss-tasks".*?<span class="ss-task__issue">#1</span>\s*<button class="ss-task__name" type="button" title="' . preg_quote(text('layout.task_edit'), '~') . '" data-ss-dialog-open="ss-task-edit-panel-[^"]+">Przygotować raport</button>~s', $html);
     }
 
     public function test_command_sent_by_the_script_gets_the_message_and_the_refreshed_task_list_instead_of_a_redirect(): void
@@ -151,7 +177,7 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertSame('Wysłać ofertę', AccountTask::query()->sole()->name);
         $tasks = $response->json('tasks');
         $this->assertIsString($tasks);
-        $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<span class="ss-task__name">Wysłać ofertę</span>.*</section>\s*$~s', $tasks);
+        $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<button class="ss-task__name"[^>]*>Wysłać ofertę</button>.*</section>\s*$~s', $tasks);
         $this->assertSame($tasks, $response->json('lists.panel'));
         $sidebar = $response->json('lists.sidebar');
         $this->assertIsString($sidebar);
