@@ -15,14 +15,15 @@ namespace Tests\Feature\Zones;
 
 use Simplysmart\Admiro\Enums\TaskStatus;
 use Simplysmart\Admiro\Models\AccountTask;
+use Simplysmart\Admiro\Tasks\AccountTasks;
 use Simplysmart\Admiro\Zones\ZoneNavigations;
 use Tests\Fixtures\Zones\AlphaAccount;
 use Tests\Fixtures\Zones\ZoneShopNavigation;
 
 /**
  * Zadania TODO konta: komenda `todo:` z pola komend na dole menu błyskawicy zapisuje zadanie z kolejnym numerem
- * zgłoszenia konta, lista pod powiadomieniami w panelu bocznym layoutu stref przełącza wykonanie, a zadania innych
- * kont są niedostępne.
+ * zgłoszenia konta, lista pod powiadomieniami w panelu bocznym layoutu stref przełącza wykonanie i ukrywa zrealizowane,
+ * rozpoczęte zadanie jest w toku, a zadania innych kont są niedostępne.
  */
 class AccountTasksTest extends ZoneTestCase
 {
@@ -80,7 +81,7 @@ class AccountTasksTest extends ZoneTestCase
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
         $this->assertNotNull($task->refresh()->completed_at);
-        $this->assertMatchesRegularExpression('~<li class="ss-task ss-task--done">.*?<input class="ss-task__check" id="ss-task-panel-' . $task->token . '" type="checkbox"\s+checked>~s', (string) $this->get('/alpha/page')->getContent());
+        $this->assertStringNotContainsString('id="ss-task-panel-' . $task->token . '"', (string) $this->get('/alpha/page')->getContent(), 'Zrealizowane zadania są ukryte na liście.');
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_reopened'));
         $this->assertSame(TaskStatus::Open, $task->refresh()->status);
@@ -89,6 +90,21 @@ class AccountTasksTest extends ZoneTestCase
         $this->signedIn($this->account(AlphaAccount::class, ['email' => 'other@example.com']), 'alpha');
         $this->patch(self::TASKS . '/' . $task->token)->assertNotFound();
         $this->assertSame(TaskStatus::Open, $task->refresh()->status);
+    }
+
+    public function test_started_task_is_in_progress_and_stays_on_the_list_until_done(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+        $this->post(self::TASKS, ['command' => 'todo', 'text' => 'Poprawić listę']);
+        $task = $this->app->make(AccountTasks::class)->start(AccountTask::query()->sole());
+
+        $this->assertSame(TaskStatus::InProgress, $task->refresh()->status);
+        $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?<span class="ss-task__name">Poprawić listę</span>\s*<span class="ss-badge ss-badge--outline ss-badge--warning ss-task__status">' . preg_quote(TaskStatus::InProgress->label(), '~') . '</span>~s', (string) $this->get('/alpha/page')->getContent());
+
+        $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
+        $this->assertSame(TaskStatus::Done, $task->refresh()->status);
+        $this->assertNotNull($task->completed_at);
     }
 
     public function test_zone_layout_has_the_command_field_in_the_lightning_menu_and_the_tasks_under_the_notifications(): void
