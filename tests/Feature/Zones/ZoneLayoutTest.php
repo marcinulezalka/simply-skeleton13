@@ -293,6 +293,34 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertMatchesRegularExpression('~<button class="ss-account-menu__link" type="button" data-ss-folder-save hidden>.*?' . preg_quote(text_action('save'), '~') . '</button>.*?<a class="ss-account-menu__link" href="/sale">.*?' . preg_quote(text_action('cancel'), '~') . '</a>~s', $html);
     }
 
+    public function test_folder_command_field_has_add_actions_a_lightning_command_toggle_and_search_or_todo_forms(): void
+    {
+        $html = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" name="q" placeholder="Sala 1" :params="[\'tab\' => \'sale\']" command-url="/zadania"><x-slot:add><li><a href="/sale/nowa" data-ss-dialog-open="sala-add">Dodaj salę</a></li></x-slot:add></x-admiro::folder-search>');
+
+        $this->assertMatchesRegularExpression('~^<div class="ss-command ss-command--folder" data-ss-command>\s*<details class="ss-command__add" data-ss-dropdown>.*?<a href="/sale/nowa" data-ss-dialog-open="sala-add">Dodaj salę</a>.*?</details>\s*<details class="ss-command__picker">\s*<summary class="ss-command__toggle"[^>]*>\s*<span class="ss-icon ss-command__zap">~s', $html);
+        $this->assertMatchesRegularExpression('~value="search" form="sale-list-command-form" checked data-ss-command-option data-prefix="' . preg_quote(text('layout.command_search_prefix'), '~') . '" data-placeholder="Sala 1" data-form="sale-list-search-form" data-name="q">~', $html);
+        $this->assertMatchesRegularExpression('~value="todo" form="sale-list-command-form" data-ss-command-option[^>]*data-form="sale-list-command-form" data-name="text">.*?' . preg_quote(text('enums.quick_command.todo.label'), '~') . '~s', $html);
+        $this->assertStringContainsString('<input class="ss-command__input" id="sale-list-search" name="q" type="search" form="sale-list-search-form"', $html);
+        $this->assertMatchesRegularExpression('~<form id="sale-list-search-form" method="GET" action="/sale" role="search" hidden data-ss-live-search="sale-list">\s*<input type="hidden" name="tab" value="sale">\s*</form>~', $html);
+        $this->assertMatchesRegularExpression('~<form id="sale-list-command-form" method="POST" action="/zadania" hidden data-ss-command-form>\s*<input type="hidden" name="_token"~', $html);
+
+        $plain = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" />');
+        $this->assertStringNotContainsString('ss-command__add', $plain);
+        $this->assertStringNotContainsString('data-ss-command-form', $plain);
+        $this->assertMatchesRegularExpression('~data-ss-command>\s*<span class="ss-icon ss-command__zap">~', $plain);
+    }
+
+    public function test_dialog_and_empty_folder_state(): void
+    {
+        $closed = Blade::render('<x-admiro::dialog id="sala-add" title="Dodaj salę"><p>Formularz</p></x-admiro::dialog>');
+        $this->assertMatchesRegularExpression('~^<dialog class="ss-dialog" id="sala-add" aria-labelledby="sala-add-title"\s+data-ss-dialog>.*?<h2 class="ss-dialog__title" id="sala-add-title">Dodaj salę</h2>\s*<form method="dialog">\s*<button class="ss-dialog__close" type="submit" title="' . preg_quote(text('layout.close'), '~') . '">.*?<div class="ss-dialog__body">\s*<p>Formularz</p>~s', $closed);
+        $this->assertMatchesRegularExpression('~<dialog class="ss-dialog" id="sala-add" aria-labelledby="sala-add-title"\s+open\s+data-ss-dialog-autoshow\s+data-ss-dialog>~', Blade::render('<x-admiro::dialog id="sala-add" title="Dodaj salę" :open="true">x</x-admiro::dialog>'));
+
+        $empty = Blade::render('<x-admiro::folder-empty as="li" title="Nie ma jeszcze sal" text="Dodaj pierwszą salę tutaj."><a href="#sala-add">Dodaj salę</a></x-admiro::folder-empty>');
+        $this->assertMatchesRegularExpression('~^<li class="ss-folder-empty">\s*<span class="ss-folder-empty__art"><span class="ss-icon ss-folder-empty__icon"><svg.*?</svg>\s*</span>\s*</span>\s*<span class="ss-folder-empty__title">Nie ma jeszcze sal</span>\s*<span class="ss-folder-empty__text">Dodaj pierwszą salę tutaj.</span>\s*<span class="ss-folder-empty__action"><a href="\#sala-add">Dodaj salę</a></span>\s*</li>~s', $empty);
+        $this->assertStringNotContainsString('ss-folder-empty__action', Blade::render('<x-admiro::folder-empty title="Pusto" text="Brak sal." />'));
+    }
+
     public function test_columns_layout_shows_the_settings_categories_in_the_left_menu_on_settings_pages(): void
     {
         $this->app->make(ZoneNavigations::class)->add('alpha', ColumnsShopNavigation::class);
