@@ -45,6 +45,19 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertSame($account->getKey(), $first->account_id);
     }
 
+    public function test_task_keeps_the_address_of_the_page_it_was_saved_from_without_showing_it(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $this->withHeader('Referer', url('/alpha/page?tab=clinics'))->postJson(self::TASKS, ['command' => 'todo', 'text' => 'Poprawić zakładkę'])->assertOk();
+        $this->flushHeaders()->postJson(self::TASKS, ['command' => 'todo', 'text' => 'Bez adresu strony'])->assertOk();
+
+        $tasks = AccountTask::query()->orderBy('issue')->get();
+        $this->assertSame([url('/alpha/page?tab=clinics'), null], $tasks->map(static fn(AccountTask $task): ?string => $task->sourceUrl())->all());
+        $this->assertStringNotContainsString('tab=clinics', (string) $this->get('/alpha/page')->assertOk()->getContent());
+    }
+
     public function test_unknown_command_or_empty_text_is_rejected(): void
     {
         $this->signedIn($this->account(AlphaAccount::class), 'alpha');
