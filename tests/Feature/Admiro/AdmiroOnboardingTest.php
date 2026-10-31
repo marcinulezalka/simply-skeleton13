@@ -408,6 +408,8 @@ class AdmiroOnboardingTest extends AdmiroTestCase
             ->assertSee('id="wiki-departament"', false)
             ->assertSee('<p class="ss-wiki-tip__question"><span class="ss-wiki-tip__qa" aria-hidden="true">Q</span>' . e(text('wiki.departament.question')) . '</p>', false)
             ->assertSee(route('admiro.wiki'), false);
+        $this->assertMatchesRegularExpression('~id="wiki-departament"[^>]*>\s*<span class="ss-wiki-tip__icons">\s*<span class="ss-icon ss-icon--tile ss-wiki-tip__icon">.*?</span>\s*<span class="ss-wiki-tip__qa-badge" title="' . preg_quote(text('wiki.qa'), '~') . '">Q&amp;A~s', (string) $this->get('/admiro/wiki')->getContent(), 'Wpis Q&A ma znacznik pod ikoną.');
+        $this->assertDoesNotMatchRegularExpression('~id="wiki-organizacja"[^>]*>\s*<span class="ss-wiki-tip__icons">(?:(?!</span>\s*<div class="ss-wiki-tip__body">).)*ss-wiki-tip__qa-badge~s', (string) $this->get('/admiro/wiki')->getContent(), 'Wpis bez pytania nie ma znacznika.');
         $this->get('/admiro/wiki?q=strefach')->assertOk()->assertSee('id="wiki-strefa"', false)->assertDontSee('id="wiki-organizacja"', false);
         $this->get('/admiro/wiki?q=zzz')->assertOk()->assertSee(text('wiki.none', ['term' => 'zzz']));
         $this->get('/admiro/onboarding/owners')->assertOk()->assertSee('id="wiki-wlasciciel"', false);

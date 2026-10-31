@@ -23,7 +23,8 @@ use Tests\Fixtures\Zones\ZoneShopNavigation;
 /**
  * Zadania TODO konta: komenda `todo:` z pola komend na dole menu błyskawicy zapisuje zadanie z kolejnym numerem
  * zgłoszenia konta, lista pod powiadomieniami w panelu bocznym layoutu stref przełącza wykonanie i ukrywa zrealizowane,
- * rozpoczęte zadanie jest w toku, nazwa zadania otwiera modal jego edycji, a zadania innych kont są niedostępne.
+ * rozpoczęte zadanie jest w toku, nazwa zadania otwiera modal jego edycji, a zadania innych kont są niedostępne;
+ * komenda `wiki:` prowadzi do wyszukiwania na stronie wiki strefy.
  */
 class AccountTasksTest extends ZoneTestCase
 {
@@ -183,6 +184,22 @@ class AccountTasksTest extends ZoneTestCase
         $this->assertIsString($sidebar);
         $this->assertStringContainsString('<section class="ss-tasks" aria-labelledby="ss-tasks-sidebar-heading" data-ss-tasks="sidebar">', $sidebar);
         $this->postJson(self::TASKS, ['command' => 'todo', 'text' => ''])->assertUnprocessable();
+    }
+
+    public function test_wiki_command_leads_to_the_zone_wiki_search_instead_of_saving_a_task(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+
+        $this->post(self::TASKS, ['command' => 'wiki', 'text' => ' departament '])->assertRedirect('/alpha/account/wiki?q=departament');
+        $this->postJson(self::TASKS, ['command' => 'wiki', 'text' => 'strefa'])->assertOk()->assertExactJson(['redirect' => url('/alpha/account/wiki?q=strefa')]);
+        $this->assertSame(0, AccountTask::query()->count());
+
+        $found = (string) $this->get('/alpha/account/wiki?q=departament')->assertOk()->getContent();
+        $this->assertStringContainsString('id="wiki-departament"', $found);
+        $this->assertStringNotContainsString('id="wiki-strefa"', $found);
+        $this->get('/alpha/account/wiki?q=nieistniejace')->assertOk()->assertSee(text('wiki.none', ['term' => 'nieistniejace']));
+        $this->assertMatchesRegularExpression('~value="wiki" form="ss-command-form"[^>]*data-prefix="wiki:"~', (string) $this->get('/alpha/page')->getContent(), 'Komenda wiki: jest w polu komend błyskawicy.');
     }
 
     public function test_guest_cannot_add_tasks(): void
