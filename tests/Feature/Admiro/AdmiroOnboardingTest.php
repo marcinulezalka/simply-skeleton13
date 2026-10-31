@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admiro;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -365,6 +366,16 @@ class AdmiroOnboardingTest extends AdmiroTestCase
         $this->assertMatchesRegularExpression('~<aside class="ss-wiki-tip" id="wiki-organizacja" role="note" aria-labelledby="wiki-organizacja-term">.*?wiki-organizacja.*?<strong class="ss-wiki-tip__term" id="wiki-organizacja-term">' . preg_quote(text('wiki.organizacja.term'), '~') . '</strong>.*?' . preg_quote(e(text('wiki.organizacja.definition')), '~') . '.*?<span class="ss-wiki-tip__example-label">' . text('wiki.example') . '</span>~s', $html);
         $this->assertLessThan(strpos($html, 'ss-onboarding-picker__enabled'), strpos($html, 'id="wiki-organizacja"'));
         $this->assertMatchesRegularExpression('~<a class="ss-onboarding-organizations__zone"\s+href="' . preg_quote(route('admiro.zones.accounts', ['managedZone' => 'admiro']), '~') . '"\s+title="admiro · /admiro">\s*<img class="ss-onboarding-organizations__zone-favicon" src="[^"]*/favicon/svg~', $html);
+    }
+
+    public function test_wiki_entry_with_usage_shows_how_to_use_it(): void
+    {
+        $this->app->make('translator')->addLines(['wiki.strefa.usage' => 'Zaloguj się osobno do każdej strefy.'], 'pl', 'admiro');
+        $entry = $this->app->make(Wiki::class)->entry('strefa');
+
+        $this->assertSame('Zaloguj się osobno do każdej strefy.', $entry?->usage);
+        $this->assertNull($this->app->make(Wiki::class)->entry('departament')?->usage);
+        $this->assertMatchesRegularExpression('~<p class="ss-wiki-tip__usage"><span class="ss-wiki-tip__example-label">' . preg_quote(text('wiki.usage'), '~') . '</span>Zaloguj się osobno do każdej strefy\.</p>~', Blade::render('<x-admiro::wiki-tip term="strefa" />'));
     }
 
     public function test_wiki_lists_core_terms_with_the_prefix_and_packages_add_their_own(): void

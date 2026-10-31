@@ -67,7 +67,7 @@ class AccountTasksTest extends ZoneTestCase
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
         $this->assertNotNull($task->refresh()->completed_at);
-        $this->assertMatchesRegularExpression('~<li class="ss-task ss-task--done">.*?<input class="ss-task__check" id="ss-task-' . $task->token . '" type="checkbox"\s+checked>~s', (string) $this->get('/alpha/page')->getContent());
+        $this->assertMatchesRegularExpression('~<li class="ss-task ss-task--done">.*?<input class="ss-task__check" id="ss-task-panel-' . $task->token . '" type="checkbox"\s+checked>~s', (string) $this->get('/alpha/page')->getContent());
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_reopened'));
         $this->assertSame(TaskStatus::Open, $task->refresh()->status);
@@ -87,7 +87,7 @@ class AccountTasksTest extends ZoneTestCase
         $html = (string) $this->get('/alpha/page')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('~<details class="ss-search__menu ss-search__menu--folder ss-search__find".*?<div class="ss-search__folder-sheet">.*?</div>\s*<div class="ss-search__folder-foot">\s*<div class="ss-command" data-ss-command>.*?<span class="ss-command__slash" aria-hidden="true">/</span>\s*<span class="ss-command__current" data-ss-command-current>todo:</span>.*?<input class="ss-command__radio" type="radio" name="command" value="todo" form="ss-command-form"\s+checked.*?<input class="ss-command__input" id="ss-command-text" name="text" type="text" form="ss-command-form"[^>]*placeholder="' . preg_quote(text('enums.quick_command.todo.placeholder'), '~') . '"~s', $html);
-        $this->assertStringContainsString('<form class="ss-command__form" id="ss-command-form" method="POST" action="' . url(self::TASKS) . '" hidden>', $html);
+        $this->assertStringContainsString('<form class="ss-command__form" id="ss-command-form" method="POST" action="' . url(self::TASKS) . '" hidden data-ss-command-form>', $html);
         $this->assertMatchesRegularExpression('~data-ss-side-panel="notifications">.*?<div class="ss-side-panels__split-top">.*?ss-notifications__tabs-wrap.*?<div class="ss-side-panels__split-bottom">\s*<section class="ss-tasks".*?<span class="ss-task__issue">#1</span>\s*<span class="ss-task__name">Przygotować raport</span>~s', $html);
     }
 
@@ -102,6 +102,10 @@ class AccountTasksTest extends ZoneTestCase
         $tasks = $response->json('tasks');
         $this->assertIsString($tasks);
         $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<span class="ss-task__name">Wysłać ofertę</span>.*</section>\s*$~s', $tasks);
+        $this->assertSame($tasks, $response->json('lists.panel'));
+        $sidebar = $response->json('lists.sidebar');
+        $this->assertIsString($sidebar);
+        $this->assertStringContainsString('<section class="ss-tasks" aria-labelledby="ss-tasks-sidebar-heading" data-ss-tasks="sidebar">', $sidebar);
         $this->postJson(self::TASKS, ['command' => 'todo', 'text' => ''])->assertUnprocessable();
     }
 

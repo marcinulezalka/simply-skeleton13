@@ -128,7 +128,7 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertMatchesRegularExpression('~<details class="ss-calendar-panel ss-side-panels" data-ss-dropdown data-ss-side-panels>.*?data-ss-side-panel="calendar">.*?ss-side-panel__tools--grid.*?data-ss-side-panel="notifications">~s', $html);
         $this->assertStringContainsString('<p class="ss-temp-mark" aria-hidden="true">' . text('layout.in_progress') . '</p>', $html);
         $this->assertMatchesRegularExpression('~<div class="ss-search__menu-panel ss-search__folder">\s*<p class="ss-search__folder-head"><span class="ss-icon ss-search__folder-head-icon">.*?</span>\s*' . preg_quote(text('layout.search_find'), '~') . '</p>\s*<div class="ss-search__folder-body">\s*<div class="ss-search__folder-sheet">\s*<p class="ss-search__menu-empty">.*?</div>\s*</div>\s*<span class="ss-search__folder-tab" aria-hidden="true"></span>~s', $html);
-        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools ss-side-panel__tools--grid"[^>]*>\s*<a class="ss-quick-tile" href="/ustawienia">.*?' . preg_quote(text('layout.settings'), '~') . '</span></a>\s*<details class="ss-quick-tile ss-quick-tile--menu" data-ss-theme-toggle hidden>.*?data-ss-theme="light".*?data-ss-theme="dark".*?data-ss-theme="contrast".*?data-ss-theme="contrast-yellow".*?<details class="ss-quick-tile ss-quick-tile--menu" data-ss-preference="text-size" hidden>.*?data-ss-preference-value="normal" data-ss-tile-close.*?data-ss-preference-value="large".*?<details class="ss-quick-tile ss-quick-tile--menu" data-ss-preference="text-size" hidden>.*?' . preg_quote(text('layout.zoom'), '~') . '.*?data-ss-preference-step="-1">.*?data-ss-preference-step="1">~s', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-side-panel__tools ss-side-panel__tools--grid"[^>]*>\s*<a class="ss-quick-tile" href="/ustawienia">.*?' . preg_quote(text('layout.settings'), '~') . '</span></a>\s*<button class="ss-quick-tile" type="button" title="' . preg_quote(text('layout.sidebar_wiki_open'), '~') . '" aria-controls="ss-sidebar-wiki-panel" aria-expanded="false" data-ss-sidebar-wiki-open hidden>.*?' . preg_quote(text('layout.wiki'), '~') . '</span></button>\s*<details class="ss-quick-tile ss-quick-tile--menu" data-ss-theme-toggle hidden>.*?data-ss-theme="light".*?data-ss-theme="dark".*?data-ss-theme="contrast".*?data-ss-theme="contrast-yellow".*?<details class="ss-quick-tile ss-quick-tile--menu" data-ss-preference="text-size" hidden>.*?data-ss-preference-value="normal" data-ss-tile-close.*?data-ss-preference-value="large".*?<details class="ss-quick-tile ss-quick-tile--menu" data-ss-preference="text-size" hidden>.*?' . preg_quote(text('layout.zoom'), '~') . '.*?data-ss-preference-step="-1">.*?data-ss-preference-step="1">~s', $html);
         $this->assertMatchesRegularExpression('~<form class="ss-workspace-footer__lock" method="POST" action="' . preg_quote(route('alpha.account.lock'), '~') . '">.*?title="' . preg_quote(text('layout.lock_screen'), '~') . '"><span class="ss-icon ss-icon-button__icon">' . preg_quote(trim(CoreAssets::contents('img/icons/lock-screen.svg')), '~') . '~s', $html);
         $this->assertMatchesRegularExpression('~<a class="ss-context__back ss-link" href="[^"]*">.*?' . preg_quote(text_action('back'), '~') . '</a>~s', $html);
     }
@@ -274,10 +274,23 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertMatchesRegularExpression('~<div class="ss-columns ss-columns--with-left">\s*<div class="ss-columns__left" role="region" aria-label="' . preg_quote(text('layout.columns_left'), '~') . '" tabindex="0">\s*Menu sal\s*</div>\s*<div class="ss-columns__content">\s*x\s*</div>\s*<aside class="ss-sidebar-wiki" data-ss-sidebar-wiki~', $html);
         $this->assertMatchesRegularExpression('~data-ss-sidebar-wiki-pin aria-pressed="false" title="' . preg_quote(text('layout.sidebar_wiki_pin'), '~') . '" hidden>.*?<div class="ss-sidebar-wiki__body" tabindex="0">\s*<aside class="ss-wiki-tip" id="wiki-organizacja"~s', $html);
 
+        $this->assertMatchesRegularExpression('~<div class="ss-sidebar-wiki__head">\s*<span class="ss-icon ss-icon--tile">.*?</span>\s*<h2 class="ss-sidebar-wiki__title" id="ss-sidebar-wiki-title">' . preg_quote(text('layout.sidebar_wiki'), '~') . '</h2>~s', $html);
+        $this->assertStringNotContainsString('ss-sidebar-wiki__rail', $html);
+        $this->assertMatchesRegularExpression('~<div class="ss-sidebar-wiki__tasks">\s*<form class="ss-sidebar-wiki__todo" id="ss-sidebar-todo-form" method="POST" action="' . preg_quote(url('/alpha/account/tasks'), '~') . '" data-ss-command-form>.*?<input type="hidden" name="command" value="todo">.*?<section class="ss-tasks" aria-labelledby="ss-tasks-sidebar-heading" data-ss-tasks="sidebar">~s', $html);
+        $this->assertStringContainsString('data-ss-sidebar-wiki-open hidden>', $html);
+
         $page = (string) $this->get('/alpha/page')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('~<div class="ss-columns">\s*<div class="ss-columns__content">\s*x\s*</div>~', $page);
         $this->assertStringContainsString('<p class="ss-sidebar-wiki__empty">' . text('layout.sidebar_wiki_empty') . '</p>', $page);
+    }
+
+    public function test_folder_actions_offer_save_for_the_chosen_folder_form_and_cancel_as_a_link(): void
+    {
+        $html = Blade::render('<div class="ss-folders" data-ss-tabs><x-admiro::folder-actions cancel-url="/sale" /></div>');
+
+        $this->assertMatchesRegularExpression('~<details class="ss-folder-actions" data-ss-dropdown data-ss-folder-actions>\s*<summary class="ss-folder-actions__toggle" title="' . preg_quote(text('layout.folder_actions'), '~') . '">\s*<span class="ss-icon ss-folder-actions__icon">~', $html);
+        $this->assertMatchesRegularExpression('~<button class="ss-account-menu__link" type="button" data-ss-folder-save hidden>.*?' . preg_quote(text_action('save'), '~') . '</button>.*?<a class="ss-account-menu__link" href="/sale">.*?' . preg_quote(text_action('cancel'), '~') . '</a>~s', $html);
     }
 
     public function test_columns_layout_shows_the_settings_categories_in_the_left_menu_on_settings_pages(): void
