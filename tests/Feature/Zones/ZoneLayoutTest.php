@@ -297,17 +297,21 @@ class ZoneLayoutTest extends ZoneTestCase
     {
         $html = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" name="q" placeholder="Sala 1" :params="[\'tab\' => \'sale\']" command-url="/zadania"><x-slot:add><li><a href="/sale/nowa" data-ss-dialog-open="sala-add">Dodaj salę</a></li></x-slot:add></x-admiro::folder-search>');
 
-        $this->assertMatchesRegularExpression('~^<div class="ss-command ss-command--folder" data-ss-command>\s*<details class="ss-command__add" data-ss-dropdown>.*?<a href="/sale/nowa" data-ss-dialog-open="sala-add">Dodaj salę</a>.*?</details>\s*<details class="ss-command__picker">\s*<summary class="ss-command__toggle"[^>]*>\s*<span class="ss-icon ss-command__zap">~s', $html);
+        $this->assertMatchesRegularExpression('~^<div class="ss-command ss-command--folder" data-ss-command>\s*<span class="ss-command__group">\s*<details class="ss-command__add" data-ss-dropdown>.*?<a href="/sale/nowa" data-ss-dialog-open="sala-add">Dodaj salę</a>.*?</details>\s*<details class="ss-command__picker" data-ss-dropdown>\s*<summary class="ss-command__toggle"[^>]*>\s*<span class="ss-icon ss-command__zap">~s', $html, 'Oba dropdowny są [data-ss-dropdown], więc otwarcie jednego zamyka drugi.');
         $this->assertMatchesRegularExpression('~value="search" form="sale-list-command-form" checked data-ss-command-option data-prefix="' . preg_quote(text('layout.command_search_prefix'), '~') . '" data-placeholder="Sala 1" data-form="sale-list-search-form" data-name="q">~', $html);
         $this->assertMatchesRegularExpression('~value="todo" form="sale-list-command-form" data-ss-command-option[^>]*data-form="sale-list-command-form" data-name="text">.*?' . preg_quote(text('enums.quick_command.todo.label'), '~') . '~s', $html);
         $this->assertStringContainsString('<input class="ss-command__input" id="sale-list-search" name="q" type="search" form="sale-list-search-form"', $html);
         $this->assertMatchesRegularExpression('~<form id="sale-list-search-form" method="GET" action="/sale" role="search" hidden data-ss-live-search="sale-list">\s*<input type="hidden" name="tab" value="sale">\s*</form>~', $html);
         $this->assertMatchesRegularExpression('~<form id="sale-list-command-form" method="POST" action="/zadania" hidden data-ss-command-form>\s*<input type="hidden" name="_token"~', $html);
 
+        $withActions = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali"><x-slot:actions><button class="ss-command__option" type="submit">sync:</button></x-slot:actions></x-admiro::folder-search>');
+        $this->assertMatchesRegularExpression('~<details class="ss-command__picker" data-ss-dropdown>.*?value="search".*?<p class="ss-command__title">' . preg_quote(text('layout.command_actions'), '~') . '</p>\s*<button class="ss-command__option" type="submit">sync:</button>~s', $withActions);
+        $this->assertStringNotContainsString('value="todo"', $withActions);
+
         $plain = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" />');
         $this->assertStringNotContainsString('ss-command__add', $plain);
         $this->assertStringNotContainsString('data-ss-command-form', $plain);
-        $this->assertMatchesRegularExpression('~data-ss-command>\s*<span class="ss-icon ss-command__zap">~', $plain);
+        $this->assertMatchesRegularExpression('~data-ss-command>\s*<span class="ss-command__group">\s*<span class="ss-icon ss-command__zap">~', $plain);
     }
 
     public function test_dialog_and_empty_folder_state(): void

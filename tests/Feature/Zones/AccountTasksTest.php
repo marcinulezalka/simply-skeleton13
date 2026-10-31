@@ -81,7 +81,7 @@ class AccountTasksTest extends ZoneTestCase
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
         $this->assertNotNull($task->refresh()->completed_at);
-        $this->assertStringNotContainsString('id="ss-task-panel-' . $task->token . '"', (string) $this->get('/alpha/page')->getContent(), 'Zrealizowane zadania są ukryte na liście.');
+        $this->assertMatchesRegularExpression('~<div class="ss-tasks__area" id="ss-tasks-panel-pending"[^>]*>\s*<p class="ss-notifications__empty">.*?<div class="ss-tasks__area" id="ss-tasks-panel-delivered"[^>]*>.*?<li class="ss-task ss-task--done">.*?id="ss-task-panel-' . $task->token . '" type="checkbox"\s+checked>~s', (string) $this->get('/alpha/page')->getContent(), 'Wykonane zadanie jest w obszarze „do sprawdzenia i wdrożone”.');
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_reopened'));
         $this->assertSame(TaskStatus::Open, $task->refresh()->status);
@@ -101,6 +101,26 @@ class AccountTasksTest extends ZoneTestCase
 
         $this->assertSame(TaskStatus::InProgress, $task->refresh()->status);
         $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?<span class="ss-task__name">Poprawić listę</span>\s*<span class="ss-badge ss-badge--outline ss-badge--warning ss-task__status">' . preg_quote(TaskStatus::InProgress->label(), '~') . '</span>~s', (string) $this->get('/alpha/page')->getContent());
+
+        $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
+        $this->assertSame(TaskStatus::Done, $task->refresh()->status);
+        $this->assertNotNull($task->completed_at);
+    }
+
+    public function test_task_submitted_for_check_shows_its_commits_in_the_delivered_area_until_done(): void
+    {
+        $this->app->make(ZoneNavigations::class)->add('alpha', ZoneShopNavigation::class);
+        $this->signedIn($this->account(AlphaAccount::class), 'alpha');
+        $this->post(self::TASKS, ['command' => 'todo', 'text' => 'Poprawić teczkę']);
+        $this->post(self::TASKS, ['command' => 'todo', 'text' => 'Nowa lista']);
+        $tasks = $this->app->make(AccountTasks::class);
+        $task = $tasks->submitForCheck(AccountTask::query()->where('issue', 1)->sole(), ['https://github.com/acme/core/commit/0123456789abcdef', 'https://github.com/acme/core/commit/0123456789abcdef', 'https://example.org/build/7']);
+
+        $this->assertSame(TaskStatus::Check, $task->refresh()->status);
+        $this->assertSame(['https://github.com/acme/core/commit/0123456789abcdef', 'https://example.org/build/7'], $task->commits());
+        $html = (string) $this->get('/alpha/page')->getContent();
+        $this->assertMatchesRegularExpression('~<span class="ss-tasks__count">1</span>.*?id="ss-tasks-panel-tab-pending"[^>]*>.*?<span class="ss-tasks__tab-count">1</span>.*?id="ss-tasks-panel-tab-delivered"[^>]*>.*?<span class="ss-tasks__tab-count">1</span>~s', $html);
+        $this->assertMatchesRegularExpression('~id="ss-tasks-panel-pending".*?Nowa lista.*?id="ss-tasks-panel-delivered".*?Poprawić teczkę</span>\s*<span class="ss-badge ss-badge--outline ss-badge--muted ss-task__status">' . preg_quote(TaskStatus::Check->label(), '~') . '</span>.*?<a class="ss-task__commit" href="https://github.com/acme/core/commit/0123456789abcdef" target="_blank" rel="noopener noreferrer"[^>]*>.*?core@0123456</a>.*?<a class="ss-task__commit" href="https://example.org/build/7"[^>]*>.*?https://example.org/build/7</a>~s', $html);
 
         $this->patch(self::TASKS . '/' . $task->token)->assertSessionHas('status', text('account.task_done'));
         $this->assertSame(TaskStatus::Done, $task->refresh()->status);
