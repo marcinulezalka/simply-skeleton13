@@ -315,12 +315,13 @@ class ZoneLayoutTest extends ZoneTestCase
         $this->assertStringNotContainsString('data-ss-folder-layout', $plain, 'Przełącznik układu tylko na życzenie (layouts).');
 
         $withLayouts = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" layouts><x-slot:add><li>Dodaj salę</li></x-slot:add></x-admiro::folder-search>');
-        $this->assertMatchesRegularExpression('~</details>\s*<button class="ss-command__layout" type="button" aria-pressed="false" title="' . preg_quote(text('layout.folder_layout_grid'), '~') . '" hidden data-ss-folder-layout="sale-list"[^>]*>\s*<span class="ss-icon ss-command__layout-icon ss-command__layout-icon--grid">.*?<span class="ss-icon ss-command__layout-icon ss-command__layout-icon--list">.*?</button>\s*<span class="ss-icon ss-command__zap">~s', $withLayouts, 'Przełącznik lista/siatka stoi w pigułce między „+” a błyskawicą.');
-        $this->assertStringContainsString('data-ss-layout-next="grid" data-layouts="list grid" ', $withLayouts);
-        $this->assertStringNotContainsString('ss-command__layout-icon--tree', $withLayouts, 'Drzewo tylko na życzenie (tree).');
+        $this->assertMatchesRegularExpression('~</details>\s*<details class="ss-command__add ss-command__layouts" data-ss-dropdown hidden data-ss-folder-layout="sale-list" data-layouts="list grid">\s*<summary class="ss-command__add-toggle ss-command__layout" title="' . preg_quote(text('layout.folder_layout'), '~') . '" data-ss-layout-current="list">.*?</details>\s*<span class="ss-icon ss-command__zap">~s', $withLayouts, 'Dropdown układu stoi w pigułce między „+” a błyskawicą, ikona pokazuje bieżący układ.');
+        $this->assertMatchesRegularExpression('~<button class="ss-account-menu__link ss-command__layout-option" type="button" title="' . preg_quote(text('layout.folder_layout_list'), '~') . '" aria-pressed="true" data-ss-layout-option="list">.*?' . preg_quote(text('layout.folder_layout_list_label'), '~') . '</button>.*?data-ss-layout-option="grid">~s', $withLayouts);
+        $this->assertStringNotContainsString('data-ss-layout-option="tree"', $withLayouts, 'Drzewo tylko na życzenie (tree).');
 
         $withTree = Blade::render('<x-admiro::folder-search action="/sale" results="sale-list" label="Szukaj sali" layouts tree />');
-        $this->assertMatchesRegularExpression('~data-layouts="list grid tree"[^>]*data-title-tree="' . preg_quote(text('layout.folder_layout_tree'), '~') . '"[^>]*>.*?<span class="ss-icon ss-command__layout-icon ss-command__layout-icon--tree">~s', $withTree);
+        $this->assertStringContainsString('data-layouts="list grid tree"', $withTree);
+        $this->assertMatchesRegularExpression('~data-ss-layout-option="tree">.*?' . preg_quote(text('layout.folder_layout_tree_label'), '~') . '</button>~s', $withTree);
     }
 
     public function test_dialog_and_empty_folder_state(): void
