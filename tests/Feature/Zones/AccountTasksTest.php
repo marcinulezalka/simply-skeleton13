@@ -99,7 +99,9 @@ class AccountTasksTest extends ZoneTestCase
         $response = $this->postJson(self::TASKS, ['command' => 'todo', 'text' => 'Wysłać ofertę'])->assertOk()->assertJsonPath('message', text('account.task_added'));
 
         $this->assertSame('Wysłać ofertę', AccountTask::query()->sole()->name);
-        $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<span class="ss-task__name">Wysłać ofertę</span>.*</section>\s*$~s', (string) $response->json('tasks'));
+        $tasks = $response->json('tasks');
+        $this->assertIsString($tasks);
+        $this->assertMatchesRegularExpression('~^\s*<section class="ss-tasks".*?<span class="ss-task__name">Wysłać ofertę</span>.*</section>\s*$~s', $tasks);
         $this->postJson(self::TASKS, ['command' => 'todo', 'text' => ''])->assertUnprocessable();
     }
 

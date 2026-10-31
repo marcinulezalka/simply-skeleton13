@@ -32,7 +32,9 @@ class OrganizationMembersTest extends ZoneRolesTestCase
         $zone = $this->app->make(ZoneRegistry::class)->get('alpha');
 
         $this->assertSame([$staff->id], array_map(static fn($account): mixed => $account->getKey(), $members->inZone($organization, $zone)));
-        $this->assertNull($members->find($organization, $zone, (string) $support->getRouteKey()));
+        $supportKey = $support->getRouteKey();
+        $this->assertIsString($supportKey);
+        $this->assertNull($members->find($organization, $zone, $supportKey));
         $this->assertEqualsCanonicalizing([$staff->id, $support->id], array_map(static fn(array $member): mixed => $member['account']->getKey(), $members->all($organization)));
     }
 }
