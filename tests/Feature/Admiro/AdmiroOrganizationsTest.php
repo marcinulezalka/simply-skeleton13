@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\MessageBag;
 use Illuminate\Support\Str;
+use Illuminate\Support\ViewErrorBag;
 use Simplysmart\Admiro\Http\Controllers\FlagController;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Organizations\OrganizationData;
@@ -73,7 +75,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $form = (string) $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()
             ->assertSeeInOrder([text('layout.organization_form.details'), text('layout.organization_form.address'), text('layout.organization_form.contact')])
             ->getContent();
-        $this->assertSame(3, substr_count($form, '<h2 class="ss-card__title ss-card__title--icon"'), 'Nagłówek każdej karty z ikoną.');
+        $this->assertSame(3, substr_count($form, '<h2 class="ss-folder__tab ss-folder__tab--title"'), 'Nagłówek każdej karty z ikoną na wypustce teczki.');
         $this->assertStringNotContainsString('ss-form-row', Str::between($form, 'id="organization-details-title"', '</form>'), 'Każde pole w osobnym wierszu.');
         $this->assertSame(3, substr_count($form, '<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"'), 'Kraj adresu i oba prefiksy telefonu z flagą w polu.');
         $this->assertMatchesRegularExpression('~<div class="ss-phone">\s*<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"[^>]*>\s*<img[^>]*data-ss-flag-image>\s*<select class="ss-input ss-phone__prefix" id="phone_country" name="phone_country"~', $form, 'Telefon w osobnym wierszu: prefiks z flagą i numer.');
@@ -92,6 +94,25 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->post('/admiro/organizations', ['name' => 'Zły NIP', 'nip' => '123-456-32-19']);
         $this->assertSame(text('validation.nip'), $this->sessionError('nip'));
         $this->assertFalse(Organization::query()->where('name', 'Zły NIP')->exists());
+    }
+
+    public function test_editable_organization_cards_open_for_editing_only_where_a_field_has_an_error(): void
+    {
+        $cards = static fn(string $html): array => preg_match_all('~<section aria-labelledby="organization-(\w+)-title"([^>]*)>~', $html, $found, PREG_SET_ORDER) > 0
+            ? array_column(array_map(static fn(array $card): array => [$card[1], $card[2]], $found), 1, 0)
+            : [];
+        view()->share('errors', new ViewErrorBag());
+
+        $this->assertSame([], array_filter($cards(Blade::render('<x-admiro::organization.fields />')), static fn(string $attributes): bool => str_contains($attributes, 'data-ss-edit-card')), 'Bez editable zwykłe karty formularza.');
+
+        $editable = $cards(Blade::render('<x-admiro::organization.fields :editable="true" />'));
+        $this->assertSame(['details', 'address', 'contact'], array_keys($editable));
+        $this->assertSame(3, count(array_filter($editable, static fn(string $attributes): bool => str_contains($attributes, 'data-ss-edit-card="data-ss-edit-card" data-state="edit"') && ! str_contains($attributes, 'data-ss-edit-open'))));
+        $this->assertSame([], array_filter($cards(Blade::render('<x-admiro::organization.fields :editable="true" :disabled="true" />')), static fn(string $attributes): bool => str_contains($attributes, 'data-ss-edit-card')), 'Bez uprawnienia do zmiany karty tylko do odczytu.');
+
+        view()->share('errors', (new ViewErrorBag())->put('default', new MessageBag(['phone' => [text('validation.required')]])));
+        $withError = $cards(Blade::render('<x-admiro::organization.fields :editable="true" />'));
+        $this->assertSame(['contact'], array_keys(array_filter($withError, static fn(string $attributes): bool => str_contains($attributes, 'data-ss-edit-open'))), 'Karta z błędem walidacji otwiera się w edycji.');
     }
 
     public function test_phones_are_saved_with_the_country_prefix_and_a_new_organization_starts_in_the_default_country(): void
