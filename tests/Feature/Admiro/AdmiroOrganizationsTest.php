@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Str;
 use Illuminate\Support\ViewErrorBag;
+use Simplysmart\Admiro\Attributes\CustomAttributes;
 use Simplysmart\Admiro\Http\Controllers\FlagController;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Organizations\OrganizationData;
@@ -113,6 +114,28 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         view()->share('errors', (new ViewErrorBag())->put('default', new MessageBag(['phone' => [text('validation.required')]])));
         $withError = $cards(Blade::render('<x-admiro::organization.fields :editable="true" />'));
         $this->assertSame(['contact'], array_keys(array_filter($withError, static fn(string $attributes): bool => str_contains($attributes, 'data-ss-edit-open'))), 'Karta z błędem walidacji otwiera się w edycji.');
+    }
+
+    public function test_read_only_cards_present_the_data_without_labels_and_custom_fields_get_a_tab_on_each_card(): void
+    {
+        view()->share('errors', new ViewErrorBag());
+        $organization = $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Przychodnia Centrum', null, ['nip' => '1234563218', 'street' => 'ul. Prosta 1', 'postal_code' => '00001', 'city' => 'Warszawa', 'email' => 'biuro@example.com']));
+
+        $preview = Blade::render('<x-admiro::organization.fields :organization="$organization" :disabled="true" />', ['organization' => $organization]);
+        $this->assertStringNotContainsString('name="name"', $preview, 'Tylko do odczytu bez pól formularza.');
+        $this->assertMatchesRegularExpression('~<p class="ss-preview__title">Przychodnia Centrum</p>\s*<ul class="ss-preview__facts">\s*<li><span class="ss-preview__fact-label">' . preg_quote(text_data(Organization::class, 'nip'), '~') . '</span> 123-456-32-18</li>\s*</ul>~', $preview, 'Nazwa, a pod nią w jednym wierszu tylko wypełnione NIP, REGON, KRS.');
+        $this->assertStringContainsString('<p class="ss-preview__line">00-001 Warszawa</p>', $preview);
+        $this->assertStringContainsString('biuro@example.com', $preview);
+        $this->assertStringContainsString(e(text('layout.organization_form.empty')), Blade::render('<x-admiro::organization.fields :organization="$organization" :disabled="true" />', ['organization' => $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Pusta'))]));
+
+        $editable = Blade::render('<x-admiro::organization.fields :organization="$organization" :editable="true" custom-fields />', ['organization' => $organization]);
+        $this->assertSame(3, substr_count($editable, '<div class="ss-folder-card__preview ss-preview">'), 'Karty edytowalne mają podgląd obok formularza.');
+        $this->assertSame(3, substr_count($editable, 'class="ss-form ss-fieldset ss-folder-card__form" data-ss-edit-fields'));
+        $this->assertSame(3, substr_count($editable, '-extra-tab" aria-controls="'), 'Każda karta ma zakładkę pól dodatkowych.');
+        foreach (['details' => CustomAttributes::DEFAULT_SECTION, 'address' => 'address', 'contact' => 'contact'] as $card => $section) {
+            $this->assertMatchesRegularExpression('~id="organization-' . $card . '-extra-tab"[^>]*>.*?' . preg_quote(text('layout.attributes.title'), '~') . '.*?<div class="ss-folder-card__pane" id="organization-' . $card . '-extra".*?name="custom_attributes\[' . $section . '\]\[0\]\[name\]"~s', $editable, 'Zakładka „Pola dodatkowe” przy karcie ' . $card . '.');
+        }
+        $this->assertStringNotContainsString('-extra-tab"', Blade::render('<x-admiro::organization.fields :organization="$organization" :editable="true" />', ['organization' => $organization]), 'Bez customFields karty bez drugiej zakładki.');
     }
 
     public function test_phones_are_saved_with_the_country_prefix_and_a_new_organization_starts_in_the_default_country(): void
