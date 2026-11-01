@@ -15,6 +15,7 @@ namespace Tests\Feature\Admiro;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
+use Simplysmart\Admiro\Http\Controllers\FlagController;
 use Simplysmart\Admiro\Models\Organization;
 use Simplysmart\Admiro\Organizations\OrganizationData;
 use Simplysmart\Admiro\Organizations\OrganizationManagement;
@@ -77,13 +78,13 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertSame(3, substr_count($form, '<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"'), 'Kraj adresu i oba prefiksy telefonu z flagą w polu.');
         $this->assertMatchesRegularExpression('~<div class="ss-phone">\s*<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"[^>]*>\s*<img[^>]*data-ss-flag-image>\s*<select class="ss-input ss-phone__prefix" id="phone_country" name="phone_country"~', $form, 'Telefon w osobnym wierszu: prefiks z flagą i numer.');
         $select = Blade::render('<x-admiro::flag-select :flags="$flags" selected="PL" id="country" name="country"><option value="PL">Polska</option></x-admiro::flag-select>', ['flags' => ['PL' => 'pl', 'DE' => 'de', 'XK' => null]]);
-        $this->assertStringContainsString('data-ss-flag-url="' . route('admiro.flags.show', ['flag' => 'flagcode']) . '" data-ss-flags="' . e('{"PL":"pl","DE":"de"}') . '"', $select, 'Strona niesie kody flag i szablon adresu, nie pliki flag.');
+        $this->assertStringContainsString('data-ss-flag-url="' . route('admiro.flags.show', ['flag' => FlagController::FLAG_PLACEHOLDER]) . '" data-ss-flags="' . e('{"PL":"pl","DE":"de"}') . '" data-ss-flag-placeholder="' . FlagController::FLAG_PLACEHOLDER . '"', $select, 'Strona niesie kody flag i szablon adresu, nie pliki flag.');
         $this->assertMatchesRegularExpression('~<img class="ss-input-wrap__icon ss-flag ss-flag-select__flag"\s+src="' . preg_quote(route('admiro.flags.show', ['flag' => 'pl']), '~') . '"~', $select);
         $this->assertMatchesRegularExpression('~<img[^>]*\shidden\s[^>]*data-ss-flag-image>~', Blade::render('<x-admiro::flag-select :flags="[]" id="c" name="c" />'), 'Bez flagi obrazek ukryty, bez pustego adresu.');
         $this->assertStringNotContainsString('<svg class="ss-flag"', $form);
         $this->get(route('admiro.flags.show', ['flag' => 'pl']))->assertOk()->assertHeader('Content-Type', 'image/svg+xml')->assertSee('id="flag-icons-pl"', false);
         $this->get(route('admiro.flags.show', ['flag' => 'zz-none']))->assertOk()->assertSee('id="flag-icons-xx"', false);
-        $this->get(str_replace('flagcode', 'PL_1', route('admiro.flags.show', ['flag' => 'flagcode'])))->assertNotFound();
+        $this->get(str_replace(FlagController::FLAG_PLACEHOLDER, 'PL_1', route('admiro.flags.show', ['flag' => FlagController::FLAG_PLACEHOLDER])))->assertNotFound();
 
         $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Firma', ...$details, 'billing_email' => 'faktury@example.com']);
         $this->assertSame('faktury@example.com', $organization->fresh()?->billing_email);
