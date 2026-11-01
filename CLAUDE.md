@@ -220,7 +220,7 @@ The application is split into zones. Each zone is an isolated sandbox with its o
 - **Configurable slug, stable names**: The zone's Service Provider groups its routes with `prefix` = the slug from the package's own config, `as` = the package's fixed route-name prefix (e.g. `<zone>.`), and the zone middleware (locale, session, `auth:<zone-guard>`). Changing a slug is a config change only and never renames routes; the route-name prefix is not configurable, so `route()` calls never break.
 - **Relative route files**: Package route files define relative paths and short names (`->name('dashboard')` → `<zone>.dashboard`). URL prefixes, the name prefix and middleware come only from the Service Provider.
 - **Named routes only**: Generate links with `route('<prefix>.<name>')`, never hand-built URLs containing the locale or a slug.
-- **Constraints**: Route names are unique across zones (each package has its own name prefix; the administrators' zone shares `admiro.` with the Core routes `admiro.cookies.*` and `admiro.legal.*`, and the design system page is `simplysmart.design-system`), everything works with `php artisan route:cache`, and no zone slug equals a locale code.
+- **Constraints**: Route names are unique across zones (each package has its own name prefix; the administrators' zone shares `admiro.` with the Core routes `admiro.cookies.*`, `admiro.legal.*` and `admiro.flags.*`, and the design system page is `simplysmart.design-system`), everything works with `php artisan route:cache`, and no zone slug equals a locale code.
 
 ## Skills Ownership
 Each skill has exactly one source; never create a second copy of a skill in another repository.

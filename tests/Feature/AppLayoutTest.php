@@ -403,14 +403,14 @@ class AppLayoutTest extends TestCase
         $this->assertSame('JA', Initials::of('jan'));
     }
 
-    public function test_input_shows_an_icon_mask_format_and_error(): void
+    public function test_input_shows_an_icon_mask_and_error_without_a_format_note(): void
     {
         $html = Blade::render('<x-admiro::input id="tax" label="NIP" :mask="$mask" name="tax_id" error="Niepoprawny NIP." />', ['mask' => InputMask::TaxId]);
 
         $this->assertStringContainsString('<div class="ss-input-wrap ss-input-wrap--icon">', $html);
         $this->assertStringContainsString('class="ss-icon ss-input-wrap__icon"', $html);
-        $this->assertStringContainsString('inputmode="numeric" placeholder="' . e(InputMask::TaxId->placeholder()) . '" maxlength="13" data-ss-mask="999-999-99-99" aria-invalid="true" aria-describedby="tax-hint tax-error"', $html);
-        $this->assertStringContainsString('<p class="ss-field__hint" id="tax-hint">' . text('layout.mask_format', ['format' => '999-999-99-99']) . '</p>', $html);
+        $this->assertStringContainsString('inputmode="numeric" placeholder="' . e(InputMask::TaxId->placeholder()) . '" maxlength="13" data-ss-mask="999-999-99-99" aria-invalid="true" aria-describedby="tax-error"', $html);
+        $this->assertStringNotContainsString('ss-field__hint', $html, 'Format narzuca maska w polu, bez przypisu pod polem.');
         $this->assertStringContainsString('<p class="ss-field__error" id="tax-error" role="alert">Niepoprawny NIP.</p>', $html);
     }
 
