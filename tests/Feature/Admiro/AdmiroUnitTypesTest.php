@@ -36,6 +36,7 @@ class AdmiroUnitTypesTest extends AdmiroTestCase
         $this->assertFalse($administration->is_public, 'Struktura wewnętrzna poza publicznym grafikiem.');
         $this->assertSame('ADM-12', $administration->displayNumber('12'));
         $this->assertNull($administration->displayNumber(null));
+        $this->assertSame('cross', OrganizationUnitType::query()->where('code', 'poradnia')->sole()->iconName(), 'Poradnia z krzyżem medycznym.');
 
         $this->app->make(OrganizationUnitTypeSeeder::class)->run();
         $this->assertSame(count(OrganizationUnitTypeSeeder::DEFAULTS), OrganizationUnitType::query()->count(), 'Seeder jest idempotentny.');
