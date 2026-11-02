@@ -68,6 +68,21 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertFalse(Organization::query()->where('name', 'Firma')->exists());
     }
 
+    public function test_organization_color_is_validated_saved_and_defaults_to_a_palette_color(): void
+    {
+        $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
+        $this->post('/admiro/organizations', ['name' => 'Firma'])->assertRedirect();
+        $organization = Organization::query()->where('name', 'Firma')->sole();
+        $this->assertNull($organization->color);
+        $this->assertSame(Organization::COLOR_PALETTE[$organization->id % count(Organization::COLOR_PALETTE)], $organization->color(), 'Bez zapisanego koloru — stały kolor z palety według id.');
+        $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()->assertSee('type="color"', false)->assertSee('value="' . $organization->color() . '"', false);
+
+        $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Firma', 'color' => 'red']);
+        $this->assertNotSame('', $this->sessionError(Organization::COLOR));
+        $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Firma', 'color' => '#AB12CD'])->assertRedirect();
+        $this->assertSame('#ab12cd', $organization->fresh()?->color());
+    }
+
     public function test_organization_details_are_saved_and_billing_email_starts_as_the_organization_email(): void
     {
         $this->signedIn($this->admin('owner@example.com', 'owner'), 'admiro');
@@ -130,6 +145,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertStringNotContainsString('name="name"', $preview, 'Tylko do odczytu bez pól formularza.');
         $this->assertMatchesRegularExpression('~<p class="ss-preview__title">Przychodnia Centrum</p>\s*<ul class="ss-preview__facts">\s*<li><span class="ss-preview__fact-label">' . preg_quote(text_data(Organization::class, 'nip'), '~') . '</span> 123-456-32-18</li>\s*</ul>~', $preview, 'Nazwa, a pod nią w jednym wierszu tylko wypełnione NIP, REGON, KRS.');
         $this->assertStringContainsString('<p class="ss-preview__line">00-001 Warszawa</p>', $preview);
+        $this->assertStringContainsString('<circle cx="6" cy="6" r="6" fill="' . $organization->color() . '" /></svg> <span class="ss-preview__fact-label">' . text_data(Organization::class, 'color') . '</span> ' . $organization->color() . '</p>', $preview, 'Kolor organizacji jako kropka SVG z wartością.');
         $this->assertStringContainsString('biuro@example.com', $preview);
         $this->assertStringContainsString(e(text('layout.organization_form.empty')), Blade::render('<x-admiro::organization.fields :organization="$organization" :disabled="true" />', ['organization' => $this->app->make(OrganizationManagement::class)->create(new OrganizationData('Pusta'))]));
 
