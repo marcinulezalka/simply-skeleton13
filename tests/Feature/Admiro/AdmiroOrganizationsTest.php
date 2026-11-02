@@ -58,6 +58,11 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $this->assertNull($organization->short_name);
         $this->assertSame('Hurtownia Materiałów Budowlanych', $organization->shortName());
 
+        $longest = str_repeat('ż', Organization::SHORT_NAME_MAX_LENGTH);
+        $this->assertSame(100, Organization::SHORT_NAME_MAX_LENGTH);
+        $this->put('/admiro/organizations/' . $organization->token, ['name' => 'Hurtownia Materiałów Budowlanych', 'short_name' => $longest])->assertSessionHasNoErrors();
+        $this->assertSame($longest, $organization->fresh()?->short_name, 'Kolumna mieści najdłuższą nazwę skróconą.');
+
         $this->post('/admiro/organizations', ['name' => 'Firma', 'short_name' => str_repeat('x', Organization::SHORT_NAME_MAX_LENGTH + 1)]);
         $this->assertNotSame('', $this->sessionError(Organization::SHORT_NAME));
         $this->assertFalse(Organization::query()->where('name', 'Firma')->exists());
