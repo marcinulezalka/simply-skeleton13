@@ -143,7 +143,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
 
         $preview = Blade::render('<x-admiro::organization.fields :organization="$organization" :disabled="true" />', ['organization' => $organization]);
         $this->assertStringNotContainsString('name="name"', $preview, 'Tylko do odczytu bez pól formularza.');
-        $this->assertMatchesRegularExpression('~<p class="ss-preview__title">Przychodnia Centrum</p>\s*<ul class="ss-preview__facts">\s*<li><span class="ss-preview__fact-label">' . preg_quote(text_data(Organization::class, 'nip'), '~') . '</span> 123-456-32-18</li>\s*</ul>~', $preview, 'Nazwa, a pod nią w jednym wierszu tylko wypełnione NIP, REGON, KRS.');
+        $this->assertMatchesRegularExpression('~<p class="ss-preview__title">Przychodnia Centrum</p>\s*<ul class="ss-preview__facts">\s*<li><span class="ss-preview__fact-label">' . preg_quote(text_data(Organization::class, 'nip'), '~') . '</span> <span class="ss-number">123-456-32-18</span></li>\s*</ul>~', $preview, 'Nazwa, a pod nią w jednym wierszu tylko wypełnione NIP, REGON, KRS — wartości krojem mono.');
         $this->assertStringContainsString('<p class="ss-preview__line">00-001 Warszawa</p>', $preview);
         $this->assertStringContainsString('<circle cx="6" cy="6" r="6" fill="' . $organization->color() . '" /></svg> <span class="ss-preview__fact-label">' . text_data(Organization::class, 'color') . '</span> ' . $organization->color() . '</p>', $preview, 'Kolor organizacji jako kropka SVG z wartością.');
         $this->assertStringContainsString('biuro@example.com', $preview);
