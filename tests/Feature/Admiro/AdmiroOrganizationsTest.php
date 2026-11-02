@@ -96,7 +96,7 @@ class AdmiroOrganizationsTest extends AdmiroTestCase
         $form = (string) $this->get('/admiro/organizations/' . $organization->token . '/edit')->assertOk()
             ->assertSeeInOrder([text('layout.organization_form.details'), text('layout.organization_form.address'), text('layout.organization_form.contact')])
             ->getContent();
-        $this->assertSame(3, substr_count($form, '<h2 class="ss-folder__tab ss-folder__tab--title"'), 'Nagłówek każdej karty z ikoną na wypustce teczki.');
+        $this->assertSame(4, substr_count($form, '<h2 class="ss-folder__tab ss-folder__tab--title"'), 'Nagłówek każdej karty — trzech kart danych i karty marki — z ikoną na wypustce teczki.');
         $this->assertStringNotContainsString('ss-form-row', Str::between($form, 'id="organization-details-title"', '</form>'), 'Każde pole w osobnym wierszu.');
         $this->assertSame(3, substr_count($form, '<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"'), 'Kraj adresu i oba prefiksy telefonu z flagą w polu.');
         $this->assertMatchesRegularExpression('~<div class="ss-phone">\s*<div class="ss-input-wrap ss-input-wrap--icon ss-flag-select"[^>]*>\s*<img[^>]*data-ss-flag-image>\s*<select class="ss-input ss-phone__prefix" id="phone_country" name="phone_country"~', $form, 'Telefon w osobnym wierszu: prefiks z flagą i numer.');
