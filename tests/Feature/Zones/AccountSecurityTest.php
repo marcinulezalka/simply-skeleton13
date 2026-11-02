@@ -114,6 +114,9 @@ class AccountSecurityTest extends SignInTestCase
         $this->signedIn($this->account(AlphaAccount::class, pin: self::PIN), 'alpha');
 
         $this->post('/alpha/account/lock');
+        $html = (string) $this->get('/alpha/account/unlock')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<div class="ss-auth__submit">.*?<button class="ss-link" type="submit" form="screen-lock-sign-out">' . preg_quote(e(text('account.screen_lock.sign_out')), '~') . '</button>\s*</div>~s', $html, '„Wyloguj” wyśrodkowane pod „Odblokuj”, jak link pomocniczy kroku PIN.');
+        $this->assertStringContainsString('<form id="screen-lock-sign-out" method="POST" action="' . url('/alpha/signin/out') . '" hidden>', $html);
         $this->post('/alpha/signin/out')->assertRedirect();
         $this->get('/alpha/account/profile')->assertRedirect(url('/alpha/signin'));
     }
