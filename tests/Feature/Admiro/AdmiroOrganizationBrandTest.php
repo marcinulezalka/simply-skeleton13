@@ -50,7 +50,7 @@ class AdmiroOrganizationBrandTest extends AdmiroTestCase
         $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
         $edit = (string) $this->get('/admiro/organizations/' . $this->company->token . '/edit')->assertOk()->assertSee(text('layout.organization_brand.title'))->assertSee($this->zoneUrl($url), false)->getContent();
         $this->assertSame(3, substr_count($edit, 'data-ss-file-drop-zone>'), 'Każdy plik marki ze strefą upuszczania.');
-        $this->assertMatchesRegularExpression('~<form method="POST" action="' . preg_quote($this->zoneUrl($url), '~') . '" enctype="multipart/form-data" data-ss-autosubmit>~', $edit, 'Plik wysyła się od razu po upuszczeniu albo wyborze.');
+        $this->assertMatchesRegularExpression('~<form id="brand-logo-store" method="POST" action="' . preg_quote($this->zoneUrl($url), '~') . '" enctype="multipart/form-data" data-ss-autosubmit>~', $edit, 'Plik wysyła się od razu po upuszczeniu albo wyborze.');
 
         $this->post($url, ['file' => UploadedFile::fake()->image('logo.jpg', 300, 60)]);
         $second = $this->storedPath();
