@@ -172,6 +172,36 @@ class ZoneRoleAssignmentTest extends ZoneRolesTestCase
         $this->assertSame(1, $account->fresh()?->authEpoch());
     }
 
+    public function test_manager_of_a_company_assigns_roles_in_its_units_to_its_people_only(): void
+    {
+        $unit = $this->organization('Dział');
+        $unit->forceFill(['parent_id' => $this->company->id])->save();
+        $manager = $this->member($this->account(AlphaAccount::class), $this->company, 'manager');
+        $clerk = $this->member($this->account(AlphaAccount::class, ['email' => 'clerk@example.com']), $this->company);
+        $stranger = $this->member($this->account(AlphaAccount::class, ['email' => 'stranger@example.com']), $this->organization('Obca'));
+
+        $this->assignment()->assign($manager, $clerk, 'analyst', $unit);
+
+        $this->assertTrue($this->allows($clerk, 'reports.export', $unit), 'Rola w jednostce z uprawnień w organizacji nadrzędnej.');
+        $this->assertFalse($this->allows($clerk, 'reports.export'), 'Rola tylko w jednostce, nie w organizacji.');
+        $this->assertDatabaseHas(PermissionTables::ORGANIZATION_MEMBERS, [PermissionTables::TEAM_FOREIGN_KEY => $unit->id, PermissionTables::MODEL_ID => $clerk->getKey()]);
+
+        $this->assignment()->revoke($manager, $clerk, 'analyst', $unit);
+        $this->assertFalse($this->allows($clerk, 'reports.export', $unit));
+
+        try {
+            $this->assignment()->assign($manager, $stranger, 'analyst', $unit);
+            $this->fail('Konto spoza drzewa nadającego nie dostaje roli.');
+        } catch (RoleAssignmentDenied) {
+            $this->assertDatabaseMissing(PermissionTables::ORGANIZATION_MEMBERS, [PermissionTables::TEAM_FOREIGN_KEY => $unit->id, PermissionTables::MODEL_ID => $stranger->getKey()]);
+        }
+
+        $support = $this->member($this->account(AlphaAccount::class, ['email' => 'support@example.com']), $this->company, 'support');
+        $this->expectException(RoleAssignmentDenied::class);
+        $this->expectExceptionMessage('grants more than the assigner has');
+        $this->assignment()->assign($support, $clerk, 'analyst', $unit);
+    }
+
     private function allows(ZoneAccount $account, string $permission, ?Organization $organization = null): bool
     {
         return $this->app->make(CurrentOrganization::class)->within(($organization ?? $this->company)->id, function () use ($account, $permission): bool {
